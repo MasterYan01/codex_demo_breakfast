@@ -883,3 +883,38 @@ body.is-ready .page-loader {
     border-radius: 22px;
   }
 }
+
+main section[id] {
+  scroll-margin-top: 120px;
+}
+
+.nav a.is-active {
+  opacity: 1;
+  color: var(--wood-deep);
+}
+
+.nav a.is-active::after {
+  transform: scaleX(1);
+}
+
+.hero-card {
+  will-change: transform;
+  transform-origin: center center;
+  transition: transform 120ms linear;
+}
+
+.hero-visual {
+  perspective: 1200px;
+}
+
+body.is-loading .site-header,
+body.is-loading .page-shell main,
+body.is-loading .site-footer {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-card {
+    transform: none !important;
+  }
+}
