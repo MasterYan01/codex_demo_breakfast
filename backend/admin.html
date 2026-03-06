@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>樂沐 La Miu 後台 | 菜單內容管理</title>
+  <meta name="description" content="樂沐 La Miu 菜單後台，可編輯分類頁與單品資料。">
+  <meta name="theme-color" content="#f2e6d8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="is-loading menu-page admin-page" data-page="admin">
+  <div class="page-loader" aria-hidden="true"><div class="page-loader__inner"><span class="page-loader__mark">樂沐</span><span class="page-loader__line"></span><span class="page-loader__label">La Miu</span></div></div>
+  <div class="page-shell">
+    <header class="site-header reveal-on-scroll" data-reveal="header">
+      <a class="brand" href="index.html"><span class="brand-mark">樂沐</span><span class="brand-sub">La Miu</span></a>
+      <nav class="nav">
+        <a href="menu.html">菜單總覽</a>
+        <a href="breakfast.html">早餐頁</a>
+        <a href="coffee.html">咖啡頁</a>
+        <a href="dessert.html">甜點頁</a>
+      </nav>
+    </header>
+    <main>
+      <section class="admin-hero reveal-on-scroll reveal-visible" data-reveal="hero">
+        <div class="admin-hero__copy">
+          <p class="eyebrow">Menu CMS</p>
+          <h1>菜單後台</h1>
+          <p class="hero-text">這個後台直接讀寫 `data/menu.json`。更新後，菜單總覽、分類頁與單品頁會同步反映最新資料。</p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" id="admin-save-button" type="button">儲存全部變更</button>
+            <a class="btn btn-secondary" href="menu.html">返回前台</a>
+          </div>
+          <p class="form-status" id="admin-status" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section class="admin-layout reveal-on-scroll" data-reveal="section">
+        <aside class="admin-sidebar">
+          <div class="admin-panel">
+            <p class="eyebrow">Items</p>
+            <h2>單品列表</h2>
+            <button class="btn btn-secondary admin-add-button" id="admin-add-item" type="button">新增單品</button>
+            <div id="admin-item-list" class="admin-item-list"></div>
+          </div>
+        </aside>
+        <section class="admin-editor">
+          <form class="admin-form admin-panel" id="admin-item-form">
+            <p class="eyebrow">Editor</p>
+            <h2>單品編輯</h2>
+            <div class="admin-grid">
+              <label class="field"><span>Slug</span><input type="text" name="slug" required></label>
+              <label class="field"><span>名稱</span><input type="text" name="name" required></label>
+              <label class="field"><span>分類</span><select name="category" required><option value="breakfast">早餐</option><option value="coffee">咖啡</option><option value="dessert">甜點</option></select></label>
+              <label class="field"><span>價格</span><input type="number" name="price" min="0" required></label>
+              <label class="field field-full"><span>圖片</span><input type="url" name="image" required></label>
+              <label class="field field-full"><span>短描述</span><input type="text" name="shortDescription" required></label>
+              <label class="field field-full"><span>完整描述</span><textarea name="description" rows="5" required></textarea></label>
+              <label class="field field-full"><span>搭配建議</span><input type="text" name="pairing"></label>
+              <label class="field"><span>供應狀態</span><input type="text" name="availability"></label>
+              <label class="field field-full"><span>食材（逗號分隔）</span><input type="text" name="ingredients"></label>
+              <label class="field field-full"><span>標籤（逗號分隔）</span><input type="text" name="tags"></label>
+            </div>
+            <div class="hero-actions">
+              <button class="btn btn-primary" type="submit">更新暫存內容</button>
+              <button class="btn btn-secondary" id="admin-delete-item" type="button">刪除此單品</button>
+            </div>
+          </form>
+        </section>
+      </section>
+    </main>
+  </div>
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
+

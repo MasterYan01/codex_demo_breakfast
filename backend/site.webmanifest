@@ -1,0 +1,15 @@
+﻿{
+  "name": "樂沐 La Miu",
+  "short_name": "La Miu",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#f5ede3",
+  "theme_color": "#f2e6d8",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

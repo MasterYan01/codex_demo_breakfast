@@ -1,0 +1,288 @@
+﻿{
+  "brand": {
+    "name": "樂沐 La Miu",
+    "email": "reservations@lamiu.com.tw",
+    "phone": "06-221-3129",
+    "address": "台南市中西區衛民街129號"
+  },
+  "categories": [
+    {
+      "slug": "breakfast",
+      "name": "早餐",
+      "english": "Breakfast Menu",
+      "tagline": "Morning Plates",
+      "description": "招牌早餐盤、蛋料理、酸種吐司與週末限定熱鍋，構成 La Miu 最完整的晨間主食分類。",
+      "heroImage": "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=1600&q=80",
+      "noteTitle": "早餐供應至下午 4:30，假日熱門時段建議提前預約。",
+      "noteText": "若希望安排窗邊或 4 人以上桌型，可於訂位備註中填寫需求，我們會依當日桌況安排。",
+      "pairings": [
+        {"label": "搭配咖啡", "href": "coffee.html"},
+        {"label": "搭配甜點", "href": "dessert.html"}
+      ]
+    },
+    {
+      "slug": "coffee",
+      "name": "咖啡",
+      "english": "Coffee Menu",
+      "tagline": "Espresso & Brew",
+      "description": "從義式咖啡到手沖單品，再到暖調奶香特調，這一頁整理了最適合搭配早午餐與甜點的飲品。",
+      "heroImage": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1600&q=80",
+      "noteTitle": "若是第一次來店，建議以拿鐵搭配鬆餅或肉桂捲開始。",
+      "noteText": "咖啡豆單與手沖品項會隨季節調整，若想了解當日豆單，可於現場向服務人員詢問。",
+      "pairings": [
+        {"label": "搭配早餐", "href": "breakfast.html"},
+        {"label": "搭配甜點", "href": "dessert.html"}
+      ]
+    },
+    {
+      "slug": "dessert",
+      "name": "甜點",
+      "english": "Dessert Menu",
+      "tagline": "Pastry & Sweets",
+      "description": "肉桂捲、巴斯克乳酪、季節水果塔與限定甜點，保留了 La Miu 網站與實體餐桌一致的暖調節奏。",
+      "heroImage": "https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1600&q=80",
+      "noteTitle": "甜點供應依每日製作數量而定，熱門品項可能提早完售。",
+      "noteText": "若你是為了肉桂捲或限定甜點來店，建議中午前後抵達，會有較完整的供應狀態。",
+      "pairings": [
+        {"label": "搭配咖啡", "href": "coffee.html"},
+        {"label": "查看早餐", "href": "breakfast.html"}
+      ]
+    }
+  ],
+  "items": [
+    {
+      "slug": "classic-pancake-plate",
+      "name": "晨光鬆餅早餐盤",
+      "category": "breakfast",
+      "price": 380,
+      "shortDescription": "經典鬆餅、水果、楓糖與黑咖啡。",
+      "description": "以自製奶香鬆餅搭配季節水果、發酵奶油與楓糖，旁附小杯黑咖啡，呈現最具代表性的 La Miu 晨間組合。",
+      "image": "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=1200&q=80",
+      "tags": ["招牌", "主廚推薦"],
+      "ingredients": ["奶香鬆餅", "季節莓果", "發酵奶油", "楓糖", "黑咖啡"],
+      "pairing": "建議搭配熱拿鐵或美式。",
+      "availability": "全時段供應"
+    },
+    {
+      "slug": "smoked-salmon-benedict",
+      "name": "燻鮭魚班尼迪克蛋",
+      "category": "breakfast",
+      "price": 320,
+      "shortDescription": "英式瑪芬、半熟蛋與荷蘭醬的招牌組合。",
+      "description": "以英式瑪芬承接燻鮭魚、水波蛋與荷蘭醬，口感柔和，帶有溫潤酸香，是開店以來的固定人氣品項。",
+      "image": "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=1200&q=80",
+      "tags": ["經典", "人氣"],
+      "ingredients": ["英式瑪芬", "燻鮭魚", "水波蛋", "荷蘭醬", "芝麻葉"],
+      "pairing": "建議搭配美式或伯爵鮮奶茶。",
+      "availability": "全時段供應"
+    },
+    {
+      "slug": "avocado-sourdough-toast",
+      "name": "酪梨酸種吐司",
+      "category": "breakfast",
+      "price": 340,
+      "shortDescription": "酸種麵包、酪梨與水波蛋的清爽搭配。",
+      "description": "以低溫發酵酸種麵包搭配酪梨泥、水波蛋與香草油，整體口感清爽明亮，適合偏好輕盈口味的來客。",
+      "image": "https://images.unsplash.com/photo-1513442542250-854d436a73f2?auto=format&fit=crop&w=1200&q=80",
+      "tags": ["清爽", "健康"],
+      "ingredients": ["酸種麵包", "酪梨泥", "水波蛋", "香草油", "檸檬皮"],
+      "pairing": "建議搭配柑橘氣泡飲。",
+      "availability": "全時段供應"
+    },
+    {
+      "slug": "bacon-potato-skillet",
+      "name": "炙烤培根洋芋早餐鍋",
+      "category": "breakfast",
+      "price": 420,
+      "shortDescription": "週末限定熱鍋早餐，風味更厚實。",
+      "description": "以鐵鍋盛裝炙烤培根、香料洋芋與半熟蛋，口感層次濃厚，適合作為週末較晚時段的主餐。",
+      "image": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
+      "tags": ["週末限定", "季節限定"],
+      "ingredients": ["厚切培根", "馬鈴薯", "半熟蛋", "奶油菠菜", "香料鹽"],
+      "pairing": "建議搭配卡布奇諾。",
+      "availability": "週末供應"
+    },
+    {
+      "slug": "french-toast-citrus-yogurt",
+      "name": "柑橘優格法式吐司",
+      "category": "breakfast",
+      "price": 340,
+      "shortDescription": "柑橘漬片、優格與楓糖平衡甜度。",
+      "description": "將布里歐法式吐司搭配自製柑橘漬片、優格與少量楓糖，讓甜味維持在更輕柔的範圍。",
+      "image": "https://images.unsplash.com/photo-1506084868230-bb9d95c24759?auto=format&fit=crop&w=1200&q=80",
+      "tags": ["季節限定", "甜口早餐"],
+      "ingredients": ["布里歐吐司", "柑橘漬片", "優格", "楓糖", "糖粉"],
+      "pairing": "建議搭配單品手沖。",
+      "availability": "春夏限定"
+    },
+    {
+      "slug": "lemon-asparagus-omelette",
+      "name": "檸香奶油蘆筍蛋卷",
+      "category": "breakfast",
+      "price": 360,
+      "shortDescription": "春季蘆筍、檸檬奶油與滑嫩蛋卷。",
+      "description": "以柔嫩蛋卷包覆春季蘆筍與香草奶油，旁附酸種吐司與小份沙拉，維持輕盈但完整的晨間份量。",
+      "image": "https://images.unsplash.com/photo-1510693206972-df098062cb71?auto=format&fit=crop&w=1200&q=80",
+      "tags": ["季節限定", "春季"],
+      "ingredients": ["蛋卷", "春季蘆筍", "檸檬奶油", "酸種吐司", "奶油生菜"],
+      "pairing": "建議搭配蜂蜜洋甘菊茶。",
+      "availability": "春季供應"
+    },
+    {
+      "slug": "latte",
+      "name": "拿鐵",
+      "category": "coffee",
+      "price": 160,
+      "shortDescription": "中焙義式濃縮搭配牛奶，口感圓潤柔和。",
+      "description": "以中焙義式豆為基底，保留可可與堅果調性，結合蒸氣牛奶與柔順奶泡，適合搭配早餐盤與甜點。",
+      "image": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1200&q=80",
+      "tags": ["經典咖啡", "奶香"],
+      "ingredients": ["義式濃縮", "牛奶"],
+      "pairing": "最適合搭配晨光鬆餅早餐盤。",
+      "availability": "全時段供應"
+    },
+    {
+      "slug": "americano",
+      "name": "美式",
+      "category": "coffee",
+      "price": 130,
+      "shortDescription": "保留乾淨尾韻與較明亮的豆香表現。",
+      "description": "以義式濃縮加入熱水調和，風味乾淨俐落，能凸顯豆子的堅果與微果酸尾韻。",
+      "image": "https://images.unsplash.com/photo-1494314671902-399b18174975?auto=format&fit=crop&w=1200&q=80",
+      "tags": ["黑咖啡", "日常"],
+      "ingredients": ["義式濃縮", "熱水"],
+      "pairing": "適合搭配班尼迪克蛋與乳酪蛋糕。",
+      "availability": "全時段供應"
+    },
+    {
+      "slug": "cappuccino",
+      "name": "卡布奇諾",
+      "category": "coffee",
+      "price": 150,
+      "shortDescription": "奶泡比例更明確，風味較集中。",
+      "description": "以較厚的奶泡比例呈現咖啡香氣與口感層次，入口更立體，也更適合搭配較重的鹹食早餐。",
+      "image": "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=1200&q=80",
+      "tags": ["奶咖", "厚實"],
+      "ingredients": ["義式濃縮", "牛奶", "奶泡"],
+      "pairing": "適合搭配炙烤培根洋芋早餐鍋。",
+      "availability": "全時段供應"
+    },
+    {
+      "slug": "single-origin-filter",
+      "name": "手沖單品",
+      "category": "coffee",
+      "price": 180,
+      "shortDescription": "依當季豆單輪替，提供花香或果酸較明顯風味。",
+      "description": "精選當季豆單，以手沖方式保留產地風味差異。豆款依日常供應變動，可能呈現花香、柑橘或可可調性。",
+      "image": "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=1200&q=80",
+      "tags": ["手沖", "精品"],
+      "ingredients": ["單品咖啡豆", "熱水"],
+      "pairing": "適合搭配法式吐司或季節水果塔。",
+      "availability": "豆單輪替"
+    },
+    {
+      "slug": "earl-grey-milk-tea",
+      "name": "伯爵鮮奶茶",
+      "category": "coffee",
+      "price": 160,
+      "shortDescription": "茶香厚實，適合搭配甜點與肉桂捲。",
+      "description": "以伯爵茶葉煮製茶底，帶有佛手柑香氣，搭配牛奶後風味溫潤，適合作為不喝咖啡時的首選。",
+      "image": "https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=1200&q=80",
+      "tags": ["茶飲", "奶茶"],
+      "ingredients": ["伯爵茶", "牛奶", "蔗糖"],
+      "pairing": "最適合搭配肉桂捲。",
+      "availability": "全時段供應"
+    },
+    {
+      "slug": "citrus-sparkling",
+      "name": "自製柑橘氣泡飲",
+      "category": "coffee",
+      "price": 170,
+      "shortDescription": "酸甜清爽，作為午後飲品也很合適。",
+      "description": "以自製柑橘糖漿、氣泡水與少量檸檬汁調製，風味輕盈，特別適合春夏季節與清爽型早餐。",
+      "image": "https://images.unsplash.com/photo-1461823385004-d7660947a7c0?auto=format&fit=crop&w=1200&q=80",
+      "tags": ["特調", "清爽", "季節限定"],
+      "ingredients": ["柑橘糖漿", "氣泡水", "檸檬汁", "柑橘片"],
+      "pairing": "適合搭配酪梨酸種吐司。",
+      "availability": "春夏供應"
+    },
+    {
+      "slug": "cinnamon-roll",
+      "name": "手作肉桂捲",
+      "category": "dessert",
+      "price": 150,
+      "shortDescription": "溫熱香料與糖霜尾韻，是品牌甜點代表。",
+      "description": "每日烘烤的手作肉桂捲帶有奶油香與糖霜尾韻，外層微酥、內裡濕潤，是 La Miu 最穩定的熱門甜點。",
+      "image": "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=1200&q=80",
+      "tags": ["招牌甜點", "人氣"],
+      "ingredients": ["麵團", "肉桂糖", "奶油", "糖霜"],
+      "pairing": "建議搭配拿鐵或伯爵鮮奶茶。",
+      "availability": "每日限量"
+    },
+    {
+      "slug": "basque-cheesecake",
+      "name": "巴斯克乳酪蛋糕",
+      "category": "dessert",
+      "price": 180,
+      "shortDescription": "表面焦糖香與濕潤乳酪質地平衡得宜。",
+      "description": "採高溫烘烤帶出巴斯克焦香，中心保留濕潤乳酪口感，甜度控制得較低，適合配黑咖啡。",
+      "image": "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=1200&q=80",
+      "tags": ["乳酪", "經典"],
+      "ingredients": ["奶油乳酪", "鮮奶油", "雞蛋", "砂糖"],
+      "pairing": "最適合搭配美式或手沖單品。",
+      "availability": "全時段供應"
+    },
+    {
+      "slug": "seasonal-fruit-tart",
+      "name": "季節水果塔",
+      "category": "dessert",
+      "price": 190,
+      "shortDescription": "以當令水果與卡士達呈現較明亮的甜感。",
+      "description": "每日依水果供應更新品項，搭配卡士達與杏仁奶油塔殼，保留更輕盈的果香與酸度。",
+      "image": "https://images.unsplash.com/photo-1464306076886-da185f6a9d05?auto=format&fit=crop&w=1200&q=80",
+      "tags": ["季節限定", "水果"],
+      "ingredients": ["塔殼", "卡士達", "當季水果", "果膠"],
+      "pairing": "建議搭配手沖單品或柑橘氣泡飲。",
+      "availability": "依水果供應輪替"
+    },
+    {
+      "slug": "vanilla-pudding",
+      "name": "香草布丁",
+      "category": "dessert",
+      "price": 140,
+      "shortDescription": "口感柔滑，適合搭配黑咖啡或茶飲。",
+      "description": "以香草籽與鮮奶製成滑順布丁，搭配焦糖醬與少量鮮奶油，風味乾淨不厚重。",
+      "image": "https://images.unsplash.com/photo-1488477304112-4944851de03d?auto=format&fit=crop&w=1200&q=80",
+      "tags": ["經典甜點", "柔滑"],
+      "ingredients": ["雞蛋", "牛奶", "香草", "焦糖醬"],
+      "pairing": "適合搭配蜂蜜洋甘菊茶。",
+      "availability": "全時段供應"
+    },
+    {
+      "slug": "sea-salt-chocolate-cookie",
+      "name": "海鹽巧克力餅",
+      "category": "dessert",
+      "price": 120,
+      "shortDescription": "略帶苦甜與海鹽尾韻的午後點心。",
+      "description": "以較高比例黑巧克力製成，尾韻帶有海鹽與奶油香氣，適合搭配不加糖的黑咖啡。",
+      "image": "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=1200&q=80",
+      "tags": ["常溫甜點", "午後"],
+      "ingredients": ["黑巧克力", "奶油", "麵粉", "海鹽"],
+      "pairing": "建議搭配美式。",
+      "availability": "每日供應"
+    },
+    {
+      "slug": "lemon-cream-cake",
+      "name": "限定檸檬奶霜蛋糕",
+      "category": "dessert",
+      "price": 200,
+      "shortDescription": "季節限定，口感較輕盈，適合春夏時段。",
+      "description": "以檸檬皮、檸檬奶霜與鬆軟蛋糕體呈現明亮酸香，是春夏最具辨識度的季節甜點。",
+      "image": "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=1200&q=80",
+      "tags": ["季節限定", "春夏"],
+      "ingredients": ["檸檬奶霜", "蛋糕體", "檸檬皮", "鮮奶油"],
+      "pairing": "建議搭配柑橘氣泡飲或單品手沖。",
+      "availability": "春夏限定"
+    }
+  ]
+}

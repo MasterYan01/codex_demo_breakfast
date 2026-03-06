@@ -1,43 +1,60 @@
-﻿# La Miu GitHub Pages + Render Deployment
+﻿# La Miu Deployment Layout
 
-## Recommended split
-- Public frontend on GitHub Pages:
-  `index.html`, `menu.html`, `breakfast.html`, `coffee.html`, `dessert.html`, `item.html`, `styles.css`, `script.js`, `config.js`, static assets.
-- Admin + API on Render:
-  `admin.html`, `app.py`, `data/menu.json`, and the same static assets used by the admin page.
+## Folder split
+- `frontend/`: public site for GitHub Pages
+- `backend/`: admin page + Python API for Render
 
-Do not expose `admin.html` on GitHub Pages if you want the editing入口只留在後端主機。
+## frontend/
+Deploy the contents of `frontend/` to GitHub Pages.
 
-## Frontend on GitHub Pages
-1. Push the frontend files to a GitHub repository.
-2. Enable GitHub Pages for the repository.
-3. Edit `config.js` and set:
-   `window.LA_MIU_CONFIG.apiBase = "https://your-render-service.onrender.com"`
-4. Keep `.nojekyll` in the published root.
+Main files:
+- `index.html`
+- `menu.html`
+- `breakfast.html`
+- `coffee.html`
+- `dessert.html`
+- `item.html`
+- `styles.css`
+- `script.js`
+- `config.js`
+- `favicon.svg`
+- `social-preview.svg`
+- `site.webmanifest`
+- `robots.txt`
+- `.nojekyll`
 
-## Backend on Render
-Render's official docs say web services must bind to `0.0.0.0` and to the `PORT` environment variable. Render also notes that local filesystem changes are ephemeral unless you attach a persistent disk.
+Before deploying, edit:
+- `frontend/config.js`
+  Set:
+  `window.LA_MIU_CONFIG.apiBase = "https://your-render-service.onrender.com"`
 
-1. Create a Python Web Service on Render.
-2. Start command:
-   `python app.py`
-3. Environment variables:
-   - `HOST=0.0.0.0`
-   - `ALLOWED_ORIGINS=https://your-user.github.io`
-   - `PORT` is provided by Render automatically.
-4. If you want menu edits to persist across redeploys/restarts, attach a Render Persistent Disk and keep `data/menu.json` under that mounted path.
+## backend/
+Deploy the contents of `backend/` to Render as a Python web service.
 
-## Admin hosting
-- Best practice for this repo: open the admin from the Render domain, for example:
-  `https://your-render-service.onrender.com/admin.html`
-- The admin page can then call the same-origin API without depending on GitHub Pages.
+Main files:
+- `admin.html`
+- `app.py`
+- `data/menu.json`
+- `styles.css`
+- `script.js`
+- `config.js`
+- `favicon.svg`
+- `site.webmanifest`
 
-## Local run
-- Local backend:
+Recommended Render settings:
+- Start command:
   `python app.py`
-- Local frontend/admin default API:
-  `http://127.0.0.1:8020`
+- Environment variables:
+  - `HOST=0.0.0.0`
+  - `ALLOWED_ORIGINS=https://your-user.github.io`
+  - `PORT` is provided by Render automatically
+
+## Admin access
+Open the admin from the Render domain:
+- `https://your-render-service.onrender.com/admin.html`
 
 ## Notes
-- If you need multiple frontend domains, set `ALLOWED_ORIGINS` as comma-separated values.
-- Public frontend pages are read-only. Editing should happen from the Render-hosted admin page.
+- `backend/data/menu.json` is the editable data source.
+- If you want edits to persist on Render, attach a Persistent Disk.
+- `frontend/` should stay public and read-only.
+- `backend/` should be treated as the editable service side.
