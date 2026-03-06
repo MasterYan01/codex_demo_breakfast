@@ -1,11 +1,12 @@
 ﻿# La Miu Deployment Layout
 
 ## Folder split
-- `frontend/`: public site for GitHub Pages
+- `docs/`: public site for GitHub Pages
 - `backend/`: admin page + Python API for Render
+- `archive/`: old root-level copies kept only for reference
 
-## frontend/
-Deploy the contents of `frontend/` to GitHub Pages.
+## docs/
+Deploy the contents of `docs/` to GitHub Pages.
 
 Main files:
 - `index.html`
@@ -24,7 +25,7 @@ Main files:
 - `.nojekyll`
 
 Before deploying, edit:
-- `frontend/config.js`
+- `docs/config.js`
   Set:
   `window.LA_MIU_CONFIG.apiBase = "https://your-render-service.onrender.com"`
 
@@ -56,5 +57,6 @@ Open the admin from the Render domain:
 ## Notes
 - `backend/data/menu.json` is the editable data source.
 - If you want edits to persist on Render, attach a Persistent Disk.
-- `frontend/` should stay public and read-only.
+- `docs/` should stay public and read-only.
 - `backend/` should be treated as the editable service side.
+- Do not deploy files from `archive/`.
