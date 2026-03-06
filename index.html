@@ -183,13 +183,85 @@
       </section>
 
       <section class="reserve-section reveal-on-scroll" id="reserve" data-reveal="section">
-        <div class="reserve-card">
-          <div>
-            <p class="eyebrow">Reservations</p>
-            <h2>為晨間的相聚，預留一席安靜而妥貼的座位。</h2>
-            <p>平日 09:00 - 16:30，假日 08:30 - 17:00。若希望安排窗邊席次，建議提前來訊預約。</p>
+        <div class="reserve-layout">
+          <div class="reserve-card reserve-copy-card">
+            <div>
+              <p class="eyebrow">Reservations</p>
+              <h2>為晨間的相聚，預留一席安靜而妥貼的座位。</h2>
+              <p>平日 09:00 - 16:30，假日 08:30 - 17:00。若希望安排窗邊席次，建議提前來訊預約。</p>
+            </div>
+            <div class="reserve-notes">
+              <div class="reserve-note-item">
+                <span class="fact-label">訂位須知</span>
+                <strong>保留 10 分鐘</strong>
+                <p>若逾時未到，座位將視現場候位情況釋出。</p>
+              </div>
+              <div class="reserve-note-item">
+                <span class="fact-label">來店提醒</span>
+                <strong>4 人以上請備註</strong>
+                <p>我們會依當日桌況為你安排最合適的座位。</p>
+              </div>
+            </div>
           </div>
-          <a class="btn btn-primary" href="mailto:hello@warmwoodbrunch.com">hello@warmwoodbrunch.com</a>
+
+          <form class="reservation-form" id="reservation-form" novalidate>
+            <div class="reservation-form__header">
+              <p class="eyebrow">Online Booking</p>
+              <h3>線上訂位</h3>
+              <p>填寫以下資訊後，我們會為你保留預約需求。此表單為前端示範版，送出後會顯示成功訊息。</p>
+            </div>
+
+            <div class="reservation-grid">
+              <label class="field">
+                <span>日期</span>
+                <input type="date" name="date" id="reservation-date" required>
+              </label>
+              <label class="field">
+                <span>時段</span>
+                <select name="time" required>
+                  <option value="">請選擇時段</option>
+                  <option value="09:00">09:00</option>
+                  <option value="10:30">10:30</option>
+                  <option value="12:00">12:00</option>
+                  <option value="13:30">13:30</option>
+                  <option value="15:00">15:00</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>人數</span>
+                <select name="guests" required>
+                  <option value="">請選擇人數</option>
+                  <option value="1">1 位</option>
+                  <option value="2">2 位</option>
+                  <option value="3">3 位</option>
+                  <option value="4">4 位</option>
+                  <option value="5">5 位</option>
+                  <option value="6+">6 位以上</option>
+                </select>
+              </label>
+              <label class="field field-full">
+                <span>姓名</span>
+                <input type="text" name="name" placeholder="請輸入訂位姓名" required>
+              </label>
+              <label class="field">
+                <span>手機</span>
+                <input type="tel" name="phone" placeholder="09xx-xxx-xxx" inputmode="tel" required>
+              </label>
+              <label class="field">
+                <span>Email</span>
+                <input type="email" name="email" placeholder="name@example.com" required>
+              </label>
+              <label class="field field-full">
+                <span>備註</span>
+                <textarea name="notes" rows="4" placeholder="例如：窗邊座位、嬰兒椅、6 位以上需求"></textarea>
+              </label>
+            </div>
+
+            <div class="reservation-actions">
+              <p class="form-status" id="reservation-status" aria-live="polite"></p>
+              <button class="btn btn-primary reservation-submit" type="submit">送出訂位需求</button>
+            </div>
+          </form>
         </div>
       </section>
     </main>
@@ -226,4 +298,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-

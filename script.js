@@ -4,6 +4,9 @@ const hero = document.querySelector('.hero');
 const heroCard = document.querySelector('.hero-card');
 const heroOverlay = document.querySelector('.hero-overlay');
 const heroFloatingCard = document.querySelector('.hero-floating-card');
+const reservationForm = document.querySelector('#reservation-form');
+const reservationDate = document.querySelector('#reservation-date');
+const reservationStatus = document.querySelector('#reservation-status');
 const revealNodes = document.querySelectorAll('.reveal-on-scroll');
 const navLinks = Array.from(document.querySelectorAll('.nav a[href^="#"]'));
 const sectionTargets = navLinks
@@ -80,6 +83,63 @@ const setActiveNav = (id) => {
     }
   });
 };
+
+const setReservationMinDate = () => {
+  if (!reservationDate) return;
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  reservationDate.min = `${yyyy}-${mm}-${dd}`;
+};
+
+const validateReservation = (formData) => {
+  const name = String(formData.get('name') || '').trim();
+  const phone = String(formData.get('phone') || '').trim();
+  const email = String(formData.get('email') || '').trim();
+  const date = String(formData.get('date') || '').trim();
+  const time = String(formData.get('time') || '').trim();
+  const guests = String(formData.get('guests') || '').trim();
+
+  if (!date || !time || !guests || !name || !phone || !email) {
+    return '請完整填寫日期、時段、人數與聯絡資訊。';
+  }
+
+  if (!/^09\d{2}-?\d{3}-?\d{3}$/.test(phone) && !/^0\d{1,2}-?\d{6,8}$/.test(phone)) {
+    return '請輸入正確的手機或電話格式。';
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return '請輸入正確的 Email 格式。';
+  }
+
+  return '';
+};
+
+const updateReservationStatus = (message, status) => {
+  if (!reservationStatus) return;
+  reservationStatus.textContent = message;
+  reservationStatus.dataset.state = status;
+};
+
+if (reservationForm) {
+  setReservationMinDate();
+  reservationForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const formData = new FormData(reservationForm);
+    const error = validateReservation(formData);
+
+    if (error) {
+      updateReservationStatus(error, 'error');
+      return;
+    }
+
+    const summary = `${formData.get('date')} ${formData.get('time')}，${formData.get('guests')} 位，${formData.get('name')}。`;
+    updateReservationStatus(`訂位需求已送出：${summary} 我們將以電話或 Email 與你確認。`, 'success');
+    reservationForm.reset();
+    setReservationMinDate();
+  });
+}
 
 navLinks.forEach((link) => {
   link.addEventListener('click', (event) => {
