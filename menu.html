@@ -5,53 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>樂沐 La Miu 菜單 | 季節餐點與咖啡甜點</title>
   <meta name="description" content="瀏覽樂沐 La Miu 完整菜單，包含招牌早午餐、季節限定、咖啡與甜點。">
-  <meta name="keywords" content="樂沐菜單, 台南早午餐菜單, 季節餐點, 台南咖啡甜點">
   <meta name="theme-color" content="#f2e6d8">
   <meta name="robots" content="index,follow">
-  <meta property="og:type" content="website">
   <meta property="og:title" content="樂沐 La Miu 菜單 | 季節餐點與咖啡甜點">
   <meta property="og:description" content="招牌早午餐、季節限定盤、咖啡與甜點，完整收錄於樂沐 La Miu 菜單頁。">
   <meta property="og:image" content="social-preview.svg">
-  <meta property="og:locale" content="zh_TW">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="樂沐 La Miu 菜單 | 季節餐點與咖啡甜點">
-  <meta name="twitter:description" content="查看樂沐 La Miu 當季菜單與完整品項。">
-  <meta name="twitter:image" content="social-preview.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="apple-touch-icon" href="favicon.svg">
   <link rel="manifest" href="site.webmanifest">
   <link rel="stylesheet" href="styles.css">
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Menu",
-    "name": "樂沐 La Miu 菜單",
-    "hasMenuSection": [
-      {"@type": "MenuSection", "name": "招牌早午餐"},
-      {"@type": "MenuSection", "name": "季節限定"},
-      {"@type": "MenuSection", "name": "咖啡與甜點"}
-    ]
-  }
-  </script>
 </head>
-<body class="is-loading menu-page">
-  <div class="page-loader" aria-hidden="true">
-    <div class="page-loader__inner">
-      <span class="page-loader__mark">樂沐</span>
-      <span class="page-loader__line"></span>
-      <span class="page-loader__label">La Miu</span>
-    </div>
-  </div>
-
+<body class="is-loading menu-page" data-page="menu-overview">
+  <div class="page-loader" aria-hidden="true"><div class="page-loader__inner"><span class="page-loader__mark">樂沐</span><span class="page-loader__line"></span><span class="page-loader__label">La Miu</span></div></div>
   <div class="page-shell">
     <header class="site-header reveal-on-scroll" data-reveal="header">
-      <a class="brand" href="index.html">
-        <span class="brand-mark">樂沐</span>
-        <span class="brand-sub">La Miu</span>
-      </a>
+      <a class="brand" href="index.html"><span class="brand-mark">樂沐</span><span class="brand-sub">La Miu</span></a>
       <nav class="nav">
         <a href="index.html">品牌首頁</a>
         <a href="#menu-overview">菜單總覽</a>
@@ -64,173 +34,37 @@
       <section class="menu-page-hero reveal-on-scroll reveal-visible" id="menu-overview" data-reveal="hero">
         <div class="menu-page-copy">
           <p class="eyebrow">Full Menu</p>
-          <div class="hero-intro-line">
-            <span></span>
-            <p>Seasonal Dining Selection</p>
-          </div>
+          <div class="hero-intro-line"><span></span><p>Seasonal Dining Selection</p></div>
           <h1>以晨間風味、季節食材與溫潤器皿，構成完整的一日菜單。</h1>
-          <p class="hero-text">本頁收錄樂沐 La Miu 的招牌早餐盤、季節限定、手作甜點與咖啡飲品，讓每一道品項都延續相同的安靜與講究。</p>
+          <p class="hero-text">本頁會從後端載入樂沐 La Miu 的招牌早餐盤、季節限定、手作甜點與咖啡飲品。</p>
           <div class="hero-actions">
             <a class="btn btn-primary" href="index.html#reserve">立即訂位</a>
-            <a class="btn btn-secondary" href="#seasonal-menu">查看季節限定</a>
+            <a class="btn btn-secondary" href="admin.html">後台編輯</a>
           </div>
         </div>
         <div class="menu-page-visual reveal-on-scroll reveal-visible" data-reveal="hero">
           <div class="menu-page-photo menu-hero-photo"></div>
           <div class="menu-page-note">
             <span class="floating-label">Today's Table</span>
-            <strong>主廚以季節食材更新早餐盤細節</strong>
-            <p>餐點依當日進貨與水果產季略有調整，請以現場供應為準。</p>
+            <strong>主廚以季節食材更新菜單細節</strong>
+            <p>後台更新後，菜單總覽、分類頁與單品頁會同步顯示最新資料。</p>
           </div>
         </div>
       </section>
 
       <section class="menu-category-section reveal-on-scroll" data-reveal="section">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Menu Categories</p>
-            <h2>真實菜單分類頁</h2>
-          </div>
-        </div>
-        <div class="menu-category-grid">
-          <a class="menu-category-card" href="breakfast.html">
-            <span class="menu-category-card__eyebrow">Breakfast</span>
-            <strong>早餐</strong>
-            <p>招牌早餐盤、蛋料理、酸種吐司與早午餐組合。</p>
-          </a>
-          <a class="menu-category-card" href="coffee.html">
-            <span class="menu-category-card__eyebrow">Coffee</span>
-            <strong>咖啡</strong>
-            <p>義式咖啡、手沖單品、特調與茶飲分類頁。</p>
-          </a>
-          <a class="menu-category-card" href="dessert.html">
-            <span class="menu-category-card__eyebrow">Dessert</span>
-            <strong>甜點</strong>
-            <p>肉桂捲、乳酪蛋糕、塔類與季節甜點完整收錄。</p>
-          </a>
-        </div>
+        <div class="section-heading"><div><p class="eyebrow">Menu Categories</p><h2>真實菜單分類頁</h2></div></div>
+        <div class="menu-category-grid" id="menu-category-grid"></div>
       </section>
 
       <section class="menu-list-section reveal-on-scroll" data-reveal="section">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Signature Menu</p>
-            <h2>招牌早午餐</h2>
-          </div>
-        </div>
-        <div class="menu-list-grid">
-          <article class="menu-item-card">
-            <div class="menu-item-photo image-platter"></div>
-            <div class="menu-item-copy">
-              <h3>晨光鬆餅早餐盤</h3>
-              <p>鬆餅、水果、奶油與黑咖啡構成最具代表性的晨間組合。</p>
-              <span class="price">NT$ 380</span>
-            </div>
-          </article>
-          <article class="menu-item-card">
-            <div class="menu-item-photo image-benedict"></div>
-            <div class="menu-item-copy">
-              <h3>燻鮭魚班尼迪克蛋</h3>
-              <p>半熟蛋、荷蘭醬與煙燻鮭魚交疊出柔和酸香與奶感。</p>
-              <span class="price">NT$ 320</span>
-            </div>
-          </article>
-          <article class="menu-item-card">
-            <div class="menu-item-photo image-salmon"></div>
-            <div class="menu-item-copy">
-              <h3>酪梨酸種吐司</h3>
-              <p>酸種麵包、酪梨泥與溫潤蛋香，是更清爽的早餐選擇。</p>
-              <span class="price">NT$ 340</span>
-            </div>
-          </article>
-          <article class="menu-item-card">
-            <div class="menu-item-photo image-roll"></div>
-            <div class="menu-item-copy">
-              <h3>肉桂捲與拿鐵</h3>
-              <p>作為早餐尾聲或午後加點，都保有溫熱與柔和的甜香。</p>
-              <span class="price">NT$ 280</span>
-            </div>
-          </article>
-        </div>
+        <div class="section-heading"><div><p class="eyebrow">Featured Items</p><h2>本日推薦品項</h2></div></div>
+        <div class="menu-list-grid" id="menu-featured-grid"></div>
       </section>
 
       <section class="seasonal-menu-section reveal-on-scroll" id="seasonal-menu" data-reveal="section">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Seasonal Plates</p>
-            <h2>季節限定餐點</h2>
-          </div>
-        </div>
-        <div class="seasonal-grid">
-          <article class="seasonal-card seasonal-card--asparagus">
-            <div class="seasonal-card__copy">
-              <p class="eyebrow small">Spring Selection</p>
-              <h3>檸香奶油蘆筍蛋卷</h3>
-              <p>春季蘆筍、檸檬奶油與滑嫩蛋卷，搭配酸種吐司與小份沙拉。</p>
-              <span class="price">NT$ 360</span>
-            </div>
-          </article>
-          <article class="seasonal-card seasonal-card--toast">
-            <div class="seasonal-card__copy">
-              <p class="eyebrow small">Chef's Seasonal</p>
-              <h3>柑橘優格法式吐司</h3>
-              <p>以柑橘漬片、優格與楓糖平衡甜度，口感輕盈明亮。</p>
-              <span class="price">NT$ 340</span>
-            </div>
-          </article>
-          <article class="seasonal-card seasonal-card--skillet">
-            <div class="seasonal-card__copy">
-              <p class="eyebrow small">Weekend Special</p>
-              <h3>炙烤培根洋芋早餐鍋</h3>
-              <p>週末限定熱鍋早餐，包含培根、洋芋、半熟蛋與香料奶油。</p>
-              <span class="price">NT$ 420</span>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="menu-storyband reveal-on-scroll" data-reveal="section">
-        <div class="menu-storyband__image chef-frame"></div>
-        <div class="menu-storyband__copy">
-          <p class="eyebrow">Brand Content</p>
-          <h2>真實品牌內容與攝影敘事，讓菜單頁延續同一套晨間場景。</h2>
-          <p>La Miu 的菜單不只陳列品項，而是以同一套木質調性、器皿質地與攝影語言，呈現早餐應有的節奏與安靜感。每一道餐點都維持一致的光線方向、留白比例與桌面材質，讓網站更像一個完整餐飲品牌，而不是單純的資訊頁。</p>
-        </div>
-      </section>
-
-      <section class="menu-drinks-section reveal-on-scroll" data-reveal="section">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Coffee & Dessert</p>
-            <h2>咖啡與甜點</h2>
-          </div>
-        </div>
-        <div class="drink-list-grid">
-          <div class="drink-list-card">
-            <h3>精品義式咖啡</h3>
-            <ul>
-              <li>拿鐵 NT$ 160</li>
-              <li>美式 NT$ 130</li>
-              <li>卡布奇諾 NT$ 150</li>
-            </ul>
-          </div>
-          <div class="drink-list-card">
-            <h3>手作甜點</h3>
-            <ul>
-              <li>肉桂捲 NT$ 150</li>
-              <li>巴斯克乳酪蛋糕 NT$ 180</li>
-              <li>季節水果塔 NT$ 190</li>
-            </ul>
-          </div>
-          <div class="drink-list-card">
-            <h3>茶與特調</h3>
-            <ul>
-              <li>伯爵鮮奶茶 NT$ 160</li>
-              <li>自製柑橘氣泡飲 NT$ 170</li>
-              <li>蜂蜜洋甘菊茶 NT$ 150</li>
-            </ul>
-          </div>
-        </div>
+        <div class="section-heading"><div><p class="eyebrow">Seasonal Picks</p><h2>季節限定餐點</h2></div></div>
+        <div class="seasonal-grid" id="seasonal-grid"></div>
       </section>
     </main>
 
@@ -240,27 +74,10 @@
         <h2>樂沐 La Miu</h2>
         <p>以暖木調性、季節餐盤與安靜晨光構成的台南精品早午餐餐廳。</p>
       </div>
-      <div class="footer-column">
-        <h3>地址</h3>
-        <p>台南市中西區衛民街129號</p>
-        <p>步行可達台南火車站與海安路商圈</p>
-      </div>
-      <div class="footer-column">
-        <h3>聯絡方式</h3>
-        <p><a href="tel:+88662213129">06-221-3129</a></p>
-        <p><a href="mailto:reservations@lamiu.com.tw">reservations@lamiu.com.tw</a></p>
-      </div>
-      <div class="footer-column">
-        <h3>營業資訊</h3>
-        <p>週一至週五 09:00 - 16:30</p>
-        <p>週六至週日 08:30 - 17:00</p>
-      </div>
-      <div class="footer-column">
-        <h3>快速連結</h3>
-        <p><a href="breakfast.html">早餐頁</a></p>
-        <p><a href="coffee.html">咖啡頁</a></p>
-        <p><a href="dessert.html">甜點頁</a></p>
-      </div>
+      <div class="footer-column"><h3>地址</h3><p>台南市中西區衛民街129號</p><p>步行可達台南火車站與海安路商圈</p></div>
+      <div class="footer-column"><h3>聯絡方式</h3><p><a href="tel:+88662213129">06-221-3129</a></p><p><a href="mailto:reservations@lamiu.com.tw">reservations@lamiu.com.tw</a></p></div>
+      <div class="footer-column"><h3>分類頁</h3><p><a href="breakfast.html">早餐頁</a></p><p><a href="coffee.html">咖啡頁</a></p><p><a href="dessert.html">甜點頁</a></p></div>
+      <div class="footer-column"><h3>管理</h3><p><a href="admin.html">菜單後台</a></p><p><a href="item.html?slug=classic-pancake-plate">單品示範頁</a></p></div>
     </footer>
   </div>
   <script src="script.js"></script>

@@ -13,25 +13,36 @@ const sectionTargets = navLinks
   .map((link) => document.querySelector(link.getAttribute('href')))
   .filter(Boolean);
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const pageType = body.dataset.page || '';
 let ticking = false;
 let heroPointerX = 0;
 let heroPointerY = 0;
 let heroPointerActive = false;
+let adminState = null;
+let adminSelectedSlug = '';
 
 const getHeaderOffset = () => (header ? header.getBoundingClientRect().height + 24 : 96);
+const menuApiUrl = '/api/menu';
 
 const finishLoading = () => {
   body.classList.remove('is-loading');
   body.classList.add('is-ready');
 };
 
-if (document.readyState === 'complete') {
-  window.setTimeout(finishLoading, reduceMotion ? 0 : 450);
-} else {
-  window.addEventListener('load', () => {
+const safeText = (value) => String(value || '').trim();
+const formatPrice = (value) => `NT$ ${Number(value || 0)}`;
+const getCategoryPageHref = (slug) => `${slug}.html`;
+const getItemPageHref = (slug) => `item.html?slug=${encodeURIComponent(slug)}`;
+
+const finishLoadingAfterReady = () => {
+  if (document.readyState === 'complete') {
     window.setTimeout(finishLoading, reduceMotion ? 0 : 450);
-  }, { once: true });
-}
+  } else {
+    window.addEventListener('load', () => {
+      window.setTimeout(finishLoading, reduceMotion ? 0 : 450);
+    }, { once: true });
+  }
+};
 
 const syncHeader = () => {
   if (!header) return;
@@ -94,12 +105,12 @@ const setReservationMinDate = () => {
 };
 
 const validateReservation = (formData) => {
-  const name = String(formData.get('name') || '').trim();
-  const phone = String(formData.get('phone') || '').trim();
-  const email = String(formData.get('email') || '').trim();
-  const date = String(formData.get('date') || '').trim();
-  const time = String(formData.get('time') || '').trim();
-  const guests = String(formData.get('guests') || '').trim();
+  const name = safeText(formData.get('name'));
+  const phone = safeText(formData.get('phone'));
+  const email = safeText(formData.get('email'));
+  const date = safeText(formData.get('date'));
+  const time = safeText(formData.get('time'));
+  const guests = safeText(formData.get('guests'));
 
   if (!date || !time || !guests || !name || !phone || !email) {
     return '請完整填寫日期、時段、人數與聯絡資訊。';
@@ -122,7 +133,8 @@ const updateReservationStatus = (message, status) => {
   reservationStatus.dataset.state = status;
 };
 
-if (reservationForm) {
+const setupReservationForm = () => {
+  if (!reservationForm) return;
   setReservationMinDate();
   reservationForm.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -139,24 +151,27 @@ if (reservationForm) {
     reservationForm.reset();
     setReservationMinDate();
   });
-}
+};
 
-navLinks.forEach((link) => {
-  link.addEventListener('click', (event) => {
-    const targetId = link.getAttribute('href');
-    const target = document.querySelector(targetId);
-    if (!target) return;
-    event.preventDefault();
-    const top = target.getBoundingClientRect().top + window.scrollY - getHeaderOffset();
-    window.history.replaceState(null, '', targetId);
-    window.scrollTo({
-      top,
-      behavior: reduceMotion ? 'auto' : 'smooth'
+const setupAnchorScroll = () => {
+  navLinks.forEach((link) => {
+    link.addEventListener('click', (event) => {
+      const targetId = link.getAttribute('href');
+      const target = document.querySelector(targetId);
+      if (!target) return;
+      event.preventDefault();
+      const top = target.getBoundingClientRect().top + window.scrollY - getHeaderOffset();
+      window.history.replaceState(null, '', targetId);
+      window.scrollTo({
+        top,
+        behavior: reduceMotion ? 'auto' : 'smooth'
+      });
     });
   });
-});
+};
 
-if (hero && !reduceMotion) {
+const setupHeroPointer = () => {
+  if (!hero || reduceMotion) return;
   hero.addEventListener('mousemove', (event) => {
     const rect = hero.getBoundingClientRect();
     const px = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -173,16 +188,14 @@ if (hero && !reduceMotion) {
     heroPointerActive = false;
     requestScrollSync();
   });
-}
+};
 
-syncHeader();
-syncHeroParallax();
-window.addEventListener('scroll', requestScrollSync, { passive: true });
-window.addEventListener('resize', requestScrollSync);
+const setupRevealAnimations = () => {
+  if (reduceMotion) {
+    revealNodes.forEach((node) => node.classList.add('reveal-visible'));
+    return;
+  }
 
-if (reduceMotion) {
-  revealNodes.forEach((node) => node.classList.add('reveal-visible'));
-} else {
   const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
@@ -201,11 +214,13 @@ if (reduceMotion) {
     }
     revealObserver.observe(node);
   });
-}
+};
 
-if (sectionTargets.length) {
+const setupActiveSections = () => {
+  if (!sectionTargets.length) return;
   const activeObserver = new IntersectionObserver((entries) => {
-    const visibleEntries = entries.filter((entry) => entry.isIntersecting)
+    const visibleEntries = entries
+      .filter((entry) => entry.isIntersecting)
       .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
 
     if (!visibleEntries.length) return;
@@ -216,4 +231,323 @@ if (sectionTargets.length) {
   });
 
   sectionTargets.forEach((section) => activeObserver.observe(section));
-}
+};
+
+const fetchJson = async (url, options) => {
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    throw new Error(`Request failed: ${response.status}`);
+  }
+  return response.json();
+};
+
+const createMenuCard = (item) => `
+  <article class="menu-item-card">
+    <div class="menu-item-photo" style="background-image:url('${item.image}')"></div>
+    <div class="menu-item-copy">
+      <h3>${item.name}</h3>
+      <p>${item.shortDescription}</p>
+      <span class="price">${formatPrice(item.price)}</span>
+      <a class="text-link" href="${getItemPageHref(item.slug)}">查看單品介紹</a>
+    </div>
+  </article>
+`;
+
+const createCategoryDishCard = (item) => `
+  <article class="category-dish-card">
+    <div class="category-dish-photo" style="background-image:url('${item.image}')"></div>
+    <div class="category-dish-copy">
+      <h3>${item.name}</h3>
+      <p>${item.shortDescription}</p>
+      <span class="price">${formatPrice(item.price)}</span>
+      <a class="text-link" href="${getItemPageHref(item.slug)}">查看單品介紹</a>
+    </div>
+  </article>
+`;
+
+const createSeasonalCard = (item) => `
+  <article class="seasonal-card" style="background-image:url('${item.image}')">
+    <div class="seasonal-card__copy">
+      <p class="eyebrow small">${item.tags.join(' / ')}</p>
+      <h3>${item.name}</h3>
+      <p>${item.shortDescription}</p>
+      <span class="price">${formatPrice(item.price)}</span>
+      <a class="text-link text-link--light" href="${getItemPageHref(item.slug)}">查看詳情</a>
+    </div>
+  </article>
+`;
+
+const createCategoryEntry = (category, count) => `
+  <a class="menu-category-card" href="${getCategoryPageHref(category.slug)}">
+    <span class="menu-category-card__eyebrow">${category.english}</span>
+    <strong>${category.name}</strong>
+    <p>${category.description}</p>
+    <span class="menu-category-card__meta">${count} 項品項</span>
+  </a>
+`;
+
+const renderMenuOverview = async () => {
+  const data = await fetchJson(menuApiUrl);
+  const categoryGrid = document.querySelector('#menu-category-grid');
+  const featuredGrid = document.querySelector('#menu-featured-grid');
+  const seasonalGrid = document.querySelector('#seasonal-grid');
+  if (!categoryGrid || !featuredGrid || !seasonalGrid) return;
+
+  categoryGrid.innerHTML = data.categories
+    .map((category) => createCategoryEntry(category, data.items.filter((item) => item.category === category.slug).length))
+    .join('');
+
+  featuredGrid.innerHTML = data.items.slice(0, 4).map(createMenuCard).join('');
+  const seasonalItems = data.items.filter((item) => Array.isArray(item.tags) && item.tags.includes('季節限定')).slice(0, 3);
+  seasonalGrid.innerHTML = seasonalItems.map(createSeasonalCard).join('');
+};
+
+const renderCategoryPage = async () => {
+  const slug = body.dataset.category;
+  if (!slug) return;
+  const payload = await fetchJson(`/api/categories/${encodeURIComponent(slug)}`);
+  const { category, items } = payload;
+
+  const setText = (selector, value) => {
+    const node = document.querySelector(selector);
+    if (node) node.textContent = value;
+  };
+
+  setText('#category-eyebrow', category.english);
+  setText('#category-tagline', category.tagline);
+  setText('#category-title', category.name);
+  setText('#category-description', category.description);
+  setText('#category-list-title', `${category.name}品項`);
+  setText('#category-note-title', category.noteTitle);
+  setText('#category-note-text', category.noteText);
+
+  const heroImage = document.querySelector('#category-hero-image');
+  if (heroImage) {
+    heroImage.style.backgroundImage = `url('${category.heroImage}')`;
+  }
+
+  const listGrid = document.querySelector('#category-list-grid');
+  if (listGrid) {
+    listGrid.innerHTML = items.map(createCategoryDishCard).join('');
+    listGrid.classList.toggle('category-list-grid--three', items.length <= 6 && slug !== 'breakfast');
+  }
+
+  const pairingNode = document.querySelector('#category-pairings');
+  if (pairingNode) {
+    pairingNode.innerHTML = (category.pairings || []).map((link) => `<a class="btn btn-secondary" href="${link.href}">${link.label}</a>`).join('');
+  }
+
+  document.title = `樂沐 La Miu ${category.name}頁 | ${category.english}`;
+};
+
+const renderItemDetailPage = async () => {
+  const params = new URLSearchParams(window.location.search);
+  const slug = params.get('slug');
+  if (!slug) return;
+  const payload = await fetchJson(`/api/items/${encodeURIComponent(slug)}`);
+  const { item, category, related } = payload;
+
+  const photo = document.querySelector('#item-detail-photo');
+  if (photo) {
+    photo.style.backgroundImage = `url('${item.image}')`;
+  }
+
+  const setText = (selector, value) => {
+    const node = document.querySelector(selector);
+    if (node) node.textContent = value;
+  };
+
+  setText('#item-category-label', category ? `${category.name} / ${category.english}` : item.category);
+  setText('#item-name', item.name);
+  setText('#item-description', item.description);
+  setText('#item-price', formatPrice(item.price));
+  setText('#item-availability', item.availability || '依現場供應');
+  setText('#item-pairing', item.pairing || '請洽現場');
+
+  const ingredientsNode = document.querySelector('#item-ingredients');
+  if (ingredientsNode) {
+    ingredientsNode.innerHTML = (item.ingredients || []).map((entry) => `<li>${entry}</li>`).join('');
+  }
+
+  const tagsNode = document.querySelector('#item-tags');
+  if (tagsNode) {
+    tagsNode.innerHTML = (item.tags || []).map((tag) => `<span class="tag">${tag}</span>`).join('');
+  }
+
+  const relatedGrid = document.querySelector('#related-items-grid');
+  if (relatedGrid) {
+    relatedGrid.innerHTML = related.map(createCategoryDishCard).join('');
+  }
+
+  document.title = `樂沐 La Miu | ${item.name}`;
+};
+
+const getAdminItemList = () => document.querySelector('#admin-item-list');
+const getAdminForm = () => document.querySelector('#admin-item-form');
+const getAdminStatus = () => document.querySelector('#admin-status');
+
+const updateAdminStatus = (message, state) => {
+  const status = getAdminStatus();
+  if (!status) return;
+  status.textContent = message;
+  status.dataset.state = state;
+};
+
+const fillAdminForm = (item) => {
+  const form = getAdminForm();
+  if (!form || !item) return;
+  form.slug.value = item.slug || '';
+  form.name.value = item.name || '';
+  form.category.value = item.category || 'breakfast';
+  form.price.value = item.price || 0;
+  form.image.value = item.image || '';
+  form.shortDescription.value = item.shortDescription || '';
+  form.description.value = item.description || '';
+  form.pairing.value = item.pairing || '';
+  form.availability.value = item.availability || '';
+  form.ingredients.value = Array.isArray(item.ingredients) ? item.ingredients.join(', ') : '';
+  form.tags.value = Array.isArray(item.tags) ? item.tags.join(', ') : '';
+};
+
+const renderAdminList = () => {
+  const list = getAdminItemList();
+  if (!list || !adminState) return;
+  list.innerHTML = adminState.items.map((item) => `
+    <button type="button" class="admin-item-button${item.slug === adminSelectedSlug ? ' is-selected' : ''}" data-slug="${item.slug}">
+      <strong>${item.name}</strong>
+      <span>${item.category} / ${formatPrice(item.price)}</span>
+    </button>
+  `).join('');
+
+  list.querySelectorAll('.admin-item-button').forEach((button) => {
+    button.addEventListener('click', () => {
+      adminSelectedSlug = button.dataset.slug || '';
+      const selected = adminState.items.find((item) => item.slug === adminSelectedSlug);
+      fillAdminForm(selected);
+      renderAdminList();
+    });
+  });
+};
+
+const getFormItemPayload = (form) => ({
+  slug: safeText(form.slug.value),
+  name: safeText(form.name.value),
+  category: safeText(form.category.value),
+  price: Number(form.price.value || 0),
+  image: safeText(form.image.value),
+  shortDescription: safeText(form.shortDescription.value),
+  description: safeText(form.description.value),
+  pairing: safeText(form.pairing.value),
+  availability: safeText(form.availability.value),
+  ingredients: safeText(form.ingredients.value).split(',').map((entry) => safeText(entry)).filter(Boolean),
+  tags: safeText(form.tags.value).split(',').map((entry) => safeText(entry)).filter(Boolean)
+});
+
+const setupAdminPage = async () => {
+  adminState = await fetchJson(menuApiUrl);
+  adminSelectedSlug = adminState.items[0]?.slug || '';
+  fillAdminForm(adminState.items[0]);
+  renderAdminList();
+
+  const form = getAdminForm();
+  const addButton = document.querySelector('#admin-add-item');
+  const saveButton = document.querySelector('#admin-save-button');
+  const deleteButton = document.querySelector('#admin-delete-item');
+
+  if (form) {
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const payload = getFormItemPayload(form);
+      if (!payload.slug || !payload.name) {
+        updateAdminStatus('Slug 與名稱為必填。', 'error');
+        return;
+      }
+
+      const currentIndex = adminState.items.findIndex((item) => item.slug === adminSelectedSlug || item.slug === payload.slug);
+      if (currentIndex >= 0) {
+        adminState.items[currentIndex] = payload;
+      } else {
+        adminState.items.unshift(payload);
+      }
+      adminSelectedSlug = payload.slug;
+      renderAdminList();
+      updateAdminStatus('已更新暫存內容，記得按上方「儲存全部變更」。', 'success');
+    });
+  }
+
+  if (addButton) {
+    addButton.addEventListener('click', () => {
+      adminSelectedSlug = '';
+      form.reset();
+      form.category.value = 'breakfast';
+      renderAdminList();
+      updateAdminStatus('已建立空白單品表單。', 'success');
+    });
+  }
+
+  if (deleteButton) {
+    deleteButton.addEventListener('click', () => {
+      if (!adminSelectedSlug) {
+        updateAdminStatus('目前沒有選定可刪除的單品。', 'error');
+        return;
+      }
+      adminState.items = adminState.items.filter((item) => item.slug !== adminSelectedSlug);
+      adminSelectedSlug = adminState.items[0]?.slug || '';
+      fillAdminForm(adminState.items[0] || {
+        slug: '', name: '', category: 'breakfast', price: 0, image: '', shortDescription: '', description: '', pairing: '', availability: '', ingredients: [], tags: []
+      });
+      renderAdminList();
+      updateAdminStatus('已從暫存內容移除此單品。記得儲存全部變更。', 'success');
+    });
+  }
+
+  if (saveButton) {
+    saveButton.addEventListener('click', async () => {
+      try {
+        await fetchJson(menuApiUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(adminState)
+        });
+        updateAdminStatus('菜單資料已寫入後端，前台頁面重新整理後會看到最新內容。', 'success');
+      } catch (error) {
+        updateAdminStatus(`儲存失敗：${error.message}`, 'error');
+      }
+    });
+  }
+};
+
+const initDataDrivenPages = async () => {
+  try {
+    if (pageType === 'menu-overview') {
+      await renderMenuOverview();
+    }
+    if (pageType === 'category') {
+      await renderCategoryPage();
+    }
+    if (pageType === 'item-detail') {
+      await renderItemDetailPage();
+    }
+    if (pageType === 'admin') {
+      await setupAdminPage();
+    }
+  } catch (error) {
+    console.error(error);
+    const statusNode = getAdminStatus() || document.querySelector('.hero-text') || document.querySelector('.menu-page-note p');
+    if (statusNode) {
+      statusNode.textContent = '資料載入失敗，請確認已使用 `python app.py` 啟動後端伺服器。';
+    }
+  }
+};
+
+setupReservationForm();
+setupAnchorScroll();
+setupHeroPointer();
+syncHeader();
+syncHeroParallax();
+window.addEventListener('scroll', requestScrollSync, { passive: true });
+window.addEventListener('resize', requestScrollSync);
+setupRevealAnimations();
+setupActiveSections();
+finishLoadingAfterReady();
+initDataDrivenPages();

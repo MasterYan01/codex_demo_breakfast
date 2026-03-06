@@ -6,10 +6,6 @@
   <title>樂沐 La Miu 甜點頁 | 肉桂捲與手作甜點</title>
   <meta name="description" content="樂沐 La Miu 甜點頁，收錄肉桂捲、巴斯克乳酪蛋糕、水果塔與季節甜點。">
   <meta name="theme-color" content="#f2e6d8">
-  <meta name="robots" content="index,follow">
-  <meta property="og:title" content="樂沐 La Miu 甜點頁 | 肉桂捲與手作甜點">
-  <meta property="og:description" content="查看樂沐 La Miu 甜點分類頁，瀏覽肉桂捲、乳酪蛋糕與季節甜點。">
-  <meta property="og:image" content="social-preview.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -17,7 +13,7 @@
   <link rel="manifest" href="site.webmanifest">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="is-loading menu-page category-page dessert-page">
+<body class="is-loading menu-page category-page" data-page="category" data-category="dessert">
   <div class="page-loader" aria-hidden="true"><div class="page-loader__inner"><span class="page-loader__mark">樂沐</span><span class="page-loader__line"></span><span class="page-loader__label">La Miu</span></div></div>
   <div class="page-shell">
     <header class="site-header reveal-on-scroll" data-reveal="header">
@@ -32,48 +28,29 @@
     <main>
       <section class="category-hero reveal-on-scroll reveal-visible" data-reveal="hero">
         <div class="category-hero__copy">
-          <p class="eyebrow">Dessert Menu</p>
-          <div class="hero-intro-line"><span></span><p>Pastry & Sweets</p></div>
-          <h1>甜點頁</h1>
-          <p class="hero-text">肉桂捲、巴斯克乳酪、季節水果塔與限定甜點，保留了 La Miu 網站與實體餐桌一致的暖調節奏。</p>
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="index.html#reserve">預約午後時段</a>
-            <a class="btn btn-secondary" href="menu.html">返回菜單總覽</a>
-          </div>
+          <p class="eyebrow" id="category-eyebrow"></p>
+          <div class="hero-intro-line"><span></span><p id="category-tagline"></p></div>
+          <h1 id="category-title"></h1>
+          <p class="hero-text" id="category-description"></p>
+          <div class="hero-actions"><a class="btn btn-primary" href="index.html#reserve">預約午後時段</a><a class="btn btn-secondary" href="menu.html">返回菜單總覽</a></div>
         </div>
-        <div class="category-hero__visual category-hero__visual--dessert"></div>
+        <div class="category-hero__visual" id="category-hero-image"></div>
       </section>
-
       <section class="category-list-section reveal-on-scroll" data-reveal="section">
-        <div class="section-heading"><div><p class="eyebrow">Dessert Selection</p><h2>手作甜點</h2></div></div>
-        <div class="category-list-grid category-list-grid--three">
-          <article class="category-dish-card"><div class="category-dish-photo image-roll"></div><div class="category-dish-copy"><h3>手作肉桂捲</h3><p>溫熱香料與糖霜尾韻，是品牌甜點代表。</p><span class="price">NT$ 150</span></div></article>
-          <article class="category-dish-card"><div class="category-dish-photo category-basque-photo"></div><div class="category-dish-copy"><h3>巴斯克乳酪蛋糕</h3><p>表面焦糖香與濕潤乳酪質地平衡得宜。</p><span class="price">NT$ 180</span></div></article>
-          <article class="category-dish-card"><div class="category-dish-photo category-tart-photo"></div><div class="category-dish-copy"><h3>季節水果塔</h3><p>以當令水果與卡士達呈現較明亮的甜感。</p><span class="price">NT$ 190</span></div></article>
-          <article class="category-dish-card"><div class="category-dish-photo category-pudding-photo"></div><div class="category-dish-copy"><h3>香草布丁</h3><p>口感柔滑，適合搭配黑咖啡或茶飲。</p><span class="price">NT$ 140</span></div></article>
-          <article class="category-dish-card"><div class="category-dish-photo category-cookie-photo"></div><div class="category-dish-copy"><h3>海鹽巧克力餅</h3><p>略帶苦甜與海鹽尾韻的午後點心。</p><span class="price">NT$ 120</span></div></article>
-          <article class="category-dish-card"><div class="category-dish-photo category-seasonal-dessert-photo"></div><div class="category-dish-copy"><h3>限定檸檬奶霜蛋糕</h3><p>季節限定，口感較輕盈，適合春夏時段。</p><span class="price">NT$ 200</span></div></article>
-        </div>
+        <div class="section-heading"><div><p class="eyebrow">Category Items</p><h2 id="category-list-title">甜點品項</h2></div></div>
+        <div class="category-list-grid" id="category-list-grid"></div>
       </section>
-
       <section class="category-note-band reveal-on-scroll" data-reveal="section">
-        <div class="category-note-band__copy">
-          <p class="eyebrow">Afternoon Note</p>
-          <h2>甜點供應依每日製作數量而定，熱門品項可能提早完售。</h2>
-          <p>若你是為了肉桂捲或限定甜點來店，建議中午前後抵達，會有較完整的供應狀態。</p>
-        </div>
-        <div class="category-note-band__links">
-          <a class="btn btn-secondary" href="coffee.html">搭配咖啡</a>
-          <a class="btn btn-secondary" href="breakfast.html">查看早餐</a>
-        </div>
+        <div class="category-note-band__copy"><p class="eyebrow">Serving Note</p><h2 id="category-note-title"></h2><p id="category-note-text"></p></div>
+        <div class="category-note-band__links" id="category-pairings"></div>
       </section>
     </main>
     <footer class="site-footer reveal-on-scroll" data-reveal="footer">
-      <div class="footer-brand-block"><p class="eyebrow">La Miu Tainan</p><h2>樂沐 La Miu</h2><p>甜點頁保留與早餐、咖啡頁一致的品牌材質與攝影節奏。</p></div>
+      <div class="footer-brand-block"><p class="eyebrow">La Miu Tainan</p><h2>樂沐 La Miu</h2><p>早餐、咖啡與甜點皆維持一致的暖木品牌語言。</p></div>
       <div class="footer-column"><h3>地址</h3><p>台南市中西區衛民街129號</p><p><a href="index.html#access">查看交通資訊</a></p></div>
       <div class="footer-column"><h3>聯絡方式</h3><p><a href="tel:+88662213129">06-221-3129</a></p><p><a href="mailto:reservations@lamiu.com.tw">reservations@lamiu.com.tw</a></p></div>
       <div class="footer-column"><h3>分類頁</h3><p><a href="breakfast.html">早餐頁</a></p><p><a href="coffee.html">咖啡頁</a></p></div>
-      <div class="footer-column"><h3>訂位</h3><p><a href="index.html#reserve">線上訂位</a></p><p>週一至週五 09:00 - 16:30</p></div>
+      <div class="footer-column"><h3>管理</h3><p><a href="admin.html">菜單後台</a></p><p><a href="menu.html">返回總覽</a></p></div>
     </footer>
   </div>
   <script src="script.js"></script>
