@@ -24,8 +24,8 @@ let adminSelectedSlug = '';
 const getHeaderOffset = () => (header ? header.getBoundingClientRect().height + 24 : 96);
 const appConfig = window.LA_MIU_CONFIG || {};
 const apiBase = String(appConfig.apiBase || window.location.origin).replace(/\/$/, '');
-const menuApiUrl = ${apiBase}/api/menu;
-const getApiUrl = (path) => ${apiBase};
+const menuApiUrl = `${apiBase}/api/menu`;
+const getApiUrl = (path) => `${apiBase}${path}`;
 
 const finishLoading = () => {
   body.classList.remove('is-loading');
@@ -538,7 +538,7 @@ const initDataDrivenPages = async () => {
     console.error(error);
     const statusNode = getAdminStatus() || document.querySelector('.hero-text') || document.querySelector('.menu-page-note p');
     if (statusNode) {
-      statusNode.textContent = '資料載入失敗，請確認已使用 `python app.py` 啟動後端伺服器。';
+      statusNode.textContent = '資料載入失敗，請確認 Render API 已啟動，且 config.js 的 apiBase 設定正確。';
     }
   }
 };
@@ -554,4 +554,5 @@ setupRevealAnimations();
 setupActiveSections();
 finishLoadingAfterReady();
 initDataDrivenPages();
+
 
