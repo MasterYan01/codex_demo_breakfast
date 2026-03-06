@@ -1048,3 +1048,254 @@ body.is-ready .hero.reveal-visible .hero-visual > .hero-floating-card { animatio
     display: none;
   }
 }
+
+.hero-overlay,
+.hero-floating-card {
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 240ms ease;
+  will-change: transform;
+}
+
+.btn,
+.site-footer,
+.site-footer .footer-column,
+.site-footer .footer-brand-block {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before,
+.site-footer .footer-column::before,
+.site-footer .footer-brand-block::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 18%, rgba(255,255,255,0.22) 34%, transparent 50%);
+  transform: translateX(-140%);
+  transition: transform 760ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.btn:hover::before,
+.site-footer .footer-column:hover::before,
+.site-footer .footer-brand-block:hover::before {
+  transform: translateX(140%);
+}
+
+.btn-primary,
+.btn-secondary {
+  box-shadow: 0 16px 30px rgba(143, 91, 60, 0.18);
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 22px 40px rgba(143, 91, 60, 0.24);
+  filter: saturate(1.03);
+}
+
+.btn-secondary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 34px rgba(74, 47, 31, 0.1);
+}
+
+.site-footer {
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 280ms ease, border-color 220ms ease;
+}
+
+.site-footer:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 28px 58px rgba(74, 47, 31, 0.12);
+}
+
+.site-footer .footer-column,
+.site-footer .footer-brand-block {
+  border-radius: 20px;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), background 260ms ease, box-shadow 260ms ease;
+}
+
+.site-footer .footer-column:hover,
+.site-footer .footer-brand-block:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 250, 244, 0.38);
+  box-shadow: 0 16px 28px rgba(74, 47, 31, 0.08);
+}
+
+.site-footer .footer-column a {
+  position: relative;
+  display: inline-block;
+}
+
+.site-footer .footer-column a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background: rgba(104, 64, 45, 0.45);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 220ms ease;
+}
+
+.site-footer .footer-column a:hover::after {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-overlay,
+  .hero-floating-card,
+  .btn,
+  .site-footer,
+  .site-footer .footer-column,
+  .site-footer .footer-brand-block {
+    transform: none !important;
+  }
+
+  .btn::before,
+  .site-footer .footer-column::before,
+  .site-footer .footer-brand-block::before {
+    display: none;
+  }
+}
+
+body {
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.page-loader__mark,
+.brand-mark,
+.hero h1,
+.section-heading h2,
+.story-copy h2,
+.reserve-card h2,
+.site-footer h2,
+.feature-content h3,
+.space-card h3,
+.footer-column h3 {
+  font-weight: 600;
+  letter-spacing: 0.015em;
+}
+
+.page-loader__mark {
+  letter-spacing: 0.12em;
+}
+
+.brand-mark {
+  font-size: 2.06rem;
+  letter-spacing: 0.085em;
+}
+
+.brand-sub,
+.page-loader__label,
+.eyebrow,
+.eyebrow.small,
+.hero-intro-line p,
+.fact-label,
+.floating-label,
+.hero-side-label,
+.hero-overlay span {
+  font-family: "Noto Serif TC", serif;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+}
+
+.brand-sub,
+.page-loader__label {
+  font-size: 0.74rem;
+  letter-spacing: 0.3em;
+}
+
+.nav a {
+  font-family: "Noto Serif TC", serif;
+  font-weight: 500;
+  letter-spacing: 0.035em;
+  line-height: 1.35;
+}
+
+.hero h1 {
+  letter-spacing: -0.01em;
+  line-height: 0.92;
+}
+
+.hero-text,
+.story-copy p,
+.space-card p,
+.reserve-card p,
+.feature-content p,
+.footer-brand-block p,
+.footer-column p,
+.footer-column a,
+.hero-floating-card p {
+  font-size: 0.955rem;
+  line-height: 1.98;
+  letter-spacing: 0.012em;
+}
+
+.hero-text {
+  max-width: 37ch;
+}
+
+.hero-overlay strong,
+.hero-floating-card strong,
+.fact-item strong {
+  letter-spacing: 0.01em;
+}
+
+.hero-overlay strong {
+  line-height: 1.28;
+}
+
+.section-heading h2,
+.story-copy h2,
+.reserve-card h2,
+.site-footer h2 {
+  letter-spacing: -0.006em;
+  line-height: 1.02;
+}
+
+.feature-content h3,
+.space-card h3,
+.footer-column h3 {
+  letter-spacing: 0;
+  line-height: 1.04;
+}
+
+.price {
+  font-family: "Noto Serif TC", serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.tag {
+  font-family: "Noto Serif TC", serif;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.btn {
+  font-family: "Noto Serif TC", serif;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+@media (max-width: 720px) {
+  .hero h1 {
+    line-height: 0.96;
+  }
+
+  .hero-text,
+  .story-copy p,
+  .space-card p,
+  .reserve-card p,
+  .feature-content p,
+  .footer-brand-block p,
+  .footer-column p,
+  .footer-column a,
+  .hero-floating-card p {
+    font-size: 0.94rem;
+    line-height: 1.92;
+  }
+}

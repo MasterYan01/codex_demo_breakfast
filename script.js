@@ -2,6 +2,8 @@
 const header = document.querySelector('.site-header');
 const hero = document.querySelector('.hero');
 const heroCard = document.querySelector('.hero-card');
+const heroOverlay = document.querySelector('.hero-overlay');
+const heroFloatingCard = document.querySelector('.hero-floating-card');
 const revealNodes = document.querySelectorAll('.reveal-on-scroll');
 const navLinks = Array.from(document.querySelectorAll('.nav a[href^="#"]'));
 const sectionTargets = navLinks
@@ -9,6 +11,9 @@ const sectionTargets = navLinks
   .filter(Boolean);
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let ticking = false;
+let heroPointerX = 0;
+let heroPointerY = 0;
+let heroPointerActive = false;
 
 const getHeaderOffset = () => (header ? header.getBoundingClientRect().height + 24 : 96);
 
@@ -36,9 +41,20 @@ const syncHeroParallax = () => {
   if (!heroRect) return;
   const viewportHeight = window.innerHeight || 1;
   const progress = Math.max(-1, Math.min(1, (viewportHeight - heroRect.top) / (viewportHeight + heroRect.height)));
-  const translate = Math.max(-18, Math.min(28, progress * 26 - 8));
-  const scale = 1.04;
-  heroCard.style.transform = `translate3d(0, ${translate}px, 0) scale(${scale})`;
+  const translateY = Math.max(-18, Math.min(28, progress * 26 - 8));
+  const pointerX = heroPointerActive ? heroPointerX * 10 : 0;
+  const pointerY = heroPointerActive ? heroPointerY * 8 : 0;
+  const rotateY = heroPointerActive ? heroPointerX * 2.6 : 0;
+  const rotateX = heroPointerActive ? heroPointerY * -1.8 : 0;
+  heroCard.style.transform = `translate3d(${pointerX}px, ${translateY + pointerY}px, 0) scale(1.04) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+
+  if (heroOverlay) {
+    heroOverlay.style.transform = `translate3d(${pointerX * -0.35}px, ${pointerY * -0.35}px, 0)`;
+  }
+
+  if (heroFloatingCard) {
+    heroFloatingCard.style.transform = `translate3d(${pointerX * -0.28}px, ${pointerY * -0.18}px, 0)`;
+  }
 };
 
 const syncScrollEffects = () => {
@@ -79,6 +95,25 @@ navLinks.forEach((link) => {
     });
   });
 });
+
+if (hero && !reduceMotion) {
+  hero.addEventListener('mousemove', (event) => {
+    const rect = hero.getBoundingClientRect();
+    const px = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    const py = ((event.clientY - rect.top) / rect.height) * 2 - 1;
+    heroPointerX = Math.max(-1, Math.min(1, px));
+    heroPointerY = Math.max(-1, Math.min(1, py));
+    heroPointerActive = true;
+    requestScrollSync();
+  });
+
+  hero.addEventListener('mouseleave', () => {
+    heroPointerX = 0;
+    heroPointerY = 0;
+    heroPointerActive = false;
+    requestScrollSync();
+  });
+}
 
 syncHeader();
 syncHeroParallax();
