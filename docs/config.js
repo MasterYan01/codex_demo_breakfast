@@ -1,3 +1,3 @@
 ﻿window.LA_MIU_CONFIG = {
-  apiBase: ''
+  apiBase: 'https://your-render-service.onrender.com'
 };
