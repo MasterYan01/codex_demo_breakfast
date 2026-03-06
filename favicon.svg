@@ -1,0 +1,10 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#f5ede3"/>
+      <stop offset="100%" stop-color="#ead7c4"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="url(#bg)"/>
+  <text x="50%" y="52%" dominant-baseline="middle" text-anchor="middle" font-family="Georgia, serif" font-size="108" fill="#6a422e">樂</text>
+</svg>
