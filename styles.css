@@ -1640,3 +1640,132 @@ body {
     align-items: stretch;
   }
 }
+
+.access-section {
+  padding: 0 18px 32px;
+}
+
+.access-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.04fr);
+  gap: 20px;
+}
+
+.access-card {
+  border: 1px solid var(--line);
+  border-radius: 32px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.18), transparent 22%),
+    var(--panel);
+  box-shadow: var(--shadow-soft);
+}
+
+.access-copy-card {
+  padding: 30px 30px 26px;
+}
+
+.access-copy-block h3,
+.access-info-item strong {
+  font-family: "Noto Serif TC", serif;
+  font-weight: 600;
+}
+
+.access-copy-block h3 {
+  margin: 8px 0 10px;
+  font-size: 2rem;
+  line-height: 1.08;
+}
+
+.access-copy-block p,
+.access-info-item p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.9;
+}
+
+.access-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.access-info-item {
+  padding: 18px 18px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(104, 64, 45, 0.1);
+  background: rgba(255, 250, 244, 0.44);
+}
+
+.access-info-item strong {
+  display: block;
+  margin: 6px 0 6px;
+}
+
+.access-map-card {
+  padding: 14px;
+  display: grid;
+  gap: 14px;
+}
+
+.map-frame {
+  min-height: 100%;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(104, 64, 45, 0.1);
+  background: rgba(255,255,255,0.6);
+}
+
+.map-frame iframe {
+  display: block;
+  width: 100%;
+  min-height: 420px;
+  border: 0;
+  filter: sepia(0.18) saturate(0.82) contrast(0.94);
+}
+
+.map-links {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 1080px) {
+  .access-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .access-copy-card,
+  .access-map-card {
+    border-radius: 24px;
+  }
+
+  .access-copy-card {
+    padding: 24px 22px;
+  }
+
+  .access-copy-block h3 {
+    font-size: 1.74rem;
+  }
+
+  .access-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .map-frame {
+    border-radius: 20px;
+  }
+
+  .map-frame iframe {
+    min-height: 320px;
+  }
+
+  .map-links {
+    justify-content: stretch;
+  }
+
+  .map-links .btn {
+    width: 100%;
+  }
+}
