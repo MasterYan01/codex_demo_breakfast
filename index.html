@@ -9,9 +9,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="is-loading">
+  <div class="page-loader" aria-hidden="true">
+    <div class="page-loader__inner">
+      <span class="page-loader__mark">暖木</span>
+      <span class="page-loader__line"></span>
+      <span class="page-loader__label">Morning Table</span>
+    </div>
+  </div>
+
   <div class="page-shell">
-    <header class="site-header">
+    <header class="site-header reveal-on-scroll" data-reveal="header">
       <a class="brand" href="#home">
         <span class="brand-mark">暖木</span>
         <span class="brand-sub">Morning Table</span>
@@ -25,7 +33,7 @@
     </header>
 
     <main>
-      <section class="hero" id="home">
+      <section class="hero reveal-on-scroll reveal-visible" id="home" data-reveal="hero">
         <div class="hero-copy">
           <p class="eyebrow">Morning Dining House</p>
           <div class="hero-intro-line">
@@ -72,7 +80,7 @@
         </div>
       </section>
 
-      <section class="signature" id="menu">
+      <section class="signature reveal-on-scroll" id="menu" data-reveal="section">
         <div class="section-heading">
           <div>
             <p class="eyebrow">Seasonal Selections</p>
@@ -131,7 +139,7 @@
         </div>
       </section>
 
-      <section class="story-section" id="story">
+      <section class="story-section reveal-on-scroll" id="story" data-reveal="section">
         <div class="story-grid">
           <div class="story-copy">
             <p class="eyebrow">About Warm Wood</p>
@@ -151,7 +159,7 @@
         </div>
       </section>
 
-      <section class="space-section" id="space">
+      <section class="space-section reveal-on-scroll" id="space" data-reveal="section">
         <div class="section-heading">
           <div>
             <p class="eyebrow">Dining Atmosphere</p>
@@ -174,7 +182,7 @@
         </div>
       </section>
 
-      <section class="reserve-section" id="reserve">
+      <section class="reserve-section reveal-on-scroll" id="reserve" data-reveal="section">
         <div class="reserve-card">
           <div>
             <p class="eyebrow">Reservations</p>
@@ -186,7 +194,7 @@
       </section>
     </main>
 
-    <footer class="site-footer">
+    <footer class="site-footer reveal-on-scroll" data-reveal="footer">
       <div class="footer-brand-block">
         <p class="eyebrow">Warm Wood Morning Table</p>
         <h2>暖木晨食</h2>
@@ -214,5 +222,7 @@
       </div>
     </footer>
   </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
