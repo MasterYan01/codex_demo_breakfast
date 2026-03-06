@@ -22,7 +22,10 @@ let adminState = null;
 let adminSelectedSlug = '';
 
 const getHeaderOffset = () => (header ? header.getBoundingClientRect().height + 24 : 96);
-const menuApiUrl = '/api/menu';
+const appConfig = window.LA_MIU_CONFIG || {};
+const apiBase = String(appConfig.apiBase || window.location.origin).replace(/\/$/, '');
+const menuApiUrl = ${apiBase}/api/menu;
+const getApiUrl = (path) => ${apiBase};
 
 const finishLoading = () => {
   body.classList.remove('is-loading');
@@ -551,3 +554,4 @@ setupRevealAnimations();
 setupActiveSections();
 finishLoadingAfterReady();
 initDataDrivenPages();
+

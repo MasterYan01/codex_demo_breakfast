@@ -1,14 +1,18 @@
 ﻿import json
 import mimetypes
+import os
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, unquote, urlparse
+from urllib.parse import unquote, urlparse
 
 ROOT = Path(__file__).resolve().parent
 DATA_FILE = ROOT / 'data' / 'menu.json'
-HOST = '127.0.0.1'
-PORT = 8020
+HOST = os.getenv('HOST', '127.0.0.1')
+PORT = int(os.getenv('PORT', '8020'))
+DEFAULT_ALLOWED_ORIGINS = 'http://127.0.0.1:8020,http://localhost:8020,http://127.0.0.1:5500,http://localhost:5500'
+ALLOWED_ORIGINS = {origin.strip() for origin in os.getenv('ALLOWED_ORIGINS', DEFAULT_ALLOWED_ORIGINS).split(',') if origin.strip()}
+ALLOW_ALL_ORIGINS = '*' in ALLOWED_ORIGINS
 
 
 def load_menu():
@@ -27,13 +31,27 @@ def json_bytes(payload):
 
 
 class MenuHandler(BaseHTTPRequestHandler):
-    server_version = 'LaMiuHTTP/1.0'
+    server_version = 'LaMiuHTTP/1.1'
+
+    def get_cors_origin(self):
+        origin = self.headers.get('Origin', '')
+        if ALLOW_ALL_ORIGINS:
+            return origin or '*'
+        if origin and origin in ALLOWED_ORIGINS:
+            return origin
+        return ''
+
+    def send_cors_headers(self):
+        origin = self.get_cors_origin()
+        if origin:
+            self.send_header('Access-Control-Allow-Origin', origin)
+            self.send_header('Vary', 'Origin')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
 
     def do_OPTIONS(self):
         self.send_response(HTTPStatus.NO_CONTENT)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_cors_headers()
         self.end_headers()
 
     def do_GET(self):
@@ -118,7 +136,7 @@ class MenuHandler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
         self.send_header('Content-Length', str(len(content)))
-        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_cors_headers()
         self.end_headers()
         self.wfile.write(content)
 
@@ -129,11 +147,10 @@ class MenuHandler(BaseHTTPRequestHandler):
 if __name__ == '__main__':
     httpd = ThreadingHTTPServer((HOST, PORT), MenuHandler)
     print(f'La Miu server running at http://{HOST}:{PORT}')
+    print(f'Allowed origins: {sorted(ALLOWED_ORIGINS)}')
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
         print('\nShutting down server...')
     finally:
         httpd.server_close()
-
-
