@@ -1055,7 +1055,7 @@ const renderMenuOverview = async () => {
 const renderCategoryPage = async () => {
   const slug = body.dataset.category;
   if (!slug) return;
-  const payload = await fetchJson(`/api/categories/${encodeURIComponent(slug)}`);
+  const payload = await fetchJson(getApiUrl(`/api/categories/${encodeURIComponent(slug)}`));
   const { category, items } = payload;
 
   const setText = (selector, value) => {
@@ -1099,7 +1099,7 @@ const renderItemDetailPage = async () => {
   const params = new URLSearchParams(window.location.search);
   const slug = params.get('slug');
   if (!slug) return;
-  const payload = await fetchJson(`/api/items/${encodeURIComponent(slug)}`);
+  const payload = await fetchJson(getApiUrl(`/api/items/${encodeURIComponent(slug)}`));
   const { item, category, related } = payload;
   storeRecentItem({
     slug: item.slug,
