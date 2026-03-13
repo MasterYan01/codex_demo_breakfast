@@ -22,6 +22,7 @@ let adminState = null;
 let adminSelectedSlug = '';
 const menuItemLookup = new Map();
 const searchStorageKey = 'la_miu_recent_items_v1';
+const favoriteStorageKey = 'la_miu_favorites_v1';
 const searchResultLimit = 8;
 const recentResultLimit = 6;
 let searchIndexPromise = null;
@@ -469,6 +470,13 @@ const getRemainingSeats = (date, time) => {
   return Math.max(0, capacity - reserved - weekendPenalty);
 };
 
+const parseGuestCount = (value) => {
+  const text = safeText(value);
+  if (!text) return 0;
+  const numeric = Number(text.replace('+', ''));
+  return Number.isFinite(numeric) ? numeric : 0;
+};
+
 const formatIcsDate = (date) => {
   const yyyy = date.getFullYear();
   const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -528,8 +536,11 @@ const buildReservationCalendarLinks = (payload) => {
 const setupAvailabilityPanel = () => {
   if (!reservationForm) return null;
   const timeSelect = reservationForm.querySelector('select[name="time"]');
+  const guestsSelect = reservationForm.querySelector('select[name="guests"]');
   const availabilitySlots = document.querySelector('#availability-slots');
   const availabilityNote = document.querySelector('#availability-note');
+  const availabilityRecommend = document.querySelector('#availability-recommend');
+  const availabilityRecommendNote = document.querySelector('#availability-recommend-note');
   if (!timeSelect || !availabilitySlots) return null;
 
   if (reservationDate && !reservationDate.value) {
@@ -545,6 +556,7 @@ const setupAvailabilityPanel = () => {
 
   const render = () => {
     const dateValue = reservationDate?.value || getTodayString();
+    const guestCount = parseGuestCount(guestsSelect?.value || '');
     let availableCount = 0;
     options.forEach((option) => {
       const remaining = getRemainingSeats(dateValue, option.value);
@@ -561,6 +573,35 @@ const setupAvailabilityPanel = () => {
 
     if (availabilityNote) {
       availabilityNote.textContent = `${dateValue} 可預約時段 ${availableCount} / ${options.length}`;
+    }
+
+    if (availabilityRecommend) {
+      const slotData = options.map((option) => ({
+        time: option.value,
+        remaining: getRemainingSeats(dateValue, option.value)
+      })).filter((slot) => slot.remaining > 0);
+
+      const preferred = guestCount
+        ? slotData.filter((slot) => slot.remaining >= guestCount)
+        : slotData;
+      const ranked = (preferred.length ? preferred : slotData)
+        .sort((a, b) => b.remaining - a.remaining)
+        .slice(0, 3);
+
+      availabilityRecommend.innerHTML = ranked.map((slot) => {
+        const isSelected = timeSelect.value === slot.time;
+        return `
+          <button type="button" class="availability-recommend__slot${isSelected ? ' is-selected' : ''}" data-time="${slot.time}">
+            ${slot.time} · 剩餘 ${slot.remaining}
+          </button>
+        `;
+      }).join('');
+
+      if (availabilityRecommendNote) {
+        availabilityRecommendNote.textContent = ranked.length
+          ? `推薦 ${guestCount ? `${guestCount} 位` : '今日'}較寬裕時段`
+          : '目前沒有可推薦時段';
+      }
     }
 
     availabilitySlots.innerHTML = options.map((option) => {
@@ -583,8 +624,16 @@ const setupAvailabilityPanel = () => {
     render();
   });
 
+  availabilityRecommend?.addEventListener('click', (event) => {
+    const target = event.target.closest('[data-time]');
+    if (!target) return;
+    timeSelect.value = target.dataset.time;
+    render();
+  });
+
   reservationDate?.addEventListener('change', render);
   timeSelect.addEventListener('change', render);
+  guestsSelect?.addEventListener('change', render);
   render();
   return { render };
 };
@@ -622,10 +671,97 @@ const updateReservationStatus = (message, status) => {
   reservationStatus.dataset.state = status;
 };
 
+const setupReservationSteps = () => {
+  if (!reservationForm) return null;
+  const steps = Array.from(reservationForm.querySelectorAll('[data-step]'));
+  const indicators = Array.from(reservationForm.querySelectorAll('[data-step-indicator]'));
+  const nextButtons = Array.from(reservationForm.querySelectorAll('[data-step-next]'));
+  const prevButtons = Array.from(reservationForm.querySelectorAll('[data-step-prev]'));
+  const summaryNode = reservationForm.querySelector('#reservation-summary');
+  const summaryFields = summaryNode
+    ? Array.from(summaryNode.querySelectorAll('[data-summary]'))
+    : [];
+  const totalSteps = steps.length;
+  let currentStep = 0;
+
+  const updateIndicators = () => {
+    indicators.forEach((indicator, index) => {
+      indicator.classList.toggle('is-active', index === currentStep);
+      indicator.classList.toggle('is-complete', index < currentStep);
+    });
+  };
+
+  const updateSummary = () => {
+    if (!summaryFields.length) return;
+    const formData = new FormData(reservationForm);
+    summaryFields.forEach((field) => {
+      const key = field.dataset.summary;
+      field.textContent = safeText(formData.get(key)) || '-';
+    });
+  };
+
+  const showStep = (index) => {
+    currentStep = Math.max(0, Math.min(totalSteps - 1, index));
+    steps.forEach((step, idx) => step.classList.toggle('is-active', idx === currentStep));
+    updateIndicators();
+    updateSummary();
+    updateReservationStatus('', '');
+  };
+
+  const validateStep = (index) => {
+    const formData = new FormData(reservationForm);
+    if (index === 0) {
+      const date = safeText(formData.get('date'));
+      const time = safeText(formData.get('time'));
+      const guests = safeText(formData.get('guests'));
+      if (!date || !time || !guests) {
+        updateReservationStatus('請先選擇日期、時段與人數。', 'error');
+        return false;
+      }
+    }
+    if (index === 1) {
+      const name = safeText(formData.get('name'));
+      const phone = safeText(formData.get('phone'));
+      const email = safeText(formData.get('email'));
+      if (!name || !phone || !email) {
+        updateReservationStatus('請填寫姓名、電話與 Email。', 'error');
+        return false;
+      }
+      if (!/^09\d{2}-?\d{3}-?\d{3}$/.test(phone) && !/^0\d{1,2}-?\d{6,8}$/.test(phone)) {
+        updateReservationStatus('請輸入正確的手機或電話格式。', 'error');
+        return false;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        updateReservationStatus('請輸入正確的 Email 格式。', 'error');
+        return false;
+      }
+    }
+    return true;
+  };
+
+  nextButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      if (!validateStep(currentStep)) return;
+      showStep(currentStep + 1);
+    });
+  });
+
+  prevButtons.forEach((button) => {
+    button.addEventListener('click', () => showStep(currentStep - 1));
+  });
+
+  reservationForm.addEventListener('input', updateSummary);
+  showStep(0);
+  return {
+    reset: () => showStep(0)
+  };
+};
+
 const setupReservationForm = () => {
   if (!reservationForm) return;
   setReservationMinDate();
   const availability = setupAvailabilityPanel();
+  const steps = setupReservationSteps();
   const successPanel = document.querySelector('#reservation-success');
   const successSummary = document.querySelector('#reservation-success-summary');
   const hideSuccess = () => {
@@ -661,11 +797,7 @@ const setupReservationForm = () => {
     if (successPanel) {
       successPanel.hidden = false;
     }
-    reservationForm.reset();
     setReservationMinDate();
-    if (reservationDate) {
-      reservationDate.value = getTodayString();
-    }
     availability?.render();
   });
 };
@@ -1072,15 +1204,56 @@ const buildPreviewTags = (item) => {
   return combinedTags.map((tag) => `<span class="tag">${tag}</span>`).join('');
 };
 
+const readFavorites = () => {
+  try {
+    const stored = JSON.parse(localStorage.getItem(favoriteStorageKey) || '[]');
+    return new Set(Array.isArray(stored) ? stored : []);
+  } catch (error) {
+    console.warn(error);
+    return new Set();
+  }
+};
+
+const writeFavorites = (favorites) => {
+  localStorage.setItem(favoriteStorageKey, JSON.stringify([...favorites]));
+};
+
+const copyToClipboard = async (text) => {
+  if (navigator.clipboard && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return true;
+  }
+  const temp = document.createElement('textarea');
+  temp.value = text;
+  temp.style.position = 'fixed';
+  temp.style.opacity = '0';
+  document.body.appendChild(temp);
+  temp.select();
+  const success = document.execCommand('copy');
+  temp.remove();
+  return success;
+};
+
+const buildShareUrl = (slug) => new URL(getItemPageHref(slug), window.location.href).toString();
+
 const setupQuickPreview = () => {
   const modal = document.createElement('div');
   modal.className = 'preview-modal';
   modal.innerHTML = `
     <div class="preview-backdrop" data-preview-close></div>
     <div class="preview-card" role="dialog" aria-modal="true" aria-label="單品快速預覽">
-      <div class="preview-photo"></div>
+      <div class="preview-photo">
+        <button class="preview-nav preview-nav--prev" type="button" aria-label="上一個品項" data-preview-nav="prev">←</button>
+        <button class="preview-nav preview-nav--next" type="button" aria-label="下一個品項" data-preview-nav="next">→</button>
+      </div>
       <div class="preview-content">
-        <p class="eyebrow small">Quick Preview</p>
+        <div class="preview-toolbar">
+          <p class="eyebrow small">Quick Preview</p>
+          <div class="preview-toolbar__actions">
+            <button class="preview-action" type="button" data-preview-favorite>收藏</button>
+            <button class="preview-action" type="button" data-preview-share>分享</button>
+          </div>
+        </div>
         <h3 class="preview-title"></h3>
         <p class="preview-description"></p>
         <div class="preview-meta">
@@ -1089,6 +1262,7 @@ const setupQuickPreview = () => {
           <div><span>搭配</span><strong class="preview-pairing"></strong></div>
         </div>
         <div class="tag-cloud preview-tags"></div>
+        <p class="preview-feedback" role="status" aria-live="polite"></p>
         <div class="preview-actions">
           <a class="btn btn-primary preview-link" href="#">查看單品介紹</a>
           <button class="btn btn-secondary" type="button" data-preview-close>關閉</button>
@@ -1106,9 +1280,45 @@ const setupQuickPreview = () => {
   const pairingNode = modal.querySelector('.preview-pairing');
   const tagsNode = modal.querySelector('.preview-tags');
   const linkNode = modal.querySelector('.preview-link');
+  const feedbackNode = modal.querySelector('.preview-feedback');
+  const favoriteButton = modal.querySelector('[data-preview-favorite]');
+  const shareButton = modal.querySelector('[data-preview-share]');
+  const prevButton = modal.querySelector('[data-preview-nav="prev"]');
+  const nextButton = modal.querySelector('[data-preview-nav="next"]');
+  let previewOrder = [];
+  let previewIndex = 0;
+  let currentItem = null;
 
-  const open = (item) => {
+  const setFeedback = (message) => {
+    if (!feedbackNode) return;
+    feedbackNode.textContent = message;
+  };
+
+  const buildPreviewOrder = () => {
+    const nodes = Array.from(document.querySelectorAll('[data-preview-slug]'));
+    const slugs = nodes.map((node) => node.dataset.previewSlug).filter(Boolean);
+    const unique = [...new Set(slugs)];
+    return unique.length ? unique : Array.from(menuItemLookup.keys());
+  };
+
+  const updateNavState = () => {
+    const disabled = previewOrder.length <= 1;
+    if (prevButton) prevButton.disabled = disabled;
+    if (nextButton) nextButton.disabled = disabled;
+  };
+
+  const updateFavoriteState = () => {
+    if (!favoriteButton || !currentItem) return;
+    const favorites = readFavorites();
+    const isFav = favorites.has(currentItem.slug);
+    favoriteButton.textContent = isFav ? '已收藏' : '收藏';
+    favoriteButton.classList.toggle('is-active', isFav);
+    favoriteButton.setAttribute('aria-pressed', String(isFav));
+  };
+
+  const open = (item, { keepOrder = false } = {}) => {
     if (!item) return;
+    currentItem = item;
     if (photoNode) {
       photoNode.style.backgroundImage = `url('${item.image}')`;
     }
@@ -1119,6 +1329,13 @@ const setupQuickPreview = () => {
     if (pairingNode) pairingNode.textContent = item.pairing || '請洽現場';
     if (tagsNode) tagsNode.innerHTML = buildPreviewTags(item);
     if (linkNode) linkNode.href = getItemPageHref(item.slug);
+    if (!keepOrder) {
+      previewOrder = buildPreviewOrder();
+    }
+    previewIndex = Math.max(0, previewOrder.indexOf(item.slug));
+    updateNavState();
+    updateFavoriteState();
+    setFeedback('');
     document.body.classList.add('preview-open');
     modal.classList.add('is-visible');
   };
@@ -1128,6 +1345,17 @@ const setupQuickPreview = () => {
     modal.classList.remove('is-visible');
   };
 
+  const openByOffset = (offset) => {
+    if (!previewOrder.length) return;
+    const nextIndex = (previewIndex + offset + previewOrder.length) % previewOrder.length;
+    const slug = previewOrder[nextIndex];
+    const item = menuItemLookup.get(slug);
+    if (item) {
+      previewIndex = nextIndex;
+      open(item, { keepOrder: true });
+    }
+  };
+
   modal.addEventListener('click', (event) => {
     if (event.target && event.target.closest('[data-preview-close]')) {
       close();
@@ -1135,10 +1363,65 @@ const setupQuickPreview = () => {
   });
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && modal.classList.contains('is-visible')) {
+    if (!modal.classList.contains('is-visible')) return;
+    if (event.key === 'Escape') {
       close();
+      return;
+    }
+    if (event.key === 'ArrowRight') {
+      openByOffset(1);
+    }
+    if (event.key === 'ArrowLeft') {
+      openByOffset(-1);
     }
   });
+
+  if (prevButton) {
+    prevButton.addEventListener('click', () => openByOffset(-1));
+  }
+
+  if (nextButton) {
+    nextButton.addEventListener('click', () => openByOffset(1));
+  }
+
+  if (favoriteButton) {
+    favoriteButton.addEventListener('click', () => {
+      if (!currentItem) return;
+      const favorites = readFavorites();
+      if (favorites.has(currentItem.slug)) {
+        favorites.delete(currentItem.slug);
+        setFeedback('已從收藏移除。');
+      } else {
+        favorites.add(currentItem.slug);
+        setFeedback('已加入收藏。');
+      }
+      writeFavorites(favorites);
+      updateFavoriteState();
+    });
+  }
+
+  if (shareButton) {
+    shareButton.addEventListener('click', async () => {
+      if (!currentItem) return;
+      const url = buildShareUrl(currentItem.slug);
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: `樂沐 La Miu｜${currentItem.name}`,
+            text: currentItem.shortDescription || '',
+            url
+          });
+          setFeedback('已開啟分享視窗。');
+        } else {
+          const success = await copyToClipboard(url);
+          setFeedback(success ? '連結已複製。' : '連結複製失敗。');
+        }
+      } catch (error) {
+        console.warn(error);
+        setFeedback('分享已取消。');
+      }
+    });
+  }
 
   document.addEventListener('click', (event) => {
     const trigger = event.target.closest('[data-preview-slug]');

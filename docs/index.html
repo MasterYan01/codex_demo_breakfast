@@ -276,74 +276,116 @@
               <p>填寫以下資訊後，我們會為你保留預約需求。此表單為前端示範版，送出後會顯示成功訊息。</p>
             </div>
 
-            <div class="reservation-grid">
-              <label class="field">
-                <span>日期</span>
-                <input type="date" name="date" id="reservation-date" required>
-              </label>
-              <label class="field">
-                <span>時段</span>
-                <select name="time" required>
-                  <option value="">請選擇時段</option>
-                  <option value="09:00">09:00</option>
-                  <option value="10:30">10:30</option>
-                  <option value="12:00">12:00</option>
-                  <option value="13:30">13:30</option>
-                  <option value="15:00">15:00</option>
-                </select>
-              </label>
-              <label class="field">
-                <span>人數</span>
-                <select name="guests" required>
-                  <option value="">請選擇人數</option>
-                  <option value="1">1 位</option>
-                  <option value="2">2 位</option>
-                  <option value="3">3 位</option>
-                  <option value="4">4 位</option>
-                  <option value="5">5 位</option>
-                  <option value="6+">6 位以上</option>
-                </select>
-              </label>
-              <label class="field field-full">
-                <span>姓名</span>
-                <input type="text" name="name" placeholder="請輸入訂位姓名" required>
-              </label>
-              <label class="field">
-                <span>手機</span>
-                <input type="tel" name="phone" placeholder="09xx-xxx-xxx" inputmode="tel" required>
-              </label>
-              <label class="field">
-                <span>Email</span>
-                <input type="email" name="email" placeholder="name@example.com" required>
-              </label>
-              <label class="field field-full">
-                <span>備註</span>
-                <textarea name="notes" rows="4" placeholder="例如：窗邊座位、嬰兒椅、6 位以上需求"></textarea>
-              </label>
-            </div>
+            <ol class="reservation-steps" aria-label="訂位步驟">
+              <li class="is-active" data-step-indicator="1"><span>1</span>選擇時段</li>
+              <li data-step-indicator="2"><span>2</span>聯絡資訊</li>
+              <li data-step-indicator="3"><span>3</span>完成預約</li>
+            </ol>
+            <p class="form-status" id="reservation-status" aria-live="polite"></p>
 
-            <div class="availability-panel" id="availability-panel" aria-live="polite">
-              <div class="availability-header">
-                <p class="eyebrow small">Availability</p>
-                <h4>剩餘時段</h4>
+            <div class="reservation-step is-active" data-step="1">
+              <div class="reservation-grid">
+                <label class="field">
+                  <span>日期</span>
+                  <input type="date" name="date" id="reservation-date" required>
+                </label>
+                <label class="field">
+                  <span>時段</span>
+                  <select name="time" required>
+                    <option value="">請選擇時段</option>
+                    <option value="09:00">09:00</option>
+                    <option value="10:30">10:30</option>
+                    <option value="12:00">12:00</option>
+                    <option value="13:30">13:30</option>
+                    <option value="15:00">15:00</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>人數</span>
+                  <select name="guests" required>
+                    <option value="">請選擇人數</option>
+                    <option value="1">1 位</option>
+                    <option value="2">2 位</option>
+                    <option value="3">3 位</option>
+                    <option value="4">4 位</option>
+                    <option value="5">5 位</option>
+                    <option value="6+">6 位以上</option>
+                  </select>
+                </label>
               </div>
-              <div class="availability-slots" id="availability-slots"></div>
-              <p class="availability-note" id="availability-note">選擇日期後會更新剩餘席次。</p>
+
+              <div class="availability-panel" id="availability-panel" aria-live="polite">
+                <div class="availability-header">
+                  <p class="eyebrow small">Availability</p>
+                  <h4>剩餘時段</h4>
+                </div>
+                <div class="availability-recommend">
+                  <p class="eyebrow small">Recommended</p>
+                  <div class="availability-recommend__list" id="availability-recommend"></div>
+                  <p class="availability-recommend__note" id="availability-recommend-note">根據當日座位狀況推薦。</p>
+                </div>
+                <div class="availability-slots" id="availability-slots"></div>
+                <p class="availability-note" id="availability-note">選擇日期後會更新剩餘席次。</p>
+              </div>
+
+              <div class="reservation-step-actions">
+                <button class="btn btn-primary" type="button" data-step-next>下一步</button>
+              </div>
             </div>
 
-            <div class="reservation-actions">
-              <p class="form-status" id="reservation-status" aria-live="polite"></p>
-              <button class="btn btn-primary reservation-submit" type="submit">送出訂位需求</button>
+            <div class="reservation-step" data-step="2">
+              <div class="reservation-grid">
+                <label class="field field-full">
+                  <span>姓名</span>
+                  <input type="text" name="name" placeholder="請輸入訂位姓名" required>
+                </label>
+                <label class="field">
+                  <span>手機</span>
+                  <input type="tel" name="phone" placeholder="09xx-xxx-xxx" inputmode="tel" required>
+                </label>
+                <label class="field">
+                  <span>Email</span>
+                  <input type="email" name="email" placeholder="name@example.com" required>
+                </label>
+              </div>
+
+              <div class="reservation-step-actions">
+                <button class="btn btn-secondary" type="button" data-step-prev>上一步</button>
+                <button class="btn btn-primary" type="button" data-step-next>下一步</button>
+              </div>
             </div>
 
-            <div class="reservation-success" id="reservation-success" hidden>
-              <div class="reservation-success__card">
-                <p class="eyebrow small">Reservation</p>
-                <h4>已收到你的預約</h4>
-                <p class="reservation-success__summary" id="reservation-success-summary"></p>
-                <div class="reservation-success__actions">
-                  <a class="btn btn-secondary" id="calendar-google" target="_blank" rel="noreferrer">加入 Google 日曆</a>
-                  <a class="btn btn-secondary" id="calendar-ics" download="lamiu-reservation.ics">下載 .ics</a>
+            <div class="reservation-step" data-step="3">
+              <div class="reservation-grid">
+                <label class="field field-full">
+                  <span>備註</span>
+                  <textarea name="notes" rows="4" placeholder="例如：窗邊座位、嬰兒椅、6 位以上需求"></textarea>
+                </label>
+              </div>
+
+              <div class="reservation-summary" id="reservation-summary">
+                <div><span>日期</span><strong data-summary="date">-</strong></div>
+                <div><span>時段</span><strong data-summary="time">-</strong></div>
+                <div><span>人數</span><strong data-summary="guests">-</strong></div>
+                <div><span>姓名</span><strong data-summary="name">-</strong></div>
+              </div>
+
+              <div class="reservation-actions">
+                <div class="reservation-actions__buttons">
+                  <button class="btn btn-secondary" type="button" data-step-prev>上一步</button>
+                  <button class="btn btn-primary reservation-submit" type="submit">送出訂位需求</button>
+                </div>
+              </div>
+
+              <div class="reservation-success" id="reservation-success" hidden>
+                <div class="reservation-success__card">
+                  <p class="eyebrow small">Reservation</p>
+                  <h4>已收到你的預約</h4>
+                  <p class="reservation-success__summary" id="reservation-success-summary"></p>
+                  <div class="reservation-success__actions">
+                    <a class="btn btn-secondary" id="calendar-google" target="_blank" rel="noreferrer">加入 Google 日曆</a>
+                    <a class="btn btn-secondary" id="calendar-ics" download="lamiu-reservation.ics">下載 .ics</a>
+                  </div>
                 </div>
               </div>
             </div>
