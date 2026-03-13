@@ -639,6 +639,43 @@ body.search-open .search-panel {
   background: rgba(255, 250, 244, 0.92);
 }
 
+.cta-fab {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 70;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 22px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  letter-spacing: 0.16em;
+  font-family: "Noto Sans TC", sans-serif;
+  font-weight: 600;
+  color: #fffaf5;
+  background: linear-gradient(135deg, var(--latte), var(--wood));
+  box-shadow: 0 20px 40px rgba(115, 70, 46, 0.24);
+  transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+}
+
+.cta-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 24px 48px rgba(115, 70, 46, 0.3);
+}
+
+.cta-fab:focus-visible {
+  outline: 2px solid rgba(115, 70, 46, 0.4);
+  outline-offset: 3px;
+}
+
+@media (max-width: 980px) {
+  .cta-fab {
+    display: none;
+  }
+}
+
 .hero-facts {
   display: grid;
   gap: 12px;
