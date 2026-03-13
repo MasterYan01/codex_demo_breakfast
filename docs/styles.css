@@ -782,6 +782,59 @@ body.search-open .search-panel {
   font-size: 1.08rem;
 }
 
+@media (min-width: 1400px) {
+  .page-shell {
+    width: min(1480px, calc(100% - 96px));
+    padding: 26px;
+    border-radius: 46px;
+  }
+
+  .hero {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: 72px;
+    align-items: start;
+    padding: 64px 24px 110px;
+  }
+
+  .hero-copy {
+    max-width: 560px;
+  }
+
+  .hero h1 {
+    max-width: 13ch;
+    font-size: clamp(3.2rem, 3.8vw, 5.2rem);
+    line-height: 0.98;
+  }
+
+  .hero-text {
+    max-width: 44ch;
+    font-size: 1rem;
+  }
+
+  .hero-facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .hero-card {
+    min-height: 620px;
+    border-radius: 38px;
+  }
+
+  .hero-overlay {
+    left: 24px;
+    right: 24px;
+    bottom: 24px;
+    padding: 20px 22px;
+  }
+
+  .hero-floating-card {
+    left: 24px;
+    bottom: -20px;
+    width: 320px;
+  }
+}
+
 .signature,
 .story-section,
 .space-section,
