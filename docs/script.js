@@ -20,6 +20,10 @@ let heroPointerY = 0;
 let heroPointerActive = false;
 let adminState = null;
 let adminSelectedSlug = '';
+const searchStorageKey = 'la_miu_recent_items_v1';
+const searchResultLimit = 8;
+const recentResultLimit = 6;
+let searchIndexPromise = null;
 
 const getHeaderOffset = () => (header ? header.getBoundingClientRect().height + 24 : 96);
 const appConfig = window.LA_MIU_CONFIG || {};
@@ -36,6 +40,192 @@ const safeText = (value) => String(value || '').trim();
 const formatPrice = (value) => `NT$ ${Number(value || 0)}`;
 const getCategoryPageHref = (slug) => `${slug}.html`;
 const getItemPageHref = (slug) => `item.html?slug=${encodeURIComponent(slug)}`;
+
+const normalizeText = (value) => safeText(value).toLowerCase();
+const tokenizeQuery = (query) => normalizeText(query).split(/\s+/).filter(Boolean);
+
+const fuzzyScore = (query, text) => {
+  const q = normalizeText(query);
+  const t = normalizeText(text);
+  if (!q || !t) return 0;
+  if (t.includes(q)) {
+    const lengthPenalty = Math.min(18, t.length - q.length);
+    const startBoost = t.startsWith(q) ? 26 : 0;
+    return 60 + startBoost + Math.min(24, q.length * 2) - lengthPenalty;
+  }
+
+  let score = 0;
+  let lastIndex = 0;
+  let streak = 0;
+  for (let i = 0; i < q.length; i += 1) {
+    const found = t.indexOf(q[i], lastIndex);
+    if (found === -1) return 0;
+    if (found === lastIndex) {
+      streak += 1;
+      score += 10 + streak * 2;
+    } else {
+      streak = 0;
+      score += 4;
+    }
+    lastIndex = found + 1;
+  }
+  return score;
+};
+
+const scoreText = (query, text) => {
+  const tokens = tokenizeQuery(query);
+  if (!tokens.length) return 0;
+  let total = 0;
+  for (const token of tokens) {
+    const score = fuzzyScore(token, text);
+    if (!score) return 0;
+    total += score;
+  }
+  return total;
+};
+
+const readRecentItems = () => {
+  try {
+    const raw = window.localStorage.getItem(searchStorageKey);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+const writeRecentItems = (items) => {
+  try {
+    window.localStorage.setItem(searchStorageKey, JSON.stringify(items));
+  } catch (error) {
+    // Ignore storage errors.
+  }
+};
+
+const storeRecentItem = (item) => {
+  if (!item || !item.slug) return;
+  const entries = readRecentItems();
+  const existing = entries.find((entry) => entry.slug === item.slug) || {};
+  const next = {
+    slug: item.slug,
+    name: item.name || existing.name || '',
+    category: item.category || existing.category || '',
+    image: item.image || existing.image || '',
+    shortDescription: item.shortDescription || existing.shortDescription || '',
+    price: Number.isFinite(item.price) ? item.price : existing.price,
+    ts: Date.now()
+  };
+  const merged = [next, ...entries.filter((entry) => entry.slug !== item.slug)].slice(0, recentResultLimit);
+  writeRecentItems(merged);
+};
+
+const storeRecentSlug = (slug) => {
+  if (!slug) return;
+  storeRecentItem({ slug });
+};
+
+const buildSearchIndex = async () => {
+  const data = await fetchJson(menuApiUrl);
+  const categories = Array.isArray(data.categories) ? data.categories : [];
+  const items = Array.isArray(data.items) ? data.items : [];
+  const categoryMap = new Map(categories.map((category) => [category.slug, category]));
+
+  const indexedItems = items.map((item) => {
+    const category = categoryMap.get(item.category) || {};
+    return {
+      type: 'item',
+      slug: item.slug,
+      title: item.name,
+      description: item.shortDescription,
+      image: item.image,
+      price: item.price,
+      categorySlug: item.category,
+      categoryName: category.name || item.category,
+      tags: item.tags || [],
+      ingredients: item.ingredients || [],
+      href: getItemPageHref(item.slug)
+    };
+  });
+
+  const indexedCategories = categories.map((category) => ({
+    type: 'category',
+    slug: category.slug,
+    title: category.name,
+    description: category.description,
+    english: category.english,
+    tagline: category.tagline,
+    href: getCategoryPageHref(category.slug)
+  }));
+
+  const indexedPages = [
+    {
+      type: 'page',
+      title: '品牌首頁',
+      description: 'La Miu 首頁、理念與空間敘事',
+      keywords: '首頁 品牌 故事 空間',
+      href: 'index.html'
+    },
+    {
+      type: 'page',
+      title: '線上訂位',
+      description: '填寫訂位資訊，預留晨間座位',
+      keywords: '訂位 預約 reserve',
+      href: 'index.html#reserve'
+    },
+    {
+      type: 'page',
+      title: '菜單總覽',
+      description: '完整菜單分類與推薦品項',
+      keywords: '菜單 總覽 menu',
+      href: 'menu.html'
+    },
+    {
+      type: 'page',
+      title: '季節餐點',
+      description: '當季限定餐點與推薦',
+      keywords: '季節 餐點 限定 seasonal',
+      href: 'menu.html#seasonal-menu'
+    },
+    {
+      type: 'page',
+      title: '早餐頁',
+      description: '招牌早餐盤與晨食選擇',
+      keywords: '早餐 brunch',
+      href: 'breakfast.html'
+    },
+    {
+      type: 'page',
+      title: '咖啡頁',
+      description: '手沖咖啡與咖啡飲品',
+      keywords: '咖啡 coffee',
+      href: 'coffee.html'
+    },
+    {
+      type: 'page',
+      title: '甜點頁',
+      description: '甜點與午茶選擇',
+      keywords: '甜點 dessert',
+      href: 'dessert.html'
+    }
+  ];
+
+  return {
+    items: indexedItems,
+    categories: indexedCategories,
+    pages: indexedPages,
+    categoryMap
+  };
+};
+
+const getSearchIndex = async () => {
+  if (!searchIndexPromise) {
+    searchIndexPromise = buildSearchIndex().catch((error) => {
+      console.error(error);
+      return { items: [], categories: [], pages: [], categoryMap: new Map() };
+    });
+  }
+  return searchIndexPromise;
+};
 
 const finishLoadingAfterReady = () => {
   if (document.readyState === 'complete') {
@@ -251,7 +441,7 @@ const createMenuCard = (item) => `
       <h3>${item.name}</h3>
       <p>${item.shortDescription}</p>
       <span class="price">${formatPrice(item.price)}</span>
-      <a class="text-link" href="${getItemPageHref(item.slug)}">查看單品介紹</a>
+      <a class="text-link" href="${getItemPageHref(item.slug)}" data-item-link data-item-slug="${item.slug}" data-item-name="${item.name}" data-item-category="${item.category}" data-item-image="${item.image}" data-item-price="${item.price}" data-item-short="${item.shortDescription}">查看單品介紹</a>
     </div>
   </article>
 `;
@@ -263,7 +453,7 @@ const createCategoryDishCard = (item) => `
       <h3>${item.name}</h3>
       <p>${item.shortDescription}</p>
       <span class="price">${formatPrice(item.price)}</span>
-      <a class="text-link" href="${getItemPageHref(item.slug)}">查看單品介紹</a>
+      <a class="text-link" href="${getItemPageHref(item.slug)}" data-item-link data-item-slug="${item.slug}" data-item-name="${item.name}" data-item-category="${item.category}" data-item-image="${item.image}" data-item-price="${item.price}" data-item-short="${item.shortDescription}">查看單品介紹</a>
     </div>
   </article>
 `;
@@ -275,7 +465,7 @@ const createSeasonalCard = (item) => `
       <h3>${item.name}</h3>
       <p>${item.shortDescription}</p>
       <span class="price">${formatPrice(item.price)}</span>
-      <a class="text-link text-link--light" href="${getItemPageHref(item.slug)}">查看詳情</a>
+      <a class="text-link text-link--light" href="${getItemPageHref(item.slug)}" data-item-link data-item-slug="${item.slug}" data-item-name="${item.name}" data-item-category="${item.category}" data-item-image="${item.image}" data-item-price="${item.price}" data-item-short="${item.shortDescription}">查看詳情</a>
     </div>
   </article>
 `;
