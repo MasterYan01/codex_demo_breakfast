@@ -8,7 +8,7 @@ const reservationForm = document.querySelector('#reservation-form');
 const reservationDate = document.querySelector('#reservation-date');
 const reservationStatus = document.querySelector('#reservation-status');
 const revealNodes = document.querySelectorAll('.reveal-on-scroll');
-const navLinks = Array.from(document.querySelectorAll('.nav a[href^="#"]'));
+const navLinks = Array.from(document.querySelectorAll('.nav a[href^="#"], .menu-pills a[href^="#"]'));
 const sectionTargets = navLinks
   .map((link) => document.querySelector(link.getAttribute('href')))
   .filter(Boolean);
@@ -875,6 +875,146 @@ const setupDietaryFilterPanel = (panel, items, grid, renderer) => {
   render();
 };
 
+const getAvailabilityBucket = (availability) => {
+  const text = safeText(availability);
+  if (!text) return '';
+  if (text.includes('週末')) return 'weekend';
+  if (text.includes('全時段') || text.includes('輪替') || text.includes('每日')) return 'all-day';
+  if (text.includes('季節') || text.includes('限定') || text.includes('春') || text.includes('夏') || text.includes('秋') || text.includes('冬')) {
+    return 'seasonal';
+  }
+  return '';
+};
+
+const isPopularItem = (item) => {
+  const tags = item.tags || [];
+  return tags.some((tag) => ['人氣', '招牌', '主廚推薦'].some((keyword) => tag.includes(keyword)));
+};
+
+const sortMenuItems = (items, sortKey, orderMap) => {
+  const sorted = [...items];
+  switch (sortKey) {
+    case 'price-asc':
+      sorted.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
+      return sorted;
+    case 'price-desc':
+      sorted.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
+      return sorted;
+    case 'popular':
+      sorted.sort((a, b) => getPopularityScore(b) - getPopularityScore(a));
+      return sorted;
+    default:
+      sorted.sort((a, b) => (orderMap.get(a.slug) ?? 0) - (orderMap.get(b.slug) ?? 0));
+      return sorted;
+  }
+};
+
+const setupMenuQuickFilters = (panel, items, grid, renderer) => {
+  if (!panel || !grid) return;
+  const toggleButtons = Array.from(panel.querySelectorAll('.filter-toggle'));
+  const clearButton = panel.querySelector('.filter-clear');
+  const sortSelect = panel.querySelector('[data-filter-sort]');
+  const statusNode = panel.parentElement ? panel.parentElement.querySelector('[data-filter-status]') : null;
+  const totalCount = items.length;
+  const orderMap = new Map(items.map((item, index) => [item.slug, index]));
+  const priceMatchers = {
+    'under-200': (price) => price <= 200,
+    '200-300': (price) => price > 200 && price <= 300,
+    '300-400': (price) => price > 300 && price <= 400,
+    'over-400': (price) => price > 400
+  };
+
+  const buildState = () => {
+    const state = {
+      price: new Set(),
+      dietary: new Set(),
+      availability: new Set(),
+      popularity: false
+    };
+    toggleButtons.forEach((button) => {
+      if (button.getAttribute('aria-pressed') !== 'true') return;
+      const group = button.dataset.filterGroup;
+      const value = button.dataset.filterValue;
+      if (group === 'popularity') {
+        state.popularity = true;
+        return;
+      }
+      if (group && value && state[group]) {
+        state[group].add(value);
+      }
+    });
+    return state;
+  };
+
+  const applyFilters = () => {
+    const state = buildState();
+    let filtered = [...items];
+
+    if (state.price.size) {
+      filtered = filtered.filter((item) => {
+        const price = Number(item.price || 0);
+        return [...state.price].some((key) => (priceMatchers[key] ? priceMatchers[key](price) : false));
+      });
+    }
+
+    if (state.availability.size) {
+      filtered = filtered.filter((item) => state.availability.has(getAvailabilityBucket(item.availability)));
+    }
+
+    if (state.dietary.size) {
+      filtered = filterItemsByDietary(filtered, [...state.dietary]);
+    }
+
+    if (state.popularity) {
+      filtered = filtered.filter((item) => isPopularItem(item));
+    }
+
+    const sortKey = sortSelect ? sortSelect.value : 'default';
+    filtered = sortMenuItems(filtered, sortKey, orderMap);
+
+    if (statusNode) {
+      statusNode.textContent = `顯示 ${filtered.length} / ${totalCount} 項`;
+    }
+
+    if (!filtered.length) {
+      grid.innerHTML = '<div class="menu-filter-empty">目前沒有符合條件的品項。</div>';
+      return;
+    }
+
+    grid.innerHTML = filtered.map(renderer).join('');
+  };
+
+  const toggleButton = (button) => {
+    const isActive = button.getAttribute('aria-pressed') === 'true';
+    button.setAttribute('aria-pressed', String(!isActive));
+    button.classList.toggle('is-active', !isActive);
+  };
+
+  toggleButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      toggleButton(button);
+      applyFilters();
+    });
+  });
+
+  if (sortSelect) {
+    sortSelect.addEventListener('change', applyFilters);
+  }
+
+  if (clearButton) {
+    clearButton.addEventListener('click', () => {
+      toggleButtons.forEach((button) => {
+        button.setAttribute('aria-pressed', 'false');
+        button.classList.remove('is-active');
+      });
+      if (sortSelect) sortSelect.value = 'default';
+      applyFilters();
+    });
+  }
+
+  applyFilters();
+};
+
 const buildItemResultCard = (result) => {
   const priceText = Number.isFinite(result.price) ? formatPrice(result.price) : '';
   const meta = result.categoryName && priceText
@@ -1239,9 +1379,12 @@ const renderMenuOverview = async () => {
     hotGrid.innerHTML = getHotItems(data.items).map(createMenuCard).join('');
   }
 
+  const filterToolbar = document.querySelector('[data-menu-filter]');
   const filterPanel = document.querySelector('[data-filter-target="menu-filter-grid"]');
   const filterGrid = document.querySelector('#menu-filter-grid');
-  if (filterPanel && filterGrid) {
+  if (filterToolbar && filterGrid) {
+    setupMenuQuickFilters(filterToolbar, data.items, filterGrid, createMenuCard);
+  } else if (filterPanel && filterGrid) {
     setupDietaryFilterPanel(filterPanel, data.items, filterGrid, createMenuCard);
   }
 };
@@ -1518,5 +1661,3 @@ setupGlobalSearch();
 setupQuickPreview();
 finishLoadingAfterReady();
 initDataDrivenPages();
-
-
