@@ -66,6 +66,26 @@
         <div class="section-heading"><div><p class="eyebrow">Seasonal Picks</p><h2>季節限定餐點</h2></div></div>
         <div class="seasonal-grid" id="seasonal-grid"></div>
       </section>
+
+      <section class="menu-filter-section reveal-on-scroll" data-reveal="section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Dietary Filters</p>
+            <h2>依飲食偏好篩選</h2>
+          </div>
+        </div>
+        <div class="menu-filter-panel" data-filter-target="menu-filter-grid">
+          <div class="menu-filter-options">
+            <label class="filter-chip"><input type="checkbox" value="vegetarian"><span>素食</span></label>
+            <label class="filter-chip"><input type="checkbox" value="eggDairy"><span>含蛋奶</span></label>
+            <label class="filter-chip"><input type="checkbox" value="nuts"><span>含堅果</span></label>
+            <label class="filter-chip"><input type="checkbox" value="glutenFree"><span>無麩質</span></label>
+          </div>
+          <button class="filter-clear" type="button">清除</button>
+        </div>
+        <p class="menu-filter-status" data-filter-status>顯示 0 / 0 項</p>
+        <div class="menu-list-grid" id="menu-filter-grid"></div>
+      </section>
     </main>
 
     <footer class="site-footer reveal-on-scroll" data-reveal="footer">

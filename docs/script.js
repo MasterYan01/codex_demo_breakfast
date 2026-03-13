@@ -24,6 +24,14 @@ const searchStorageKey = 'la_miu_recent_items_v1';
 const searchResultLimit = 8;
 const recentResultLimit = 6;
 let searchIndexPromise = null;
+const reservationSlotCapacities = {
+  '09:00': 8,
+  '10:30': 10,
+  '12:00': 12,
+  '13:30': 10,
+  '15:00': 8
+};
+const reservationDurationMinutes = 90;
 
 const getHeaderOffset = () => (header ? header.getBoundingClientRect().height + 24 : 96);
 const appConfig = window.LA_MIU_CONFIG || {};
@@ -40,6 +48,63 @@ const safeText = (value) => String(value || '').trim();
 const formatPrice = (value) => `NT$ ${Number(value || 0)}`;
 const getCategoryPageHref = (slug) => `${slug}.html`;
 const getItemPageHref = (slug) => `item.html?slug=${encodeURIComponent(slug)}`;
+
+const dietaryKeywords = {
+  meat: ['培根', '火腿', '鮭魚', '鴨', '雞', '豬', '牛肉', '羊', '海鮮', '蝦', '蟹', '貝', '魚', '牛排'],
+  eggDairy: ['蛋', '雞蛋', '水波蛋', '半熟蛋', '荷蘭醬', '牛奶', '鮮奶', '奶油', '鮮奶油', '乳酪', '起司', '優格', '奶泡', '奶霜', '奶香', '奶茶'],
+  nuts: ['堅果', '杏仁', '核桃', '腰果', '榛果', '花生', '胡桃', '開心果'],
+  gluten: ['麵包', '吐司', '麵粉', '麵團', '鬆餅', '蛋糕', '塔殼', '餅乾', '布里歐', '司康', '義大利麵', '麵條', '麩']
+};
+
+const dietaryBadgeConfig = [
+  { key: 'vegetarian', label: '素食', className: 'tag-pill--veg' },
+  { key: 'eggDairy', label: '含蛋奶', className: 'tag-pill--egg' },
+  { key: 'nuts', label: '含堅果', className: 'tag-pill--nut' },
+  { key: 'glutenFree', label: '無麩質', className: 'tag-pill--gf' }
+];
+
+const buildItemText = (item) => normalizeText([
+  item.name,
+  item.shortDescription,
+  item.description,
+  ...(item.tags || []),
+  ...(item.ingredients || [])
+].join(' '));
+
+const hasKeyword = (text, keywords) => keywords.some((keyword) => text.includes(keyword));
+
+const getDietaryProfile = (item) => {
+  if (item && item._dietary) return item._dietary;
+  const text = buildItemText(item);
+  const tagText = normalizeText((item.tags || []).join(' '));
+  const vegetarianTag = tagText.includes('素食') || tagText.includes('蔬食');
+  const glutenFreeTag = tagText.includes('無麩質');
+  const eggDairyTag = tagText.includes('含蛋奶');
+  const nutTag = tagText.includes('含堅果');
+  const hasMeat = hasKeyword(text, dietaryKeywords.meat);
+  const hasEggDairy = eggDairyTag || hasKeyword(text, dietaryKeywords.eggDairy);
+  const hasNuts = nutTag || hasKeyword(text, dietaryKeywords.nuts);
+  const hasGluten = hasKeyword(text, dietaryKeywords.gluten);
+  const profile = {
+    vegetarian: vegetarianTag ? true : !hasMeat,
+    eggDairy: hasEggDairy,
+    nuts: hasNuts,
+    glutenFree: glutenFreeTag ? true : !hasGluten
+  };
+  if (item) {
+    item._dietary = profile;
+  }
+  return profile;
+};
+
+const getDietaryBadgesHtml = (item) => {
+  const profile = getDietaryProfile(item);
+  const tags = dietaryBadgeConfig
+    .filter((badge) => profile[badge.key])
+    .map((badge) => `<span class="tag-pill ${badge.className}">${badge.label}</span>`)
+    .join('');
+  return tags ? `<div class="menu-item-tags">${tags}</div>` : '';
+};
 
 const normalizeText = (value) => safeText(value).toLowerCase();
 const tokenizeQuery = (query) => normalizeText(query).split(/\s+/).filter(Boolean);
@@ -297,6 +362,153 @@ const setReservationMinDate = () => {
   reservationDate.min = `${yyyy}-${mm}-${dd}`;
 };
 
+const getTodayString = () => {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+const hashString = (value) => {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash << 5) - hash + value.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+};
+
+const getRemainingSeats = (date, time) => {
+  if (!date || !time) return 0;
+  const capacity = reservationSlotCapacities[time] || 6;
+  const hash = hashString(`${date}-${time}`);
+  const reserved = hash % (capacity + 2);
+  const day = new Date(date).getDay();
+  const weekendPenalty = day === 0 || day === 6 ? 1 : 0;
+  return Math.max(0, capacity - reserved - weekendPenalty);
+};
+
+const formatIcsDate = (date) => {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  const hh = String(date.getHours()).padStart(2, '0');
+  const min = String(date.getMinutes()).padStart(2, '0');
+  return `${yyyy}${mm}${dd}T${hh}${min}00`;
+};
+
+const formatGoogleDate = (date) => {
+  const iso = date.toISOString().replace(/[-:]/g, '').split('.')[0];
+  return `${iso}Z`;
+};
+
+const formatUtcStamp = (date) => date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+const escapeIcsText = (value) => safeText(value).replace(/,/g, '\\,').replace(/;/g, '\\;').replace(/\n/g, '\\n');
+
+const buildReservationCalendarLinks = (payload) => {
+  const googleLink = document.querySelector('#calendar-google');
+  const icsLink = document.querySelector('#calendar-ics');
+  if (!googleLink || !icsLink) return;
+
+  const start = new Date(`${payload.date}T${payload.time}:00`);
+  const end = new Date(start.getTime() + reservationDurationMinutes * 60000);
+  const title = '樂沐 La Miu 訂位';
+  const location = '台南市中西區衛民街129號';
+  const details = `訂位姓名：${payload.name}\n人數：${payload.guests} 位\n備註：${payload.notes || '無'}`;
+
+  const googleParams = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title,
+    dates: `${formatGoogleDate(start)}/${formatGoogleDate(end)}`,
+    details,
+    location
+  });
+  googleLink.href = `https://www.google.com/calendar/render?${googleParams.toString()}`;
+
+  const icsLines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//La Miu//Reservation//ZH-TW',
+    'BEGIN:VEVENT',
+    `UID:${Date.now()}@lamiu`,
+    `DTSTAMP:${formatUtcStamp(new Date())}`,
+    `DTSTART:${formatIcsDate(start)}`,
+    `DTEND:${formatIcsDate(end)}`,
+    `SUMMARY:${escapeIcsText(title)}`,
+    `LOCATION:${escapeIcsText(location)}`,
+    `DESCRIPTION:${escapeIcsText(details)}`,
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ];
+  icsLink.href = `data:text/calendar;charset=utf-8,${encodeURIComponent(icsLines.join('\n'))}`;
+};
+
+const setupAvailabilityPanel = () => {
+  if (!reservationForm) return null;
+  const timeSelect = reservationForm.querySelector('select[name="time"]');
+  const availabilitySlots = document.querySelector('#availability-slots');
+  const availabilityNote = document.querySelector('#availability-note');
+  if (!timeSelect || !availabilitySlots) return null;
+
+  if (reservationDate && !reservationDate.value) {
+    reservationDate.value = getTodayString();
+  }
+
+  const options = Array.from(timeSelect.options).filter((option) => option.value);
+  options.forEach((option) => {
+    if (!option.dataset.baseLabel) {
+      option.dataset.baseLabel = option.textContent;
+    }
+  });
+
+  const render = () => {
+    const dateValue = reservationDate?.value || getTodayString();
+    let availableCount = 0;
+    options.forEach((option) => {
+      const remaining = getRemainingSeats(dateValue, option.value);
+      const label = remaining > 0 ? `剩餘 ${remaining}` : '已滿';
+      option.textContent = `${option.dataset.baseLabel}（${label}）`;
+      option.disabled = remaining <= 0;
+      if (remaining > 0) availableCount += 1;
+    });
+
+    const selectedOption = options.find((option) => option.value === timeSelect.value);
+    if (selectedOption && selectedOption.disabled) {
+      timeSelect.value = '';
+    }
+
+    if (availabilityNote) {
+      availabilityNote.textContent = `${dateValue} 可預約時段 ${availableCount} / ${options.length}`;
+    }
+
+    availabilitySlots.innerHTML = options.map((option) => {
+      const remaining = getRemainingSeats(dateValue, option.value);
+      const isSelected = timeSelect.value === option.value;
+      const isFull = remaining <= 0;
+      return `
+        <button type="button" class="availability-slot${isSelected ? ' is-selected' : ''}${isFull ? ' is-full' : ''}" data-time="${option.value}" ${isFull ? 'disabled' : ''}>
+          <span class="availability-slot__time">${option.value}</span>
+          <span class="availability-slot__meta">${isFull ? '已滿' : `剩餘 ${remaining}`}</span>
+        </button>
+      `;
+    }).join('');
+  };
+
+  availabilitySlots.addEventListener('click', (event) => {
+    const target = event.target.closest('[data-time]');
+    if (!target || target.disabled) return;
+    timeSelect.value = target.dataset.time;
+    render();
+  });
+
+  reservationDate?.addEventListener('change', render);
+  timeSelect.addEventListener('change', render);
+  render();
+  return { render };
+};
+
 const validateReservation = (formData) => {
   const name = safeText(formData.get('name'));
   const phone = safeText(formData.get('phone'));
@@ -317,6 +529,10 @@ const validateReservation = (formData) => {
     return '請輸入正確的 Email 格式。';
   }
 
+  if (getRemainingSeats(date, time) <= 0) {
+    return '該時段已滿，請選擇其他時段。';
+  }
+
   return '';
 };
 
@@ -329,6 +545,16 @@ const updateReservationStatus = (message, status) => {
 const setupReservationForm = () => {
   if (!reservationForm) return;
   setReservationMinDate();
+  const availability = setupAvailabilityPanel();
+  const successPanel = document.querySelector('#reservation-success');
+  const successSummary = document.querySelector('#reservation-success-summary');
+  const hideSuccess = () => {
+    if (successPanel) {
+      successPanel.hidden = true;
+    }
+  };
+
+  reservationForm.addEventListener('input', hideSuccess);
   reservationForm.addEventListener('submit', (event) => {
     event.preventDefault();
     const formData = new FormData(reservationForm);
@@ -339,10 +565,28 @@ const setupReservationForm = () => {
       return;
     }
 
-    const summary = `${formData.get('date')} ${formData.get('time')}，${formData.get('guests')} 位，${formData.get('name')}。`;
+    const payload = {
+      date: safeText(formData.get('date')),
+      time: safeText(formData.get('time')),
+      guests: safeText(formData.get('guests')),
+      name: safeText(formData.get('name')),
+      notes: safeText(formData.get('notes'))
+    };
+    const summary = `${payload.date} ${payload.time}，${payload.guests} 位，${payload.name}。`;
     updateReservationStatus(`訂位需求已送出：${summary} 我們將以電話或 Email 與你確認。`, 'success');
+    buildReservationCalendarLinks(payload);
+    if (successSummary) {
+      successSummary.textContent = `預約完成：${summary} 可點擊下方加入行事曆。`;
+    }
+    if (successPanel) {
+      successPanel.hidden = false;
+    }
     reservationForm.reset();
     setReservationMinDate();
+    if (reservationDate) {
+      reservationDate.value = getTodayString();
+    }
+    availability?.render();
   });
 };
 
@@ -440,6 +684,7 @@ const createMenuCard = (item) => `
     <div class="menu-item-copy">
       <h3>${item.name}</h3>
       <p>${item.shortDescription}</p>
+      ${getDietaryBadgesHtml(item)}
       <span class="price">${formatPrice(item.price)}</span>
       <a class="text-link" href="${getItemPageHref(item.slug)}" data-item-link data-item-slug="${item.slug}" data-item-name="${item.name}" data-item-category="${item.category}" data-item-image="${item.image}" data-item-price="${item.price}" data-item-short="${item.shortDescription}">查看單品介紹</a>
     </div>
@@ -452,6 +697,7 @@ const createCategoryDishCard = (item) => `
     <div class="category-dish-copy">
       <h3>${item.name}</h3>
       <p>${item.shortDescription}</p>
+      ${getDietaryBadgesHtml(item)}
       <span class="price">${formatPrice(item.price)}</span>
       <a class="text-link" href="${getItemPageHref(item.slug)}" data-item-link data-item-slug="${item.slug}" data-item-name="${item.name}" data-item-category="${item.category}" data-item-image="${item.image}" data-item-price="${item.price}" data-item-short="${item.shortDescription}">查看單品介紹</a>
     </div>
@@ -464,6 +710,7 @@ const createSeasonalCard = (item) => `
       <p class="eyebrow small">${item.tags.join(' / ')}</p>
       <h3>${item.name}</h3>
       <p>${item.shortDescription}</p>
+      ${getDietaryBadgesHtml(item)}
       <span class="price">${formatPrice(item.price)}</span>
       <a class="text-link text-link--light" href="${getItemPageHref(item.slug)}" data-item-link data-item-slug="${item.slug}" data-item-name="${item.name}" data-item-category="${item.category}" data-item-image="${item.image}" data-item-price="${item.price}" data-item-short="${item.shortDescription}">查看詳情</a>
     </div>
@@ -495,6 +742,46 @@ const getRecentDisplayItems = (index) => {
       href: getItemPageHref(entry.slug)
     };
   }).filter((result) => result.title);
+};
+
+const filterItemsByDietary = (items, activeFilters) => {
+  if (!activeFilters.length) return items;
+  return items.filter((item) => {
+    const profile = getDietaryProfile(item);
+    return activeFilters.every((key) => profile[key]);
+  });
+};
+
+const setupDietaryFilterPanel = (panel, items, grid, renderer) => {
+  if (!panel || !grid) return;
+  const inputs = Array.from(panel.querySelectorAll('input[type="checkbox"]'));
+  const clearButton = panel.querySelector('.filter-clear');
+  const statusNode = panel.parentElement ? panel.parentElement.querySelector('[data-filter-status]') : null;
+  const totalCount = items.length;
+
+  const render = () => {
+    const activeFilters = inputs.filter((input) => input.checked).map((input) => input.value);
+    const filtered = filterItemsByDietary(items, activeFilters);
+    if (statusNode) {
+      statusNode.textContent = `顯示 ${filtered.length} / ${totalCount} 項`;
+    }
+    if (!filtered.length) {
+      grid.innerHTML = '<div class="menu-filter-empty">目前沒有符合條件的品項。</div>';
+      return;
+    }
+    grid.innerHTML = filtered.map(renderer).join('');
+  };
+
+  inputs.forEach((input) => input.addEventListener('change', render));
+  if (clearButton) {
+    clearButton.addEventListener('click', () => {
+      inputs.forEach((input) => {
+        input.checked = false;
+      });
+      render();
+    });
+  }
+  render();
 };
 
 const buildItemResultCard = (result) => {
@@ -757,6 +1044,12 @@ const renderMenuOverview = async () => {
   featuredGrid.innerHTML = data.items.slice(0, 4).map(createMenuCard).join('');
   const seasonalItems = data.items.filter((item) => Array.isArray(item.tags) && item.tags.includes('季節限定')).slice(0, 3);
   seasonalGrid.innerHTML = seasonalItems.map(createSeasonalCard).join('');
+
+  const filterPanel = document.querySelector('[data-filter-target="menu-filter-grid"]');
+  const filterGrid = document.querySelector('#menu-filter-grid');
+  if (filterPanel && filterGrid) {
+    setupDietaryFilterPanel(filterPanel, data.items, filterGrid, createMenuCard);
+  }
 };
 
 const renderCategoryPage = async () => {
@@ -785,7 +1078,12 @@ const renderCategoryPage = async () => {
 
   const listGrid = document.querySelector('#category-list-grid');
   if (listGrid) {
-    listGrid.innerHTML = items.map(createCategoryDishCard).join('');
+    const filterPanel = document.querySelector('[data-filter-target="category-list-grid"]');
+    if (filterPanel) {
+      setupDietaryFilterPanel(filterPanel, items, listGrid, createCategoryDishCard);
+    } else {
+      listGrid.innerHTML = items.map(createCategoryDishCard).join('');
+    }
     listGrid.classList.toggle('category-list-grid--three', items.length <= 6 && slug !== 'breakfast');
   }
 
@@ -836,7 +1134,12 @@ const renderItemDetailPage = async () => {
 
   const tagsNode = document.querySelector('#item-tags');
   if (tagsNode) {
-    tagsNode.innerHTML = (item.tags || []).map((tag) => `<span class="tag">${tag}</span>`).join('');
+    const dietary = getDietaryProfile(item);
+    const dietaryTags = dietaryBadgeConfig
+      .filter((badge) => dietary[badge.key])
+      .map((badge) => badge.label);
+    const combinedTags = [...(item.tags || []), ...dietaryTags];
+    tagsNode.innerHTML = combinedTags.map((tag) => `<span class="tag">${tag}</span>`).join('');
   }
 
   const relatedGrid = document.querySelector('#related-items-grid');
