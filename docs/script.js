@@ -479,6 +479,270 @@ const createCategoryEntry = (category, count) => `
   </a>
 `;
 
+const getRecentDisplayItems = (index) => {
+  const entries = readRecentItems();
+  const itemMap = new Map((index.items || []).map((item) => [item.slug, item]));
+  return entries.map((entry) => {
+    const item = itemMap.get(entry.slug) || {};
+    return {
+      type: 'item',
+      slug: entry.slug,
+      title: entry.name || item.title || entry.slug,
+      description: entry.shortDescription || item.description || '',
+      image: entry.image || item.image || '',
+      price: Number.isFinite(entry.price) ? entry.price : item.price,
+      categoryName: entry.category || item.categoryName || '',
+      href: getItemPageHref(entry.slug)
+    };
+  }).filter((result) => result.title);
+};
+
+const buildItemResultCard = (result) => {
+  const priceText = Number.isFinite(result.price) ? formatPrice(result.price) : '';
+  const meta = result.categoryName && priceText
+    ? `${result.categoryName} · ${priceText}`
+    : (result.categoryName || priceText);
+  return `
+    <a class="search-result" href="${result.href}" data-item-link data-item-slug="${result.slug}" data-item-name="${result.title}" data-item-category="${result.categoryName}" data-item-image="${result.image}" data-item-price="${result.price}" data-item-short="${result.description}" data-result-type="item">
+      <div class="search-result__thumb" style="background-image:url('${result.image}')"></div>
+      <div class="search-result__copy">
+        <strong>${result.title}</strong>
+        <p>${result.description || ''}</p>
+        ${meta ? `<span class="search-result__meta">${meta}</span>` : ''}
+      </div>
+    </a>
+  `;
+};
+
+const buildCategoryResultCard = (result) => `
+  <a class="search-result" href="${result.href}" data-result-type="category">
+    <div class="search-result__thumb search-result__thumb--icon">分類</div>
+    <div class="search-result__copy">
+      <strong>${result.title}</strong>
+      <p>${result.description || result.tagline || ''}</p>
+      <span class="search-result__meta">分類</span>
+    </div>
+  </a>
+`;
+
+const buildPageResultCard = (result) => `
+  <a class="search-result" href="${result.href}" data-result-type="page">
+    <div class="search-result__thumb search-result__thumb--icon">頁面</div>
+    <div class="search-result__copy">
+      <strong>${result.title}</strong>
+      <p>${result.description || ''}</p>
+      <span class="search-result__meta">頁面</span>
+    </div>
+  </a>
+`;
+
+const buildSearchGroup = (title, content) => `
+  <div class="search-group">
+    <div class="search-group__title">${title}</div>
+    <div class="search-group__list">
+      ${content}
+    </div>
+  </div>
+`;
+
+const renderSearchResults = async (panel, query) => {
+  const resultsNode = panel.querySelector('.search-results');
+  const titleNode = panel.querySelector('.search-panel__title');
+  const hintNode = panel.querySelector('.search-panel__hint');
+  if (!resultsNode || !titleNode || !hintNode) return;
+
+  const index = await getSearchIndex();
+  const trimmedQuery = safeText(query);
+  const hasQuery = Boolean(trimmedQuery);
+
+  if (!hasQuery) {
+    const recentItems = getRecentDisplayItems(index);
+    const recentHtml = recentItems.length
+      ? recentItems.map(buildItemResultCard).join('')
+      : '<div class="search-empty">還沒有最近瀏覽的單品，試著點選菜單項目吧。</div>';
+    const quickLinks = index.pages.slice(0, 4).map(buildPageResultCard).join('');
+    const quickHtml = quickLinks ? buildSearchGroup('快速連結', quickLinks) : '';
+
+    titleNode.textContent = '最近項目';
+    hintNode.textContent = '輸入關鍵字可進行模糊搜尋';
+    resultsNode.innerHTML = buildSearchGroup('最近瀏覽', recentHtml) + quickHtml;
+    return;
+  }
+
+  const scoredItems = index.items.map((item) => {
+    const fields = [
+      { text: item.title, weight: 3.2 },
+      { text: item.description, weight: 2 },
+      { text: item.categoryName, weight: 1.4 },
+      { text: item.tags.join(' '), weight: 1.4 },
+      { text: item.ingredients.join(' '), weight: 1.2 }
+    ];
+    const score = fields.reduce((max, field) => Math.max(max, scoreText(trimmedQuery, field.text) * field.weight), 0);
+    return { item, score };
+  }).filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, searchResultLimit)
+    .map((entry) => entry.item);
+
+  const scoredCategories = index.categories.map((category) => {
+    const fields = [
+      { text: category.title, weight: 3 },
+      { text: category.english, weight: 1.4 },
+      { text: category.description, weight: 1.6 },
+      { text: category.tagline, weight: 1.4 }
+    ];
+    const score = fields.reduce((max, field) => Math.max(max, scoreText(trimmedQuery, field.text) * field.weight), 0);
+    return { category, score };
+  }).filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 4)
+    .map((entry) => entry.category);
+
+  const scoredPages = index.pages.map((page) => {
+    const fields = [
+      { text: page.title, weight: 2.6 },
+      { text: page.description, weight: 1.6 },
+      { text: page.keywords, weight: 1.4 }
+    ];
+    const score = fields.reduce((max, field) => Math.max(max, scoreText(trimmedQuery, field.text) * field.weight), 0);
+    return { page, score };
+  }).filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 4)
+    .map((entry) => entry.page);
+
+  const totalResults = scoredItems.length + scoredCategories.length + scoredPages.length;
+  titleNode.textContent = `搜尋結果（${totalResults}）`;
+  hintNode.textContent = '可直接點選跳轉內容';
+
+  if (!totalResults) {
+    resultsNode.innerHTML = '<div class="search-empty">找不到符合的內容，試著改用其他關鍵字。</div>';
+    return;
+  }
+
+  const itemHtml = scoredItems.length ? buildSearchGroup('菜單單品', scoredItems.map(buildItemResultCard).join('')) : '';
+  const categoryHtml = scoredCategories.length ? buildSearchGroup('菜單分類', scoredCategories.map(buildCategoryResultCard).join('')) : '';
+  const pageHtml = scoredPages.length ? buildSearchGroup('站內頁面', scoredPages.map(buildPageResultCard).join('')) : '';
+  resultsNode.innerHTML = itemHtml + categoryHtml + pageHtml;
+};
+
+const setupRecentItemTracking = () => {
+  document.addEventListener('click', (event) => {
+    const link = event.target.closest('a');
+    if (!link) return;
+    if (link.dataset.itemLink !== undefined) {
+      storeRecentItem({
+        slug: link.dataset.itemSlug,
+        name: link.dataset.itemName,
+        category: link.dataset.itemCategory,
+        image: link.dataset.itemImage,
+        price: Number(link.dataset.itemPrice),
+        shortDescription: link.dataset.itemShort
+      });
+      return;
+    }
+    const href = link.getAttribute('href') || '';
+    const match = href.match(/item\.html\?slug=([^&#]+)/);
+    if (match) {
+      storeRecentSlug(decodeURIComponent(match[1]));
+    }
+  });
+};
+
+const setupGlobalSearch = () => {
+  const nav = document.querySelector('.nav');
+  if (!nav || nav.querySelector('.nav-search-trigger')) return;
+
+  const trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = 'nav-search-trigger';
+  trigger.innerHTML = '<span>搜尋</span><span class="nav-search-trigger__hint">/</span>';
+  nav.appendChild(trigger);
+
+  const panel = document.createElement('div');
+  panel.className = 'search-panel';
+  panel.setAttribute('aria-hidden', 'true');
+  panel.innerHTML = `
+    <div class="search-panel__backdrop" data-search-close></div>
+    <div class="search-panel__content" role="dialog" aria-label="全站搜尋">
+      <div class="search-panel__bar">
+        <span class="search-panel__icon" aria-hidden="true"></span>
+        <input class="search-input" type="search" placeholder="搜尋菜單、分類或頁面" autocomplete="off" />
+        <button class="search-clear" type="button">清除</button>
+        <button class="search-close" type="button" data-search-close>Esc</button>
+      </div>
+      <div class="search-panel__meta">
+        <p class="search-panel__title">最近項目</p>
+        <span class="search-panel__hint">輸入關鍵字可進行模糊搜尋</span>
+      </div>
+      <div class="search-results" role="listbox" aria-label="搜尋結果"></div>
+    </div>
+  `;
+  document.body.appendChild(panel);
+
+  const input = panel.querySelector('.search-input');
+  const clearButton = panel.querySelector('.search-clear');
+  const closeButtons = panel.querySelectorAll('[data-search-close]');
+  let searchTimer = 0;
+
+  const openSearch = () => {
+    document.body.classList.add('search-open');
+    panel.setAttribute('aria-hidden', 'false');
+    window.setTimeout(() => {
+      input?.focus();
+      input?.select();
+    }, 0);
+    renderSearchResults(panel, input?.value || '');
+  };
+
+  const closeSearch = () => {
+    document.body.classList.remove('search-open');
+    panel.setAttribute('aria-hidden', 'true');
+  };
+
+  trigger.addEventListener('click', openSearch);
+  closeButtons.forEach((button) => button.addEventListener('click', closeSearch));
+
+  panel.addEventListener('click', (event) => {
+    if (event.target && event.target.closest('[data-search-close]')) {
+      closeSearch();
+    }
+    if (event.target && event.target.closest('.search-result')) {
+      closeSearch();
+    }
+  });
+
+  if (input) {
+    input.addEventListener('input', () => {
+      window.clearTimeout(searchTimer);
+      searchTimer = window.setTimeout(() => renderSearchResults(panel, input.value), 140);
+    });
+  }
+
+  if (clearButton) {
+    clearButton.addEventListener('click', () => {
+      if (!input) return;
+      input.value = '';
+      renderSearchResults(panel, '');
+      input.focus();
+    });
+  }
+
+  document.addEventListener('keydown', (event) => {
+    const target = event.target;
+    const isTypingField = target && (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable);
+    if (event.key === 'Escape' && document.body.classList.contains('search-open')) {
+      closeSearch();
+      return;
+    }
+    if (isTypingField) return;
+    if ((event.key === 'k' && (event.metaKey || event.ctrlKey)) || event.key === '/') {
+      event.preventDefault();
+      openSearch();
+    }
+  });
+};
+
 const renderMenuOverview = async () => {
   const data = await fetchJson(menuApiUrl);
   const categoryGrid = document.querySelector('#menu-category-grid');
@@ -539,6 +803,14 @@ const renderItemDetailPage = async () => {
   if (!slug) return;
   const payload = await fetchJson(`/api/items/${encodeURIComponent(slug)}`);
   const { item, category, related } = payload;
+  storeRecentItem({
+    slug: item.slug,
+    name: item.name,
+    category: item.category,
+    image: item.image,
+    shortDescription: item.shortDescription,
+    price: item.price
+  });
 
   const photo = document.querySelector('#item-detail-photo');
   if (photo) {
@@ -742,6 +1014,8 @@ window.addEventListener('scroll', requestScrollSync, { passive: true });
 window.addEventListener('resize', requestScrollSync);
 setupRevealAnimations();
 setupActiveSections();
+setupRecentItemTracking();
+setupGlobalSearch();
 finishLoadingAfterReady();
 initDataDrivenPages();
 
