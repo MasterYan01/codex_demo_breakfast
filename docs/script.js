@@ -923,6 +923,94 @@ const buildSearchGroup = (title, content) => `
   </div>
 `;
 
+const buildPreviewTags = (item) => {
+  const dietary = getDietaryProfile(item);
+  const dietaryTags = dietaryBadgeConfig
+    .filter((badge) => dietary[badge.key])
+    .map((badge) => badge.label);
+  const combinedTags = [...(item.tags || []), ...dietaryTags];
+  return combinedTags.map((tag) => `<span class="tag">${tag}</span>`).join('');
+};
+
+const setupQuickPreview = () => {
+  const modal = document.createElement('div');
+  modal.className = 'preview-modal';
+  modal.innerHTML = `
+    <div class="preview-backdrop" data-preview-close></div>
+    <div class="preview-card" role="dialog" aria-modal="true" aria-label="單品快速預覽">
+      <div class="preview-photo"></div>
+      <div class="preview-content">
+        <p class="eyebrow small">Quick Preview</p>
+        <h3 class="preview-title"></h3>
+        <p class="preview-description"></p>
+        <div class="preview-meta">
+          <div><span>價格</span><strong class="preview-price"></strong></div>
+          <div><span>供應</span><strong class="preview-availability"></strong></div>
+          <div><span>搭配</span><strong class="preview-pairing"></strong></div>
+        </div>
+        <div class="tag-cloud preview-tags"></div>
+        <div class="preview-actions">
+          <a class="btn btn-primary preview-link" href="#">查看單品介紹</a>
+          <button class="btn btn-secondary" type="button" data-preview-close>關閉</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  const photoNode = modal.querySelector('.preview-photo');
+  const titleNode = modal.querySelector('.preview-title');
+  const descNode = modal.querySelector('.preview-description');
+  const priceNode = modal.querySelector('.preview-price');
+  const availabilityNode = modal.querySelector('.preview-availability');
+  const pairingNode = modal.querySelector('.preview-pairing');
+  const tagsNode = modal.querySelector('.preview-tags');
+  const linkNode = modal.querySelector('.preview-link');
+
+  const open = (item) => {
+    if (!item) return;
+    if (photoNode) {
+      photoNode.style.backgroundImage = `url('${item.image}')`;
+    }
+    if (titleNode) titleNode.textContent = item.name || '';
+    if (descNode) descNode.textContent = item.description || item.shortDescription || '';
+    if (priceNode) priceNode.textContent = formatPrice(item.price);
+    if (availabilityNode) availabilityNode.textContent = item.availability || '依現場供應';
+    if (pairingNode) pairingNode.textContent = item.pairing || '請洽現場';
+    if (tagsNode) tagsNode.innerHTML = buildPreviewTags(item);
+    if (linkNode) linkNode.href = getItemPageHref(item.slug);
+    document.body.classList.add('preview-open');
+    modal.classList.add('is-visible');
+  };
+
+  const close = () => {
+    document.body.classList.remove('preview-open');
+    modal.classList.remove('is-visible');
+  };
+
+  modal.addEventListener('click', (event) => {
+    if (event.target && event.target.closest('[data-preview-close]')) {
+      close();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modal.classList.contains('is-visible')) {
+      close();
+    }
+  });
+
+  document.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-preview-slug]');
+    if (!trigger) return;
+    const slug = trigger.dataset.previewSlug;
+    const item = menuItemLookup.get(slug);
+    if (item) {
+      open(item);
+    }
+  });
+};
+
 const renderSearchResults = async (panel, query) => {
   const resultsNode = panel.querySelector('.search-results');
   const titleNode = panel.querySelector('.search-panel__title');
@@ -1123,6 +1211,7 @@ const setupGlobalSearch = () => {
 
 const renderMenuOverview = async () => {
   const data = await fetchJson(menuApiUrl);
+  cacheMenuItems(data.items);
   const categoryGrid = document.querySelector('#menu-category-grid');
   const featuredGrid = document.querySelector('#menu-featured-grid');
   const seasonalGrid = document.querySelector('#seasonal-grid');
@@ -1136,6 +1225,20 @@ const renderMenuOverview = async () => {
   const seasonalItems = data.items.filter((item) => Array.isArray(item.tags) && item.tags.includes('季節限定')).slice(0, 3);
   seasonalGrid.innerHTML = seasonalItems.map(createSeasonalCard).join('');
 
+  const todayGrid = document.querySelector('#today-picks-grid');
+  const hotGrid = document.querySelector('#hot-picks-grid');
+  const todayNote = document.querySelector('#today-picks-note');
+  if (todayGrid) {
+    const today = getDailyRecommendations(data.items);
+    todayGrid.innerHTML = today.items.map(createMenuCard).join('');
+    if (todayNote) {
+      todayNote.textContent = `${getTimeSegmentLabel(today.segment)}，依當前時間更新`;
+    }
+  }
+  if (hotGrid) {
+    hotGrid.innerHTML = getHotItems(data.items).map(createMenuCard).join('');
+  }
+
   const filterPanel = document.querySelector('[data-filter-target="menu-filter-grid"]');
   const filterGrid = document.querySelector('#menu-filter-grid');
   if (filterPanel && filterGrid) {
@@ -1148,6 +1251,7 @@ const renderCategoryPage = async () => {
   if (!slug) return;
   const payload = await fetchJson(getApiUrl(`/api/categories/${encodeURIComponent(slug)}`));
   const { category, items } = payload;
+  cacheMenuItems(items);
 
   const setText = (selector, value) => {
     const node = document.querySelector(selector);
@@ -1192,6 +1296,7 @@ const renderItemDetailPage = async () => {
   if (!slug) return;
   const payload = await fetchJson(getApiUrl(`/api/items/${encodeURIComponent(slug)}`));
   const { item, category, related } = payload;
+  cacheMenuItems([item, ...related]);
   storeRecentItem({
     slug: item.slug,
     name: item.name,
@@ -1410,6 +1515,7 @@ setupRevealAnimations();
 setupActiveSections();
 setupRecentItemTracking();
 setupGlobalSearch();
+setupQuickPreview();
 finishLoadingAfterReady();
 initDataDrivenPages();
 
