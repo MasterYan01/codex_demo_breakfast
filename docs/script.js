@@ -20,6 +20,7 @@ let heroPointerY = 0;
 let heroPointerActive = false;
 let adminState = null;
 let adminSelectedSlug = '';
+const menuItemLookup = new Map();
 const searchStorageKey = 'la_miu_recent_items_v1';
 const searchResultLimit = 8;
 const recentResultLimit = 6;
@@ -105,6 +106,85 @@ const getDietaryBadgesHtml = (item) => {
     .join('');
   return tags ? `<div class="menu-item-tags">${tags}</div>` : '';
 };
+
+const cacheMenuItems = (items) => {
+  if (!Array.isArray(items)) return;
+  items.forEach((item) => {
+    if (item && item.slug) {
+      menuItemLookup.set(item.slug, item);
+    }
+  });
+};
+
+const getPopularityScore = (item, index = 0) => {
+  const base = Number.isFinite(item.popularity) ? item.popularity : Math.max(30, 60 - index * 2);
+  const tags = item.tags || [];
+  let boost = 0;
+  if (tags.some((tag) => tag.includes('人氣'))) boost += 14;
+  if (tags.some((tag) => tag.includes('招牌'))) boost += 10;
+  if (tags.some((tag) => tag.includes('主廚推薦'))) boost += 8;
+  if (tags.some((tag) => tag.includes('季節限定'))) boost += 4;
+  return base + boost;
+};
+
+const getTimeSegment = () => {
+  const hour = new Date().getHours();
+  if (hour < 11) return 'morning';
+  if (hour < 14) return 'midday';
+  if (hour < 17) return 'afternoon';
+  return 'evening';
+};
+
+const getTimeSegmentLabel = (segment) => {
+  switch (segment) {
+    case 'morning':
+      return '早晨推薦';
+    case 'midday':
+      return '午間推薦';
+    case 'afternoon':
+      return '午後推薦';
+    default:
+      return '晚間甜點推薦';
+  }
+};
+
+const createSeededRandom = (seed) => {
+  let value = seed;
+  return () => {
+    value = (value * 9301 + 49297) % 233280;
+    return value / 233280;
+  };
+};
+
+const getDailyRecommendations = (items) => {
+  const segment = getTimeSegment();
+  const weights = {
+    morning: { breakfast: 3, coffee: 1, dessert: 0 },
+    midday: { breakfast: 2, coffee: 2, dessert: 1 },
+    afternoon: { breakfast: 1, coffee: 2, dessert: 2 },
+    evening: { breakfast: 0, coffee: 1, dessert: 3 }
+  }[segment];
+  const today = new Date();
+  const seed = hashString(`${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}-${segment}`);
+  const random = createSeededRandom(seed);
+
+  const ranked = items.map((item, index) => {
+    const weight = weights[item.category] || 0;
+    const score = getPopularityScore(item, index) + weight * 20 + random() * 6;
+    return { item, score };
+  }).sort((a, b) => b.score - a.score);
+
+  return {
+    segment,
+    items: ranked.slice(0, 6).map((entry) => entry.item)
+  };
+};
+
+const getHotItems = (items) => items
+  .map((item, index) => ({ item, score: getPopularityScore(item, index) }))
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 6)
+  .map((entry) => entry.item);
 
 const normalizeText = (value) => safeText(value).toLowerCase();
 const tokenizeQuery = (query) => normalizeText(query).split(/\s+/).filter(Boolean);
@@ -680,7 +760,12 @@ const fetchJson = async (url, options) => {
 
 const createMenuCard = (item) => `
   <article class="menu-item-card">
-    <div class="menu-item-photo" style="background-image:url('${item.image}')"></div>
+    <div class="menu-item-photo" style="background-image:url('${item.image}')">
+      <div class="card-photo-overlay">
+        <span class="card-photo-overlay__label">Quick Preview</span>
+        <button class="preview-button" type="button" data-preview-slug="${item.slug}" aria-label="快速預覽 ${item.name}">快速預覽</button>
+      </div>
+    </div>
     <div class="menu-item-copy">
       <h3>${item.name}</h3>
       <p>${item.shortDescription}</p>
@@ -693,7 +778,12 @@ const createMenuCard = (item) => `
 
 const createCategoryDishCard = (item) => `
   <article class="category-dish-card">
-    <div class="category-dish-photo" style="background-image:url('${item.image}')"></div>
+    <div class="category-dish-photo" style="background-image:url('${item.image}')">
+      <div class="card-photo-overlay">
+        <span class="card-photo-overlay__label">Quick Preview</span>
+        <button class="preview-button" type="button" data-preview-slug="${item.slug}" aria-label="快速預覽 ${item.name}">快速預覽</button>
+      </div>
+    </div>
     <div class="category-dish-copy">
       <h3>${item.name}</h3>
       <p>${item.shortDescription}</p>
@@ -712,6 +802,7 @@ const createSeasonalCard = (item) => `
       <p>${item.shortDescription}</p>
       ${getDietaryBadgesHtml(item)}
       <span class="price">${formatPrice(item.price)}</span>
+      <button class="preview-button preview-button--light" type="button" data-preview-slug="${item.slug}" aria-label="快速預覽 ${item.name}">快速預覽</button>
       <a class="text-link text-link--light" href="${getItemPageHref(item.slug)}" data-item-link data-item-slug="${item.slug}" data-item-name="${item.name}" data-item-category="${item.category}" data-item-image="${item.image}" data-item-price="${item.price}" data-item-short="${item.shortDescription}">查看詳情</a>
     </div>
   </article>
