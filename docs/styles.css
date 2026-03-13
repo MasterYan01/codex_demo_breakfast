@@ -2473,6 +2473,8 @@ body {
   background: rgba(255, 250, 244, 0.78);
   backdrop-filter: blur(10px);
   box-shadow: var(--shadow-soft);
+  font-family: "Noto Sans TC", sans-serif;
+  font-weight: 500;
 }
 
 .menu-pills a {
@@ -2482,8 +2484,8 @@ body {
   border-radius: 999px;
   border: 1px solid rgba(104, 64, 45, 0.12);
   background: rgba(255, 255, 255, 0.72);
-  font-size: 0.76rem;
-  letter-spacing: 0.16em;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease, color 160ms ease;
 }
@@ -2586,16 +2588,16 @@ body {
 }
 
 .menu-filter-group {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(84px, max-content) 1fr;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px 14px;
 }
 
 .filter-group-label {
-  min-width: 92px;
-  font-size: 0.7rem;
-  letter-spacing: 0.2em;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 0.74rem;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: rgba(111, 67, 45, 0.7);
 }
@@ -2607,26 +2609,39 @@ body {
 }
 
 .filter-select {
+  appearance: none;
+  -webkit-appearance: none;
   border: 1px solid rgba(104, 64, 45, 0.18);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.92);
   border-radius: 999px;
-  padding: 8px 14px;
+  padding: 8px 36px 8px 14px;
   font-size: 0.8rem;
   color: var(--wood-deep);
   font-family: "Noto Sans TC", sans-serif;
+  line-height: 1.2;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='%237b5b45' d='M5.5 7.5 10 12l4.5-4.5 1.4 1.4-5.9 5.9-5.9-5.9z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px 12px;
 }
 
 .filter-toggle {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 6px 14px;
   border-radius: 999px;
+  appearance: none;
+  -webkit-appearance: none;
   border: 1px solid rgba(104, 64, 45, 0.18);
   background: rgba(255, 255, 255, 0.74);
   font-size: 0.76rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--wood-deep);
+  font-family: "Noto Sans TC", sans-serif;
+  line-height: 1.2;
+  white-space: nowrap;
   cursor: pointer;
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease;
 }
@@ -2759,6 +2774,7 @@ body {
   }
 
   .menu-filter-group {
+    grid-template-columns: 1fr;
     align-items: flex-start;
   }
 
