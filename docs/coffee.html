@@ -27,11 +27,16 @@
     <header class="site-header reveal-on-scroll" data-reveal="header">
       <a class="brand" href="index.html"><span class="brand-mark">樂沐</span><span class="brand-sub">La Miu</span></a>
       <nav class="nav">
-        <a href="menu.html">菜單總覽</a>
-        <a href="breakfast.html">早餐頁</a>
-        <a href="dessert.html">甜點頁</a>
-        <a href="index.html#reserve">線上訂位</a>
+        <a href="menu.html" data-i18n="nav.menuOverview">菜單總覽</a>
+        <a href="breakfast.html" data-i18n="nav.breakfast">早餐頁</a>
+        <a href="dessert.html" data-i18n="nav.dessert">甜點頁</a>
+        <a href="index.html#reserve" data-i18n="nav.reserve">線上訂位</a>
       </nav>
+      <div class="lang-toggle" aria-label="Language">
+        <a class="lang-toggle__link" data-lang-switch="zh" href="?lang=zh">中文</a>
+        <span>/</span>
+        <a class="lang-toggle__link" data-lang-switch="en" href="?lang=en">EN</a>
+      </div>
     </header>
     <main>
       <section class="category-hero reveal-on-scroll reveal-visible" data-reveal="hero">
@@ -40,35 +45,35 @@
           <div class="hero-intro-line"><span></span><p id="category-tagline"></p></div>
           <h1 id="category-title"></h1>
           <p class="hero-text" id="category-description"></p>
-          <div class="hero-actions"><a class="btn btn-primary" href="index.html#reserve">預留座位</a><a class="btn btn-secondary" href="menu.html">返回菜單總覽</a></div>
+          <div class="hero-actions"><a class="btn btn-primary" href="index.html#reserve" data-i18n="category.cta.reserve.coffee">預留座位</a><a class="btn btn-secondary" href="menu.html" data-i18n="category.cta.back">返回菜單總覽</a></div>
         </div>
         <div class="category-hero__visual" id="category-hero-image"></div>
       </section>
       <section class="category-list-section reveal-on-scroll" data-reveal="section">
-        <div class="section-heading"><div><p class="eyebrow">Category Items</p><h2 id="category-list-title">咖啡品項</h2></div></div>
+        <div class="section-heading"><div><p class="eyebrow" data-i18n="category.list.eyebrow">Category Items</p><h2 id="category-list-title">咖啡品項</h2></div></div>
         <div class="menu-filter-panel menu-filter-panel--inline" data-filter-target="category-list-grid">
           <div class="menu-filter-options">
-            <label class="filter-chip"><input type="checkbox" value="vegetarian"><span>素食</span></label>
-            <label class="filter-chip"><input type="checkbox" value="eggDairy"><span>含蛋奶</span></label>
-            <label class="filter-chip"><input type="checkbox" value="nuts"><span>含堅果</span></label>
-            <label class="filter-chip"><input type="checkbox" value="glutenFree"><span>無麩質</span></label>
+            <label class="filter-chip"><input type="checkbox" value="vegetarian"><span data-i18n="filter.vegetarian">素食</span></label>
+            <label class="filter-chip"><input type="checkbox" value="eggDairy"><span data-i18n="filter.eggDairy">含蛋奶</span></label>
+            <label class="filter-chip"><input type="checkbox" value="nuts"><span data-i18n="filter.nuts">含堅果</span></label>
+            <label class="filter-chip"><input type="checkbox" value="glutenFree"><span data-i18n="filter.glutenFree">無麩質</span></label>
           </div>
-          <button class="filter-clear" type="button">清除</button>
+          <button class="filter-clear" type="button" data-i18n="filter.clear">清除</button>
         </div>
-        <p class="menu-filter-status" data-filter-status>顯示 0 / 0 項</p>
+        <p class="menu-filter-status" data-filter-status data-i18n="filter.status.zero">顯示 0 / 0 項</p>
         <div class="category-list-grid" id="category-list-grid"></div>
       </section>
       <section class="category-note-band reveal-on-scroll" data-reveal="section">
-        <div class="category-note-band__copy"><p class="eyebrow">Serving Note</p><h2 id="category-note-title"></h2><p id="category-note-text"></p></div>
+        <div class="category-note-band__copy"><p class="eyebrow" data-i18n="category.note.eyebrow">Serving Note</p><h2 id="category-note-title"></h2><p id="category-note-text"></p></div>
         <div class="category-note-band__links" id="category-pairings"></div>
       </section>
     </main>
     <footer class="site-footer reveal-on-scroll" data-reveal="footer">
-      <div class="footer-brand-block"><p class="eyebrow">La Miu Tainan</p><h2>樂沐 La Miu</h2><p>早餐、咖啡與甜點皆維持一致的暖木品牌語言。</p></div>
-      <div class="footer-column"><h3>地址</h3><p>台南市中西區衛民街129號</p><p><a href="index.html#access">查看交通資訊</a></p></div>
-      <div class="footer-column"><h3>聯絡方式</h3><p><a href="tel:+88662213129">06-221-3129</a></p><p><a href="mailto:reservations@lamiu.com.tw">reservations@lamiu.com.tw</a></p></div>
-      <div class="footer-column"><h3>分類頁</h3><p><a href="breakfast.html">早餐頁</a></p><p><a href="dessert.html">甜點頁</a></p></div>
-      <div class="footer-column"><h3>管理</h3><p><a href="admin.html">菜單後台</a></p><p><a href="menu.html">返回總覽</a></p></div>
+      <div class="footer-brand-block"><p class="eyebrow" data-i18n="footer.eyebrow">La Miu Tainan</p><h2 data-i18n="footer.title">樂沐 La Miu</h2><p data-i18n="footer.text.category">早餐、咖啡與甜點皆維持一致的暖木品牌語言。</p></div>
+      <div class="footer-column"><h3 data-i18n="footer.address.title">地址</h3><p data-i18n="footer.address.line1">台南市中西區衛民街129號</p><p><a href="index.html#access" data-i18n="footer.address.link">查看交通資訊</a></p></div>
+      <div class="footer-column"><h3 data-i18n="footer.contact.title">聯絡方式</h3><p><a href="tel:+88662213129">06-221-3129</a></p><p><a href="mailto:reservations@lamiu.com.tw">reservations@lamiu.com.tw</a></p></div>
+      <div class="footer-column"><h3 data-i18n="footer.category.title">分類頁</h3><p><a href="breakfast.html" data-i18n="footer.category.breakfast">早餐頁</a></p><p><a href="dessert.html" data-i18n="footer.category.dessert">甜點頁</a></p></div>
+      <div class="footer-column"><h3 data-i18n="footer.manage.title">管理</h3><p><a href="admin.html" data-i18n="footer.manage.admin">菜單後台</a></p><p><a href="menu.html" data-i18n="footer.manage.menu">返回總覽</a></p></div>
     </footer>
   </div>
   <script src="config.js"></script>

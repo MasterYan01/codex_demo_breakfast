@@ -29,40 +29,45 @@
     <header class="site-header reveal-on-scroll" data-reveal="header">
       <a class="brand" href="index.html"><span class="brand-mark">樂沐</span><span class="brand-sub">La Miu</span></a>
       <nav class="nav">
-        <a href="index.html">品牌首頁</a>
-        <a href="#menu-overview">菜單總覽</a>
-        <a href="#seasonal-menu">季節餐點</a>
-        <a href="index.html#reserve">線上訂位</a>
+        <a href="index.html" data-i18n="nav.home">品牌首頁</a>
+        <a href="#menu-overview" data-i18n="nav.menuOverview">菜單總覽</a>
+        <a href="#seasonal-menu" data-i18n="nav.seasonal">季節餐點</a>
+        <a href="index.html#reserve" data-i18n="nav.reserve">線上訂位</a>
       </nav>
+      <div class="lang-toggle" aria-label="Language">
+        <a class="lang-toggle__link" data-lang-switch="zh" href="?lang=zh">中文</a>
+        <span>/</span>
+        <a class="lang-toggle__link" data-lang-switch="en" href="?lang=en">EN</a>
+      </div>
     </header>
     <nav class="menu-pills" aria-label="菜單分類快速導覽">
-      <a href="#menu-overview">總覽</a>
-      <a href="#today-picks">今日推薦</a>
-      <a href="#hot-picks">熱門榜</a>
-      <a href="#menu-categories">分類</a>
-      <a href="#menu-featured">本日推薦</a>
-      <a href="#seasonal-menu">季節限定</a>
-      <a href="#menu-filter">快速篩選</a>
+      <a href="#menu-overview" data-i18n="menu.pills.overview">總覽</a>
+      <a href="#today-picks" data-i18n="menu.pills.today">今日推薦</a>
+      <a href="#hot-picks" data-i18n="menu.pills.hot">熱門榜</a>
+      <a href="#menu-categories" data-i18n="menu.pills.categories">分類</a>
+      <a href="#menu-featured" data-i18n="menu.pills.featured">本日推薦</a>
+      <a href="#seasonal-menu" data-i18n="menu.pills.seasonal">季節限定</a>
+      <a href="#menu-filter" data-i18n="menu.pills.filter">快速篩選</a>
     </nav>
 
     <main>
       <section class="menu-page-hero reveal-on-scroll reveal-visible" id="menu-overview" data-reveal="hero">
         <div class="menu-page-copy">
-          <p class="eyebrow">Full Menu</p>
+          <p class="eyebrow" data-i18n="menu.hero.eyebrow">Full Menu</p>
           <div class="hero-intro-line"><span></span><p>Seasonal Dining Selection</p></div>
-          <h1>以晨間風味、季節食材與溫潤器皿，構成完整的一日菜單。</h1>
-          <p class="hero-text">本頁會從後端載入樂沐 La Miu 的招牌早餐盤、季節限定、手作甜點與咖啡飲品。</p>
+          <h1 data-i18n="menu.hero.title">以晨間風味、季節食材與溫潤器皿，構成完整的一日菜單。</h1>
+          <p class="hero-text" data-i18n="menu.hero.text">本頁會從後端載入樂沐 La Miu 的招牌早餐盤、季節限定、手作甜點與咖啡飲品。</p>
           <div class="hero-actions">
-            <a class="btn btn-primary" href="index.html#reserve">立即訂位</a>
-            <a class="btn btn-secondary" href="https://la-miu-backend.onrender.com/admin.html">後台編輯</a>
+            <a class="btn btn-primary" href="index.html#reserve" data-i18n="menu.hero.cta.reserve">立即訂位</a>
+            <a class="btn btn-secondary" href="https://la-miu-backend.onrender.com/admin.html" data-i18n="menu.hero.cta.admin">後台編輯</a>
           </div>
         </div>
         <div class="menu-page-visual reveal-on-scroll reveal-visible" data-reveal="hero">
           <div class="menu-page-photo menu-hero-photo"></div>
           <div class="menu-page-note">
-            <span class="floating-label">Today's Table</span>
-            <strong>主廚以季節食材更新菜單細節</strong>
-            <p>後台更新後，菜單總覽、分類頁與單品頁會同步顯示最新資料。</p>
+            <span class="floating-label" data-i18n="menu.hero.note.label">Today's Table</span>
+            <strong data-i18n="menu.hero.note.title">主廚以季節食材更新菜單細節</strong>
+            <p data-i18n="menu.hero.note.text">後台更新後，菜單總覽、分類頁與單品頁會同步顯示最新資料。</p>
           </div>
         </div>
       </section>
@@ -70,8 +75,8 @@
       <section class="menu-picks-section reveal-on-scroll" id="today-picks" data-reveal="section">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Today Picks</p>
-            <h2>今日推薦</h2>
+            <p class="eyebrow" data-i18n="menu.today.eyebrow">Today Picks</p>
+            <h2 data-i18n="menu.today.title">今日推薦</h2>
             <p class="menu-picks-note" id="today-picks-note"></p>
           </div>
         </div>
@@ -81,94 +86,94 @@
       <section class="menu-picks-section reveal-on-scroll" id="hot-picks" data-reveal="section">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Popular Now</p>
-            <h2>熱門榜</h2>
+            <p class="eyebrow" data-i18n="menu.hot.eyebrow">Popular Now</p>
+            <h2 data-i18n="menu.hot.title">熱門榜</h2>
           </div>
         </div>
         <div class="menu-list-grid" id="hot-picks-grid"></div>
       </section>
 
       <section class="menu-category-section reveal-on-scroll" id="menu-categories" data-reveal="section">
-        <div class="section-heading"><div><p class="eyebrow">Menu Categories</p><h2>真實菜單分類頁</h2></div></div>
+        <div class="section-heading"><div><p class="eyebrow" data-i18n="menu.categories.eyebrow">Menu Categories</p><h2 data-i18n="menu.categories.title">真實菜單分類頁</h2></div></div>
         <div class="menu-category-grid" id="menu-category-grid"></div>
       </section>
 
       <section class="menu-list-section reveal-on-scroll" id="menu-featured" data-reveal="section">
-        <div class="section-heading"><div><p class="eyebrow">Featured Items</p><h2>本日推薦品項</h2></div></div>
+        <div class="section-heading"><div><p class="eyebrow" data-i18n="menu.featured.eyebrow">Featured Items</p><h2 data-i18n="menu.featured.title">本日推薦品項</h2></div></div>
         <div class="menu-list-grid" id="menu-featured-grid"></div>
       </section>
 
       <section class="seasonal-menu-section reveal-on-scroll" id="seasonal-menu" data-reveal="section">
-        <div class="section-heading"><div><p class="eyebrow">Seasonal Picks</p><h2>季節限定餐點</h2></div></div>
+        <div class="section-heading"><div><p class="eyebrow" data-i18n="menu.seasonal.eyebrow">Seasonal Picks</p><h2 data-i18n="menu.seasonal.title">季節限定餐點</h2></div></div>
         <div class="seasonal-grid" id="seasonal-grid"></div>
       </section>
 
       <section class="menu-filter-section reveal-on-scroll" id="menu-filter" data-reveal="section">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Quick Filters</p>
-            <h2>快速篩選與排序</h2>
+            <p class="eyebrow" data-i18n="menu.filter.eyebrow">Quick Filters</p>
+            <h2 data-i18n="menu.filter.title">快速篩選與排序</h2>
           </div>
         </div>
         <div class="menu-filter-toolbar" data-menu-filter>
           <div class="menu-filter-group">
-            <span class="filter-group-label">排序</span>
+            <span class="filter-group-label" data-i18n="menu.filter.sort">排序</span>
             <select class="filter-select" data-filter-sort>
-              <option value="default">預設排序</option>
-              <option value="popular">人氣最高</option>
-              <option value="price-asc">價格低到高</option>
-              <option value="price-desc">價格高到低</option>
+              <option value="default" data-i18n="menu.filter.sort.default">預設排序</option>
+              <option value="popular" data-i18n="menu.filter.sort.popular">人氣最高</option>
+              <option value="price-asc" data-i18n="menu.filter.sort.priceAsc">價格低到高</option>
+              <option value="price-desc" data-i18n="menu.filter.sort.priceDesc">價格高到低</option>
             </select>
           </div>
           <div class="menu-filter-group">
-            <span class="filter-group-label">價位</span>
+            <span class="filter-group-label" data-i18n="menu.filter.price">價位</span>
             <div class="filter-chip-group" data-filter-group="price">
-              <button class="filter-toggle" type="button" data-filter-group="price" data-filter-value="under-200" aria-pressed="false">NT$ 200 以下</button>
-              <button class="filter-toggle" type="button" data-filter-group="price" data-filter-value="200-300" aria-pressed="false">NT$ 200-300</button>
-              <button class="filter-toggle" type="button" data-filter-group="price" data-filter-value="300-400" aria-pressed="false">NT$ 300-400</button>
-              <button class="filter-toggle" type="button" data-filter-group="price" data-filter-value="over-400" aria-pressed="false">NT$ 400 以上</button>
+              <button class="filter-toggle" type="button" data-filter-group="price" data-filter-value="under-200" aria-pressed="false" data-i18n="menu.filter.price.under200">NT$ 200 以下</button>
+              <button class="filter-toggle" type="button" data-filter-group="price" data-filter-value="200-300" aria-pressed="false" data-i18n="menu.filter.price.200-300">NT$ 200-300</button>
+              <button class="filter-toggle" type="button" data-filter-group="price" data-filter-value="300-400" aria-pressed="false" data-i18n="menu.filter.price.300-400">NT$ 300-400</button>
+              <button class="filter-toggle" type="button" data-filter-group="price" data-filter-value="over-400" aria-pressed="false" data-i18n="menu.filter.price.over400">NT$ 400 以上</button>
             </div>
           </div>
           <div class="menu-filter-group">
-            <span class="filter-group-label">人氣</span>
+            <span class="filter-group-label" data-i18n="menu.filter.popular">人氣</span>
             <div class="filter-chip-group" data-filter-group="popularity">
-              <button class="filter-toggle" type="button" data-filter-group="popularity" data-filter-value="popular" aria-pressed="false">人氣推薦</button>
+              <button class="filter-toggle" type="button" data-filter-group="popularity" data-filter-value="popular" aria-pressed="false" data-i18n="menu.filter.popular.label">人氣推薦</button>
             </div>
           </div>
           <div class="menu-filter-group">
-            <span class="filter-group-label">飲食</span>
+            <span class="filter-group-label" data-i18n="menu.filter.diet">飲食</span>
             <div class="filter-chip-group" data-filter-group="dietary">
-              <button class="filter-toggle" type="button" data-filter-group="dietary" data-filter-value="vegetarian" aria-pressed="false">素食</button>
-              <button class="filter-toggle" type="button" data-filter-group="dietary" data-filter-value="glutenFree" aria-pressed="false">無麩質</button>
+              <button class="filter-toggle" type="button" data-filter-group="dietary" data-filter-value="vegetarian" aria-pressed="false" data-i18n="menu.filter.diet.vegetarian">素食</button>
+              <button class="filter-toggle" type="button" data-filter-group="dietary" data-filter-value="glutenFree" aria-pressed="false" data-i18n="menu.filter.diet.glutenFree">無麩質</button>
             </div>
           </div>
           <div class="menu-filter-group">
-            <span class="filter-group-label">供應時段</span>
+            <span class="filter-group-label" data-i18n="menu.filter.availability">供應時段</span>
             <div class="filter-chip-group" data-filter-group="availability">
-              <button class="filter-toggle" type="button" data-filter-group="availability" data-filter-value="all-day" aria-pressed="false">全時段</button>
-              <button class="filter-toggle" type="button" data-filter-group="availability" data-filter-value="weekend" aria-pressed="false">週末</button>
-              <button class="filter-toggle" type="button" data-filter-group="availability" data-filter-value="seasonal" aria-pressed="false">季節限定</button>
+              <button class="filter-toggle" type="button" data-filter-group="availability" data-filter-value="all-day" aria-pressed="false" data-i18n="menu.filter.availability.all">全時段</button>
+              <button class="filter-toggle" type="button" data-filter-group="availability" data-filter-value="weekend" aria-pressed="false" data-i18n="menu.filter.availability.weekend">週末</button>
+              <button class="filter-toggle" type="button" data-filter-group="availability" data-filter-value="seasonal" aria-pressed="false" data-i18n="menu.filter.availability.seasonal">季節限定</button>
             </div>
           </div>
           <div class="menu-filter-actions">
-            <button class="filter-clear" type="button">清除全部</button>
+            <button class="filter-clear" type="button" data-i18n="menu.filter.clear">清除全部</button>
           </div>
         </div>
-        <p class="menu-filter-status" data-filter-status>顯示 0 / 0 項</p>
+        <p class="menu-filter-status" data-filter-status data-i18n="filter.status.zero">顯示 0 / 0 項</p>
         <div class="menu-list-grid" id="menu-filter-grid"></div>
       </section>
     </main>
 
     <footer class="site-footer reveal-on-scroll" data-reveal="footer">
       <div class="footer-brand-block">
-        <p class="eyebrow">La Miu Tainan</p>
-        <h2>樂沐 La Miu</h2>
-        <p>以暖木調性、季節餐盤與安靜晨光構成的台南精品早午餐餐廳。</p>
+        <p class="eyebrow" data-i18n="footer.eyebrow">La Miu Tainan</p>
+        <h2 data-i18n="footer.title">樂沐 La Miu</h2>
+        <p data-i18n="footer.text.menu">以暖木調性、季節餐盤與安靜晨光構成的台南精品早午餐餐廳。</p>
       </div>
-      <div class="footer-column"><h3>地址</h3><p>台南市中西區衛民街129號</p><p>步行可達台南火車站與海安路商圈</p></div>
-      <div class="footer-column"><h3>聯絡方式</h3><p><a href="tel:+88662213129">06-221-3129</a></p><p><a href="mailto:reservations@lamiu.com.tw">reservations@lamiu.com.tw</a></p></div>
-      <div class="footer-column"><h3>分類頁</h3><p><a href="breakfast.html">早餐頁</a></p><p><a href="coffee.html">咖啡頁</a></p><p><a href="dessert.html">甜點頁</a></p></div>
-      <div class="footer-column"><h3>管理</h3><p><a href="https://la-miu-backend.onrender.com/admin.html">菜單後台</a></p><p><a href="item.html?slug=classic-pancake-plate">單品示範頁</a></p></div>
+      <div class="footer-column"><h3 data-i18n="footer.address.title">地址</h3><p data-i18n="footer.address.line1">台南市中西區衛民街129號</p><p data-i18n="footer.address.line2.menu">步行可達台南火車站與海安路商圈</p></div>
+      <div class="footer-column"><h3 data-i18n="footer.contact.title">聯絡方式</h3><p><a href="tel:+88662213129">06-221-3129</a></p><p><a href="mailto:reservations@lamiu.com.tw">reservations@lamiu.com.tw</a></p></div>
+      <div class="footer-column"><h3 data-i18n="footer.category.title">分類頁</h3><p><a href="breakfast.html" data-i18n="footer.category.breakfast">早餐頁</a></p><p><a href="coffee.html" data-i18n="footer.category.coffee">咖啡頁</a></p><p><a href="dessert.html" data-i18n="footer.category.dessert">甜點頁</a></p></div>
+      <div class="footer-column"><h3 data-i18n="footer.manage.title">管理</h3><p><a href="https://la-miu-backend.onrender.com/admin.html" data-i18n="footer.manage.admin">菜單後台</a></p><p><a href="item.html?slug=classic-pancake-plate" data-i18n="footer.manage.item">單品示範頁</a></p></div>
     </footer>
   </div>
   <script src="config.js"></script>

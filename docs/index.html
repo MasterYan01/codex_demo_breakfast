@@ -66,7 +66,7 @@
   }
   </script>
 </head>
-<body class="is-loading">
+<body class="is-loading" data-page="home">
   <div class="page-loader" aria-hidden="true">
     <div class="page-loader__inner">
       <span class="page-loader__mark">樂沐</span>
@@ -82,11 +82,16 @@
         <span class="brand-sub">La Miu</span>
       </a>
       <nav class="nav">
-        <a href="menu.html">完整菜單</a>
-        <a href="#story">餐廳理念</a>
-        <a href="#space">空間風格</a>
-        <a href="#reserve">預約用餐</a>
+        <a href="menu.html" data-i18n="nav.menu">完整菜單</a>
+        <a href="#story" data-i18n="nav.story">餐廳理念</a>
+        <a href="#space" data-i18n="nav.space">空間風格</a>
+        <a href="#reserve" data-i18n="nav.reserve">預約用餐</a>
       </nav>
+      <div class="lang-toggle" aria-label="Language">
+        <a class="lang-toggle__link" data-lang-switch="zh" href="?lang=zh">中文</a>
+        <span>/</span>
+        <a class="lang-toggle__link" data-lang-switch="en" href="?lang=en">EN</a>
+      </div>
     </header>
 
     <main>
@@ -97,26 +102,26 @@
             <span></span>
             <p>La Miu Tainan</p>
           </div>
-          <h1>以安靜晨光、木質餐桌與細緻料理，款待每一段早晨時光。</h1>
-          <p class="hero-text">
+          <h1 data-i18n="hero.title">以安靜晨光、木質餐桌與細緻料理，款待每一段早晨時光。</h1>
+          <p class="hero-text" data-i18n="hero.text">
             樂沐 La Miu 位於台南市中西區衛民街，延續飯店餐廳的待客節奏，將光線、器皿、料理與服務收斂為一致而克制的晨間體驗。
           </p>
           <div class="hero-actions">
-            <a class="btn btn-primary" href="#reserve">預約座位</a>
-            <a class="btn btn-secondary" href="menu.html">完整菜單</a>
+            <a class="btn btn-primary" href="#reserve" data-i18n="hero.cta.reserve">預約座位</a>
+            <a class="btn btn-secondary" href="menu.html" data-i18n="hero.cta.menu">完整菜單</a>
           </div>
           <div class="hero-facts">
             <div class="fact-item">
-              <span class="fact-label">營業時段</span>
-              <strong>09:00 - 16:30</strong>
+              <span class="fact-label" data-i18n="hero.fact.hours">營業時段</span>
+              <strong data-i18n="hero.fact.hoursValue">09:00 - 16:30</strong>
             </div>
             <div class="fact-item">
-              <span class="fact-label">餐廳語彙</span>
-              <strong>暖木、咖啡、晨光</strong>
+              <span class="fact-label" data-i18n="hero.fact.vibe">餐廳語彙</span>
+              <strong data-i18n="hero.fact.vibeValue">暖木、咖啡、晨光</strong>
             </div>
             <div class="fact-item">
-              <span class="fact-label">訂位安排</span>
-              <strong>現場候位與預約席次</strong>
+              <span class="fact-label" data-i18n="hero.fact.booking">訂位安排</span>
+              <strong data-i18n="hero.fact.bookingValue">現場候位與預約席次</strong>
             </div>
           </div>
         </div>
@@ -125,14 +130,14 @@
           <div class="hero-side-label">Morning House</div>
           <div class="hero-card hero-photo-main">
             <div class="hero-overlay">
-              <span>House Signature</span>
-              <strong>鬆餅、咖啡與晨間光影，構成 La Miu 最經典的餐桌景致</strong>
+              <span data-i18n="hero.overlay.label">House Signature</span>
+              <strong data-i18n="hero.overlay.title">鬆餅、咖啡與晨間光影，構成 La Miu 最經典的餐桌景致</strong>
             </div>
           </div>
           <div class="hero-floating-card service-card-floating">
-            <span class="floating-label">Dining Note</span>
-            <strong>以節制留白，保留用餐的從容</strong>
-            <p>桌距、光線與服務節奏皆經過安排，讓每一次入座都維持安定而舒適的質地。</p>
+            <span class="floating-label" data-i18n="hero.float.label">Dining Note</span>
+            <strong data-i18n="hero.float.title">以節制留白，保留用餐的從容</strong>
+            <p data-i18n="hero.float.text">桌距、光線與服務節奏皆經過安排，讓每一次入座都維持安定而舒適的質地。</p>
           </div>
         </div>
       </section>
@@ -140,8 +145,8 @@
       <section class="signature reveal-on-scroll" id="menu" data-reveal="section">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Seasonal Selections</p>
-            <h2>本日餐桌選粹</h2>
+            <p class="eyebrow" data-i18n="signature.eyebrow">Seasonal Selections</p>
+            <h2 data-i18n="signature.title">本日餐桌選粹</h2>
           </div>
         </div>
 
@@ -199,12 +204,12 @@
       <section class="story-section reveal-on-scroll" id="story" data-reveal="section">
         <div class="story-grid">
           <div class="story-copy">
-            <p class="eyebrow">About La Miu</p>
-            <h2>樂沐 La Miu 相信，早餐應當被端放在一個安定、講究且足以承接日常的空間裡。</h2>
-            <p>
+            <p class="eyebrow" data-i18n="story.eyebrow">About La Miu</p>
+            <h2 data-i18n="story.title">樂沐 La Miu 相信，早餐應當被端放在一個安定、講究且足以承接日常的空間裡。</h2>
+            <p data-i18n="story.text1">
               從木作桌面、器皿色澤到餐點風味，我們都維持一致的節制與比例。沒有過度鋪陳，只有恰到好處的光、溫度與服務，讓網站畫面與實際入座時的感受維持相同語彙。
             </p>
-            <p>
+            <p data-i18n="story.text2">
               對樂沐而言，一頓早餐不只是餐食本身，更是城市裡少數能夠讓節奏緩下來的時刻。這也是我們始終希望保留的待客方式，以及品牌攝影與網站內容所共同描寫的場景。
             </p>
           </div>
@@ -218,10 +223,10 @@
 
       <section class="editorial-section reveal-on-scroll" data-reveal="section">
         <div class="editorial-card editorial-copy">
-          <p class="eyebrow">Editorial Narrative</p>
-          <h2>品牌內容與攝影整合，從首頁延伸到每一道實際上桌的料理。</h2>
-          <p>我們以相同的木質桌面、暖色晨光、低飽和器皿與留白比例呈現品牌。首頁主視覺、菜單頁照片與空間敘事共用一致攝影方向，讓網站不只是資訊入口，而是先一步建立用餐預期。</p>
-          <a class="btn btn-secondary" href="menu.html#seasonal-menu">查看季節餐點</a>
+          <p class="eyebrow" data-i18n="editorial.eyebrow">Editorial Narrative</p>
+          <h2 data-i18n="editorial.title">品牌內容與攝影整合，從首頁延伸到每一道實際上桌的料理。</h2>
+          <p data-i18n="editorial.text">我們以相同的木質桌面、暖色晨光、低飽和器皿與留白比例呈現品牌。首頁主視覺、菜單頁照片與空間敘事共用一致攝影方向，讓網站不只是資訊入口，而是先一步建立用餐預期。</p>
+          <a class="btn btn-secondary" href="menu.html#seasonal-menu" data-i18n="editorial.cta">查看季節餐點</a>
         </div>
         <div class="editorial-card editorial-gallery">
           <div class="editorial-photo editorial-photo-large image-platter"></div>
@@ -233,8 +238,8 @@
       <section class="space-section reveal-on-scroll" id="space" data-reveal="section">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Dining Atmosphere</p>
-            <h2>空間、光線與餐桌比例，共同構成用餐的完整感受。</h2>
+            <p class="eyebrow" data-i18n="space.eyebrow">Dining Atmosphere</p>
+            <h2 data-i18n="space.title">空間、光線與餐桌比例，共同構成用餐的完整感受。</h2>
           </div>
         </div>
         <div class="space-carousel" aria-label="店內環境照片導覽">
@@ -243,15 +248,15 @@
             <div class="space-carousel__track" data-space-track>
               <figure class="space-carousel__slide is-active" data-space-slide>
                 <div class="space-carousel__image interior-frame"></div>
-                <figcaption>晨間自然光與木質桌面</figcaption>
+                <figcaption data-i18n="space.carousel.1">晨間自然光與木質桌面</figcaption>
               </figure>
               <figure class="space-carousel__slide" data-space-slide>
                 <div class="space-carousel__image chef-frame"></div>
-                <figcaption>主廚備餐的靜謐節奏</figcaption>
+                <figcaption data-i18n="space.carousel.2">主廚備餐的靜謐節奏</figcaption>
               </figure>
               <figure class="space-carousel__slide" data-space-slide>
                 <div class="space-carousel__image produce-frame"></div>
-                <figcaption>季節食材與暖調器皿</figcaption>
+                <figcaption data-i18n="space.carousel.3">季節食材與暖調器皿</figcaption>
               </figure>
             </div>
           </div>
@@ -264,16 +269,16 @@
         </div>
         <div class="space-layout">
           <div class="space-card">
-            <h3>材質</h3>
-            <p>淺橡木、奶油白牆面與霧面陶器，使空間保持溫潤而不繁複。</p>
+            <h3 data-i18n="space.card.material.title">材質</h3>
+            <p data-i18n="space.card.material.text">淺橡木、奶油白牆面與霧面陶器，使空間保持溫潤而不繁複。</p>
           </div>
           <div class="space-card">
-            <h3>光線</h3>
-            <p>晨間自然光落在桌面與餐盤上，是 La Miu 最重要也最克制的視覺語言。</p>
+            <h3 data-i18n="space.card.light.title">光線</h3>
+            <p data-i18n="space.card.light.text">晨間自然光落在桌面與餐盤上，是 La Miu 最重要也最克制的視覺語言。</p>
           </div>
           <div class="space-card">
-            <h3>節奏</h3>
-            <p>不擁擠、不急促，讓每一位客人都能在自己的時間裡完成一頓早餐。</p>
+            <h3 data-i18n="space.card.rhythm.title">節奏</h3>
+            <p data-i18n="space.card.rhythm.text">不擁擠、不急促，讓每一位客人都能在自己的時間裡完成一頓早餐。</p>
           </div>
         </div>
       </section>
@@ -282,48 +287,48 @@
         <div class="reserve-layout">
           <div class="reserve-card reserve-copy-card">
             <div>
-              <p class="eyebrow">Reservations</p>
-              <h2>為晨間的相聚，預留一席安靜而妥貼的座位。</h2>
-              <p>平日 09:00 - 16:30，假日 08:30 - 17:00。若希望安排窗邊席次，建議提前來訊預約。</p>
+              <p class="eyebrow" data-i18n="reserve.eyebrow">Reservations</p>
+              <h2 data-i18n="reserve.title">為晨間的相聚，預留一席安靜而妥貼的座位。</h2>
+              <p data-i18n="reserve.text">平日 09:00 - 16:30，假日 08:30 - 17:00。若希望安排窗邊席次，建議提前來訊預約。</p>
             </div>
             <div class="reserve-notes">
               <div class="reserve-note-item">
-                <span class="fact-label">訂位須知</span>
-                <strong>保留 10 分鐘</strong>
-                <p>若逾時未到，座位將視現場候位情況釋出。</p>
+                <span class="fact-label" data-i18n="reserve.note1.label">訂位須知</span>
+                <strong data-i18n="reserve.note1.title">保留 10 分鐘</strong>
+                <p data-i18n="reserve.note1.text">若逾時未到，座位將視現場候位情況釋出。</p>
               </div>
               <div class="reserve-note-item">
-                <span class="fact-label">來店提醒</span>
-                <strong>4 人以上請備註</strong>
-                <p>我們會依當日桌況為你安排最合適的座位。</p>
+                <span class="fact-label" data-i18n="reserve.note2.label">來店提醒</span>
+                <strong data-i18n="reserve.note2.title">4 人以上請備註</strong>
+                <p data-i18n="reserve.note2.text">我們會依當日桌況為你安排最合適的座位。</p>
               </div>
             </div>
           </div>
 
           <form class="reservation-form" id="reservation-form" novalidate>
             <div class="reservation-form__header">
-              <p class="eyebrow">Online Booking</p>
-              <h3>線上訂位</h3>
-              <p>填寫以下資訊後，我們會為你保留預約需求。此表單為前端示範版，送出後會顯示成功訊息。</p>
+              <p class="eyebrow" data-i18n="reserve.form.eyebrow">Online Booking</p>
+              <h3 data-i18n="reserve.form.title">線上訂位</h3>
+              <p data-i18n="reserve.form.text">填寫以下資訊後，我們會為你保留預約需求。此表單為前端示範版，送出後會顯示成功訊息。</p>
             </div>
 
             <ol class="reservation-steps" aria-label="訂位步驟">
-              <li class="is-active" data-step-indicator="1"><span>1</span>選擇時段</li>
-              <li data-step-indicator="2"><span>2</span>聯絡資訊</li>
-              <li data-step-indicator="3"><span>3</span>完成預約</li>
+              <li class="is-active" data-step-indicator="1"><span>1</span><span data-i18n="reserve.step1">選擇時段</span></li>
+              <li data-step-indicator="2"><span>2</span><span data-i18n="reserve.step2">聯絡資訊</span></li>
+              <li data-step-indicator="3"><span>3</span><span data-i18n="reserve.step3">完成預約</span></li>
             </ol>
             <p class="form-status" id="reservation-status" aria-live="polite"></p>
 
             <div class="reservation-step is-active" data-step="1">
               <div class="reservation-grid">
                 <label class="field">
-                  <span>日期</span>
+                  <span data-i18n="reserve.field.date">日期</span>
                   <input type="date" name="date" id="reservation-date" required>
                 </label>
                 <label class="field">
-                  <span>時段</span>
+                  <span data-i18n="reserve.field.time">時段</span>
                   <select name="time" required>
-                    <option value="">請選擇時段</option>
+                    <option value="" data-i18n="reserve.field.time.placeholder">請選擇時段</option>
                     <option value="09:00">09:00</option>
                     <option value="10:30">10:30</option>
                     <option value="12:00">12:00</option>
@@ -332,90 +337,90 @@
                   </select>
                 </label>
                 <label class="field">
-                  <span>人數</span>
+                  <span data-i18n="reserve.field.guests">人數</span>
                   <select name="guests" required>
-                    <option value="">請選擇人數</option>
-                    <option value="1">1 位</option>
-                    <option value="2">2 位</option>
-                    <option value="3">3 位</option>
-                    <option value="4">4 位</option>
-                    <option value="5">5 位</option>
-                    <option value="6+">6 位以上</option>
+                    <option value="" data-i18n="reserve.field.guests.placeholder">請選擇人數</option>
+                    <option value="1" data-i18n="reserve.field.guests.1">1 位</option>
+                    <option value="2" data-i18n="reserve.field.guests.2">2 位</option>
+                    <option value="3" data-i18n="reserve.field.guests.3">3 位</option>
+                    <option value="4" data-i18n="reserve.field.guests.4">4 位</option>
+                    <option value="5" data-i18n="reserve.field.guests.5">5 位</option>
+                    <option value="6+" data-i18n="reserve.field.guests.6">6 位以上</option>
                   </select>
                 </label>
               </div>
 
               <div class="availability-panel" id="availability-panel" aria-live="polite">
                 <div class="availability-header">
-                  <p class="eyebrow small">Availability</p>
-                  <h4>剩餘時段</h4>
+                  <p class="eyebrow small" data-i18n="reserve.availability.eyebrow">Availability</p>
+                  <h4 data-i18n="reserve.availability.title">剩餘時段</h4>
                 </div>
                 <div class="availability-recommend">
-                  <p class="eyebrow small">Recommended</p>
+                  <p class="eyebrow small" data-i18n="reserve.availability.recommend">Recommended</p>
                   <div class="availability-recommend__list" id="availability-recommend"></div>
-                  <p class="availability-recommend__note" id="availability-recommend-note">根據當日座位狀況推薦。</p>
+                  <p class="availability-recommend__note" id="availability-recommend-note" data-i18n="reserve.availability.recommend.note">根據當日座位狀況推薦。</p>
                 </div>
                 <div class="availability-slots" id="availability-slots"></div>
-                <p class="availability-note" id="availability-note">選擇日期後會更新剩餘席次。</p>
+                <p class="availability-note" id="availability-note" data-i18n="reserve.availability.note">選擇日期後會更新剩餘席次。</p>
               </div>
 
               <div class="reservation-step-actions">
-                <button class="btn btn-primary" type="button" data-step-next>下一步</button>
+                <button class="btn btn-primary" type="button" data-step-next data-i18n="reserve.step.next">下一步</button>
               </div>
             </div>
 
             <div class="reservation-step" data-step="2">
               <div class="reservation-grid">
                 <label class="field field-full">
-                  <span>姓名</span>
-                  <input type="text" name="name" placeholder="請輸入訂位姓名" required>
+                  <span data-i18n="reserve.field.name">姓名</span>
+                  <input type="text" name="name" placeholder="請輸入訂位姓名" data-i18n-placeholder="reserve.field.name.placeholder" required>
                 </label>
                 <label class="field">
-                  <span>手機</span>
-                  <input type="tel" name="phone" placeholder="09xx-xxx-xxx" inputmode="tel" required>
+                  <span data-i18n="reserve.field.phone">手機</span>
+                  <input type="tel" name="phone" placeholder="09xx-xxx-xxx" data-i18n-placeholder="reserve.field.phone.placeholder" inputmode="tel" required>
                 </label>
                 <label class="field">
-                  <span>Email</span>
-                  <input type="email" name="email" placeholder="name@example.com" required>
+                  <span data-i18n="reserve.field.email">Email</span>
+                  <input type="email" name="email" placeholder="name@example.com" data-i18n-placeholder="reserve.field.email.placeholder" required>
                 </label>
               </div>
 
               <div class="reservation-step-actions">
-                <button class="btn btn-secondary" type="button" data-step-prev>上一步</button>
-                <button class="btn btn-primary" type="button" data-step-next>下一步</button>
+                <button class="btn btn-secondary" type="button" data-step-prev data-i18n="reserve.step.prev">上一步</button>
+                <button class="btn btn-primary" type="button" data-step-next data-i18n="reserve.step.next">下一步</button>
               </div>
             </div>
 
             <div class="reservation-step" data-step="3">
               <div class="reservation-grid">
                 <label class="field field-full">
-                  <span>備註</span>
-                  <textarea name="notes" rows="4" placeholder="例如：窗邊座位、嬰兒椅、6 位以上需求"></textarea>
+                  <span data-i18n="reserve.field.notes">備註</span>
+                  <textarea name="notes" rows="4" placeholder="例如：窗邊座位、嬰兒椅、6 位以上需求" data-i18n-placeholder="reserve.field.notes.placeholder"></textarea>
                 </label>
               </div>
 
               <div class="reservation-summary" id="reservation-summary">
-                <div><span>日期</span><strong data-summary="date">-</strong></div>
-                <div><span>時段</span><strong data-summary="time">-</strong></div>
-                <div><span>人數</span><strong data-summary="guests">-</strong></div>
-                <div><span>姓名</span><strong data-summary="name">-</strong></div>
+                <div><span data-i18n="reserve.summary.date">日期</span><strong data-summary="date">-</strong></div>
+                <div><span data-i18n="reserve.summary.time">時段</span><strong data-summary="time">-</strong></div>
+                <div><span data-i18n="reserve.summary.guests">人數</span><strong data-summary="guests">-</strong></div>
+                <div><span data-i18n="reserve.summary.name">姓名</span><strong data-summary="name">-</strong></div>
               </div>
 
               <div class="reservation-actions">
                 <div class="reservation-actions__buttons">
-                  <button class="btn btn-secondary" type="button" data-step-prev>上一步</button>
-                  <button class="btn btn-primary reservation-submit" type="submit">送出訂位需求</button>
+                  <button class="btn btn-secondary" type="button" data-step-prev data-i18n="reserve.step.prev">上一步</button>
+                  <button class="btn btn-primary reservation-submit" type="submit" data-i18n="reserve.submit">送出訂位需求</button>
                 </div>
               </div>
 
               <div class="reservation-success" id="reservation-success" hidden>
                 <div class="reservation-success__card">
-                  <p class="eyebrow small">Reservation</p>
-                  <h4>已收到你的預約</h4>
+                  <p class="eyebrow small" data-i18n="reserve.success.eyebrow">Reservation</p>
+                  <h4 data-i18n="reserve.success.title">已收到你的預約</h4>
                   <p class="reservation-success__summary" id="reservation-success-summary"></p>
                   <div class="reservation-success__actions">
-                    <a class="btn btn-secondary" id="calendar-google" target="_blank" rel="noreferrer">加入 Google 日曆</a>
-                    <a class="btn btn-secondary" id="calendar-ics" download="lamiu-reservation.ics">下載 .ics</a>
+                    <a class="btn btn-secondary" id="calendar-google" target="_blank" rel="noreferrer" data-i18n="reserve.success.google">加入 Google 日曆</a>
+                    <a class="btn btn-secondary" id="calendar-ics" download="lamiu-reservation.ics" data-i18n="reserve.success.ics">下載 .ics</a>
                   </div>
                 </div>
               </div>
@@ -427,37 +432,37 @@
       <section class="access-section reveal-on-scroll" id="access" data-reveal="section">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Access & Directions</p>
-            <h2>地圖與交通資訊</h2>
+            <p class="eyebrow" data-i18n="access.eyebrow">Access & Directions</p>
+            <h2 data-i18n="access.title">地圖與交通資訊</h2>
           </div>
         </div>
         <div class="access-layout">
           <div class="access-card access-copy-card">
             <div class="access-copy-block">
-              <span class="fact-label">地址</span>
-              <h3>台南市中西區衛民街129號</h3>
-              <p>樂沐 La Miu 位於台南市中西區衛民街，步行可達台南火車站與海安路商圈，適合早餐約會與週末早午餐聚會。</p>
+              <span class="fact-label" data-i18n="access.address.label">地址</span>
+              <h3 data-i18n="access.address.value">台南市中西區衛民街129號</h3>
+              <p data-i18n="access.address.text">樂沐 La Miu 位於台南市中西區衛民街，步行可達台南火車站與海安路商圈，適合早餐約會與週末早午餐聚會。</p>
             </div>
             <div class="access-info-grid">
               <div class="access-info-item">
-                <span class="fact-label">車站</span>
-                <strong>台南火車站</strong>
-                <p>步行約 12 分鐘，沿北門路轉衛民街即可抵達。</p>
+                <span class="fact-label" data-i18n="access.station.label">車站</span>
+                <strong data-i18n="access.station.value">台南火車站</strong>
+                <p data-i18n="access.station.text">步行約 12 分鐘，沿北門路轉衛民街即可抵達。</p>
               </div>
               <div class="access-info-item">
-                <span class="fact-label">公車</span>
-                <strong>衛民街口站</strong>
-                <p>可搭乘 2、5、77、藍幹線，步行約 3 分鐘。</p>
+                <span class="fact-label" data-i18n="access.bus.label">公車</span>
+                <strong data-i18n="access.bus.value">衛民街口站</strong>
+                <p data-i18n="access.bus.text">可搭乘 2、5、77、藍幹線，步行約 3 分鐘。</p>
               </div>
               <div class="access-info-item">
-                <span class="fact-label">停車</span>
-                <strong>衛民街停車場 / 海安路地下停車場</strong>
-                <p>周邊步行 3 至 5 分鐘內皆有付費停車場。</p>
+                <span class="fact-label" data-i18n="access.parking.label">停車</span>
+                <strong data-i18n="access.parking.value">衛民街停車場 / 海安路地下停車場</strong>
+                <p data-i18n="access.parking.text">周邊步行 3 至 5 分鐘內皆有付費停車場。</p>
               </div>
               <div class="access-info-item">
-                <span class="fact-label">來店建議</span>
-                <strong>假日建議提早 10 分鐘</strong>
-                <p>週末車流較多，若已訂位建議預留交通時間。</p>
+                <span class="fact-label" data-i18n="access.note.label">來店建議</span>
+                <strong data-i18n="access.note.value">假日建議提早 10 分鐘</strong>
+                <p data-i18n="access.note.text">週末車流較多，若已訂位建議預留交通時間。</p>
               </div>
             </div>
           </div>
@@ -470,7 +475,7 @@
                 referrerpolicy="no-referrer-when-downgrade"></iframe>
             </div>
             <div class="map-links">
-              <a class="btn btn-secondary" href="https://maps.google.com/?q=%E5%8F%B0%E5%8D%97%E5%B8%82%E4%B8%AD%E8%A5%BF%E5%8D%80%E8%A1%9B%E6%B0%91%E8%A1%97129%E8%99%9F" target="_blank" rel="noreferrer">使用 Google Maps 開啟</a>
+              <a class="btn btn-secondary" href="https://maps.google.com/?q=%E5%8F%B0%E5%8D%97%E5%B8%82%E4%B8%AD%E8%A5%BF%E5%8D%80%E8%A1%9B%E6%B0%91%E8%A1%97129%E8%99%9F" target="_blank" rel="noreferrer" data-i18n="access.map.cta">使用 Google Maps 開啟</a>
             </div>
           </div>
         </div>
@@ -479,37 +484,37 @@
 
     <footer class="site-footer reveal-on-scroll" data-reveal="footer">
       <div class="footer-brand-block">
-        <p class="eyebrow">La Miu Tainan</p>
-        <h2>樂沐 La Miu</h2>
-        <p>一間以暖木調性、季節早餐盤與安靜晨光為核心的城市晨間餐廳，位於台南市中西區。</p>
+        <p class="eyebrow" data-i18n="footer.eyebrow">La Miu Tainan</p>
+        <h2 data-i18n="footer.title">樂沐 La Miu</h2>
+        <p data-i18n="footer.text">一間以暖木調性、季節早餐盤與安靜晨光為核心的城市晨間餐廳，位於台南市中西區。</p>
       </div>
       <div class="footer-column">
-        <h3>地址</h3>
-        <p>台南市中西區衛民街129號</p>
-        <p>近台南火車站與海安路商圈，步行約 10 至 12 分鐘</p>
+        <h3 data-i18n="footer.address.title">地址</h3>
+        <p data-i18n="footer.address.line1">台南市中西區衛民街129號</p>
+        <p data-i18n="footer.address.line2">近台南火車站與海安路商圈，步行約 10 至 12 分鐘</p>
       </div>
       <div class="footer-column">
-        <h3>聯絡方式</h3>
+        <h3 data-i18n="footer.contact.title">聯絡方式</h3>
         <p><a href="tel:+88662213129">06-221-3129</a></p>
         <p><a href="mailto:reservations@lamiu.com.tw">reservations@lamiu.com.tw</a></p>
       </div>
       <div class="footer-column">
-        <h3>營業資訊</h3>
-        <p>週一至週五 09:00 - 16:30</p>
-        <p>週六至週日 08:30 - 17:00</p>
+        <h3 data-i18n="footer.hours.title">營業資訊</h3>
+        <p data-i18n="footer.hours.line1">週一至週五 09:00 - 16:30</p>
+        <p data-i18n="footer.hours.line2">週六至週日 08:30 - 17:00</p>
       </div>
       <div class="footer-column">
-        <h3>社群連結</h3>
+        <h3 data-i18n="footer.social.title">社群連結</h3>
         <p><a href="https://www.instagram.com" target="_blank" rel="noreferrer">Instagram</a></p>
         <p><a href="https://www.facebook.com" target="_blank" rel="noreferrer">Facebook</a></p>
       </div>
     </footer>
   </div>
 
-  <a class="cta-fab" href="#reserve" aria-label="立即訂位">立即訂位</a>
+  <a class="cta-fab" href="#reserve" aria-label="立即訂位" data-i18n="cta.reserve" data-i18n-aria="cta.reserve">立即訂位</a>
   <div class="mobile-quick-actions" aria-label="行動快速操作">
-    <a class="mobile-quick-action" href="#reserve">快速訂位</a>
-    <button class="mobile-quick-action" type="button" data-scroll-top>回到頂部</button>
+    <a class="mobile-quick-action" href="#reserve" data-i18n="cta.reserve.quick">快速訂位</a>
+    <button class="mobile-quick-action" type="button" data-scroll-top data-i18n="cta.scrollTop">回到頂部</button>
   </div>
 
   <script src="config.js"></script>

@@ -27,11 +27,16 @@
     <header class="site-header reveal-on-scroll" data-reveal="header">
       <a class="brand" href="index.html"><span class="brand-mark">樂沐</span><span class="brand-sub">La Miu</span></a>
       <nav class="nav">
-        <a href="menu.html">菜單總覽</a>
-        <a href="breakfast.html">早餐頁</a>
-        <a href="coffee.html">咖啡頁</a>
-        <a href="dessert.html">甜點頁</a>
+        <a href="menu.html" data-i18n="nav.menuOverview">菜單總覽</a>
+        <a href="breakfast.html" data-i18n="nav.breakfast">早餐頁</a>
+        <a href="coffee.html" data-i18n="nav.coffee">咖啡頁</a>
+        <a href="dessert.html" data-i18n="nav.dessert">甜點頁</a>
       </nav>
+      <div class="lang-toggle" aria-label="Language">
+        <a class="lang-toggle__link" data-lang-switch="zh" href="?lang=zh">中文</a>
+        <span>/</span>
+        <a class="lang-toggle__link" data-lang-switch="en" href="?lang=en">EN</a>
+      </div>
     </header>
     <main>
       <section class="item-detail-hero reveal-on-scroll reveal-visible" data-reveal="hero">
@@ -41,37 +46,37 @@
           <h1 id="item-name"></h1>
           <p class="hero-text" id="item-description"></p>
           <div class="item-meta">
-            <div class="fact-item"><span class="fact-label">價格</span><strong id="item-price"></strong></div>
-            <div class="fact-item"><span class="fact-label">供應</span><strong id="item-availability"></strong></div>
-            <div class="fact-item"><span class="fact-label">搭配建議</span><strong id="item-pairing"></strong></div>
+            <div class="fact-item"><span class="fact-label" data-i18n="item.meta.price">價格</span><strong id="item-price"></strong></div>
+            <div class="fact-item"><span class="fact-label" data-i18n="item.meta.availability">供應</span><strong id="item-availability"></strong></div>
+            <div class="fact-item"><span class="fact-label" data-i18n="item.meta.pairing">搭配建議</span><strong id="item-pairing"></strong></div>
           </div>
         </div>
       </section>
 
       <section class="item-detail-section reveal-on-scroll" data-reveal="section">
         <div class="item-panel">
-          <p class="eyebrow">Ingredients</p>
-          <h2>食材構成</h2>
+          <p class="eyebrow" data-i18n="item.ingredients.eyebrow">Ingredients</p>
+          <h2 data-i18n="item.ingredients.title">食材構成</h2>
           <ul id="item-ingredients" class="detail-list"></ul>
         </div>
         <div class="item-panel">
-          <p class="eyebrow">Tags</p>
-          <h2>品項標籤</h2>
+          <p class="eyebrow" data-i18n="item.tags.eyebrow">Tags</p>
+          <h2 data-i18n="item.tags.title">品項標籤</h2>
           <div id="item-tags" class="tag-cloud"></div>
         </div>
       </section>
 
       <section class="item-related-section reveal-on-scroll" data-reveal="section">
-        <div class="section-heading"><div><p class="eyebrow">Related Items</p><h2>同分類推薦</h2></div></div>
+        <div class="section-heading"><div><p class="eyebrow" data-i18n="item.related.eyebrow">Related Items</p><h2 data-i18n="item.related.title">同分類推薦</h2></div></div>
         <div class="category-list-grid" id="related-items-grid"></div>
       </section>
     </main>
     <footer class="site-footer reveal-on-scroll" data-reveal="footer">
-      <div class="footer-brand-block"><p class="eyebrow">La Miu Tainan</p><h2>樂沐 La Miu</h2><p>從單品頁也能延續完整品牌攝影與餐桌敘事。</p></div>
-      <div class="footer-column"><h3>快速連結</h3><p><a href="menu.html">菜單總覽</a></p><p><a href="admin.html">菜單後台</a></p></div>
-      <div class="footer-column"><h3>聯絡方式</h3><p><a href="tel:+88662213129">06-221-3129</a></p><p><a href="mailto:reservations@lamiu.com.tw">reservations@lamiu.com.tw</a></p></div>
-      <div class="footer-column"><h3>分類頁</h3><p><a href="breakfast.html">早餐頁</a></p><p><a href="coffee.html">咖啡頁</a></p><p><a href="dessert.html">甜點頁</a></p></div>
-      <div class="footer-column"><h3>訂位</h3><p><a href="index.html#reserve">線上訂位</a></p><p>台南市中西區衛民街129號</p></div>
+      <div class="footer-brand-block"><p class="eyebrow" data-i18n="footer.eyebrow">La Miu Tainan</p><h2 data-i18n="footer.title">樂沐 La Miu</h2><p data-i18n="footer.text.item">從單品頁也能延續完整品牌攝影與餐桌敘事。</p></div>
+      <div class="footer-column"><h3 data-i18n="footer.quick.title">快速連結</h3><p><a href="menu.html" data-i18n="footer.quick.menu">菜單總覽</a></p><p><a href="admin.html" data-i18n="footer.quick.admin">菜單後台</a></p></div>
+      <div class="footer-column"><h3 data-i18n="footer.contact.title">聯絡方式</h3><p><a href="tel:+88662213129">06-221-3129</a></p><p><a href="mailto:reservations@lamiu.com.tw">reservations@lamiu.com.tw</a></p></div>
+      <div class="footer-column"><h3 data-i18n="footer.category.title">分類頁</h3><p><a href="breakfast.html" data-i18n="footer.category.breakfast">早餐頁</a></p><p><a href="coffee.html" data-i18n="footer.category.coffee">咖啡頁</a></p><p><a href="dessert.html" data-i18n="footer.category.dessert">甜點頁</a></p></div>
+      <div class="footer-column"><h3 data-i18n="footer.reserve.title">訂位</h3><p><a href="index.html#reserve" data-i18n="footer.reserve.cta">線上訂位</a></p><p data-i18n="footer.address.line1">台南市中西區衛民街129號</p></div>
     </footer>
   </div>
   <script src="config.js"></script>
