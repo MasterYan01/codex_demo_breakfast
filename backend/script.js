@@ -403,6 +403,8 @@ const fillAdminForm = (item) => {
   form.name.value = item.name || '';
   form.category.value = item.category || 'breakfast';
   form.price.value = item.price || 0;
+  form.sortWeight.value = Number.isFinite(item.sortWeight) ? item.sortWeight : 0;
+  form.status.value = item.status || 'active';
   form.image.value = item.image || '';
   form.shortDescription.value = item.shortDescription || '';
   form.description.value = item.description || '';
@@ -418,7 +420,7 @@ const renderAdminList = () => {
   list.innerHTML = adminState.items.map((item) => `
     <button type="button" class="admin-item-button${item.slug === adminSelectedSlug ? ' is-selected' : ''}" data-slug="${item.slug}">
       <strong>${item.name}</strong>
-      <span>${item.category} / ${formatPrice(item.price)}</span>
+      <span>${item.category} / ${formatPrice(item.price)} · 權重 ${Number.isFinite(item.sortWeight) ? item.sortWeight : 0}${item.status === 'inactive' ? ' · 下架' : ''}</span>
     </button>
   `).join('');
 
@@ -437,6 +439,8 @@ const getFormItemPayload = (form) => ({
   name: safeText(form.name.value),
   category: safeText(form.category.value),
   price: Number(form.price.value || 0),
+  sortWeight: Number(form.sortWeight.value || 0),
+  status: safeText(form.status.value) || 'active',
   image: safeText(form.image.value),
   shortDescription: safeText(form.shortDescription.value),
   description: safeText(form.description.value),
@@ -483,6 +487,8 @@ const setupAdminPage = async () => {
       adminSelectedSlug = '';
       form.reset();
       form.category.value = 'breakfast';
+      form.sortWeight.value = 0;
+      form.status.value = 'active';
       renderAdminList();
       updateAdminStatus('已建立空白單品表單。', 'success');
     });
@@ -497,7 +503,7 @@ const setupAdminPage = async () => {
       adminState.items = adminState.items.filter((item) => item.slug !== adminSelectedSlug);
       adminSelectedSlug = adminState.items[0]?.slug || '';
       fillAdminForm(adminState.items[0] || {
-        slug: '', name: '', category: 'breakfast', price: 0, image: '', shortDescription: '', description: '', pairing: '', availability: '', ingredients: [], tags: []
+        slug: '', name: '', category: 'breakfast', price: 0, sortWeight: 0, status: 'active', image: '', shortDescription: '', description: '', pairing: '', availability: '', ingredients: [], tags: []
       });
       renderAdminList();
       updateAdminStatus('已從暫存內容移除此單品。記得儲存全部變更。', 'success');
@@ -554,5 +560,3 @@ setupRevealAnimations();
 setupActiveSections();
 finishLoadingAfterReady();
 initDataDrivenPages();
-
-

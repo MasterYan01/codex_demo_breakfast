@@ -57,6 +57,8 @@
               <label class="field"><span>名稱</span><input type="text" name="name" required></label>
               <label class="field"><span>分類</span><select name="category" required><option value="breakfast">早餐</option><option value="coffee">咖啡</option><option value="dessert">甜點</option></select></label>
               <label class="field"><span>價格</span><input type="number" name="price" min="0" required></label>
+              <label class="field"><span>排序權重</span><input type="number" name="sortWeight" min="-100" max="1000" step="1" value="0"></label>
+              <label class="field"><span>上架狀態</span><select name="status"><option value="active">上架</option><option value="inactive">下架</option></select></label>
               <label class="field field-full"><span>圖片</span><input type="url" name="image" required></label>
               <label class="field field-full"><span>短描述</span><input type="text" name="shortDescription" required></label>
               <label class="field field-full"><span>完整描述</span><textarea name="description" rows="5" required></textarea></label>
@@ -78,4 +80,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-

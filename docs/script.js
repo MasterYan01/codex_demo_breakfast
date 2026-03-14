@@ -41,6 +41,75 @@ const apiBase = String(appConfig.apiBase || window.location.origin).replace(/\/$
 const menuApiUrl = `${apiBase}/api/menu`;
 const getApiUrl = (path) => `${apiBase}${path}`;
 
+const syncSeoMeta = () => {
+  const cleanUrl = window.location.href.split('#')[0];
+  let canonical = document.querySelector('link[rel="canonical"]');
+  if (!canonical) {
+    canonical = document.createElement('link');
+    canonical.setAttribute('rel', 'canonical');
+    document.head.appendChild(canonical);
+  }
+  canonical.setAttribute('href', cleanUrl);
+
+  let ogUrl = document.querySelector('meta[property="og:url"]');
+  if (!ogUrl) {
+    ogUrl = document.createElement('meta');
+    ogUrl.setAttribute('property', 'og:url');
+    document.head.appendChild(ogUrl);
+  }
+  ogUrl.setAttribute('content', cleanUrl);
+
+  const ogImage = document.querySelector('meta[property="og:image"]');
+  if (ogImage) {
+    const content = ogImage.getAttribute('content') || '';
+    if (content && !content.startsWith('http')) {
+      ogImage.setAttribute('content', new URL(content, window.location.href).toString());
+    }
+  }
+
+  const twitterImage = document.querySelector('meta[name="twitter:image"]');
+  if (twitterImage) {
+    const content = twitterImage.getAttribute('content') || '';
+    if (content && !content.startsWith('http')) {
+      twitterImage.setAttribute('content', new URL(content, window.location.href).toString());
+    }
+  }
+};
+
+const upsertJsonLd = (id, payload) => {
+  if (!payload) return;
+  let node = document.querySelector(`script[data-jsonld="${id}"]`);
+  if (!node) {
+    node = document.createElement('script');
+    node.type = 'application/ld+json';
+    node.dataset.jsonld = id;
+    document.head.appendChild(node);
+  }
+  node.textContent = JSON.stringify(payload);
+};
+
+const setMetaProperty = (property, content) => {
+  if (!content) return;
+  let node = document.querySelector(`meta[property="${property}"]`);
+  if (!node) {
+    node = document.createElement('meta');
+    node.setAttribute('property', property);
+    document.head.appendChild(node);
+  }
+  node.setAttribute('content', content);
+};
+
+const setMetaName = (name, content) => {
+  if (!content) return;
+  let node = document.querySelector(`meta[name="${name}"]`);
+  if (!node) {
+    node = document.createElement('meta');
+    node.setAttribute('name', name);
+    document.head.appendChild(node);
+  }
+  node.setAttribute('content', content);
+};
+
 const finishLoading = () => {
   body.classList.remove('is-loading');
   body.classList.add('is-ready');
@@ -187,6 +256,23 @@ const getHotItems = (items) => items
   .slice(0, 6)
   .map((entry) => entry.item);
 
+const isItemActive = (item) => item && item.status !== 'inactive';
+
+const getSortWeight = (item) => {
+  const weight = Number(item?.sortWeight);
+  return Number.isFinite(weight) ? weight : 0;
+};
+
+const sortItemsForDisplay = (items, orderMap) => {
+  const sorted = [...items];
+  sorted.sort((a, b) => {
+    const weightDiff = getSortWeight(b) - getSortWeight(a);
+    if (weightDiff !== 0) return weightDiff;
+    return (orderMap.get(a.slug) ?? 0) - (orderMap.get(b.slug) ?? 0);
+  });
+  return sorted;
+};
+
 const normalizeText = (value) => safeText(value).toLowerCase();
 const tokenizeQuery = (query) => normalizeText(query).split(/\s+/).filter(Boolean);
 
@@ -273,7 +359,7 @@ const storeRecentSlug = (slug) => {
 const buildSearchIndex = async () => {
   const data = await fetchJson(menuApiUrl);
   const categories = Array.isArray(data.categories) ? data.categories : [];
-  const items = Array.isArray(data.items) ? data.items : [];
+  const items = Array.isArray(data.items) ? data.items.filter(isItemActive) : [];
   const categoryMap = new Map(categories.map((category) => [category.slug, category]));
 
   const indexedItems = items.map((item) => {
@@ -964,7 +1050,11 @@ const getRecentDisplayItems = (index) => {
       categoryName: entry.category || item.categoryName || '',
       href: getItemPageHref(entry.slug)
     };
-  }).filter((result) => result.title);
+  }).filter((result) => {
+    const item = itemMap.get(result.slug);
+    if (item && !isItemActive(item)) return false;
+    return result.title;
+  });
 };
 
 const filterItemsByDietary = (items, activeFilters) => {
@@ -1682,40 +1772,69 @@ const setupGlobalSearch = () => {
 const renderMenuOverview = async () => {
   const data = await fetchJson(menuApiUrl);
   cacheMenuItems(data.items);
+  const activeItems = Array.isArray(data.items) ? data.items.filter(isItemActive) : [];
+  const orderMap = new Map((data.items || []).map((item, index) => [item.slug, index]));
+  const displayItems = sortItemsForDisplay(activeItems, orderMap);
   const categoryGrid = document.querySelector('#menu-category-grid');
   const featuredGrid = document.querySelector('#menu-featured-grid');
   const seasonalGrid = document.querySelector('#seasonal-grid');
   if (!categoryGrid || !featuredGrid || !seasonalGrid) return;
 
   categoryGrid.innerHTML = data.categories
-    .map((category) => createCategoryEntry(category, data.items.filter((item) => item.category === category.slug).length))
+    .map((category) => createCategoryEntry(category, activeItems.filter((item) => item.category === category.slug).length))
     .join('');
 
-  featuredGrid.innerHTML = data.items.slice(0, 4).map(createMenuCard).join('');
-  const seasonalItems = data.items.filter((item) => Array.isArray(item.tags) && item.tags.includes('季節限定')).slice(0, 3);
+  featuredGrid.innerHTML = displayItems.slice(0, 4).map(createMenuCard).join('');
+  const seasonalItems = displayItems.filter((item) => Array.isArray(item.tags) && item.tags.includes('季節限定')).slice(0, 3);
   seasonalGrid.innerHTML = seasonalItems.map(createSeasonalCard).join('');
 
   const todayGrid = document.querySelector('#today-picks-grid');
   const hotGrid = document.querySelector('#hot-picks-grid');
   const todayNote = document.querySelector('#today-picks-note');
   if (todayGrid) {
-    const today = getDailyRecommendations(data.items);
+    const today = getDailyRecommendations(displayItems);
     todayGrid.innerHTML = today.items.map(createMenuCard).join('');
     if (todayNote) {
       todayNote.textContent = `${getTimeSegmentLabel(today.segment)}，依當前時間更新`;
     }
   }
   if (hotGrid) {
-    hotGrid.innerHTML = getHotItems(data.items).map(createMenuCard).join('');
+    hotGrid.innerHTML = getHotItems(displayItems).map(createMenuCard).join('');
   }
 
   const filterToolbar = document.querySelector('[data-menu-filter]');
   const filterPanel = document.querySelector('[data-filter-target="menu-filter-grid"]');
   const filterGrid = document.querySelector('#menu-filter-grid');
   if (filterToolbar && filterGrid) {
-    setupMenuQuickFilters(filterToolbar, data.items, filterGrid, createMenuCard);
+    setupMenuQuickFilters(filterToolbar, displayItems, filterGrid, createMenuCard);
   } else if (filterPanel && filterGrid) {
-    setupDietaryFilterPanel(filterPanel, data.items, filterGrid, createMenuCard);
+    setupDietaryFilterPanel(filterPanel, displayItems, filterGrid, createMenuCard);
+  }
+
+  if (data && data.categories) {
+    const menuSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'Menu',
+      name: `${data.brand?.name || '樂沐 La Miu'} 菜單`,
+      hasMenuSection: data.categories.map((category) => ({
+        '@type': 'MenuSection',
+        name: category.name,
+        description: category.description,
+        hasMenuItem: displayItems
+          .filter((item) => item.category === category.slug)
+          .map((item) => ({
+            '@type': 'MenuItem',
+            name: item.name,
+            description: item.shortDescription,
+            offers: {
+              '@type': 'Offer',
+              price: Number(item.price || 0),
+              priceCurrency: 'TWD'
+            }
+          }))
+      }))
+    };
+    upsertJsonLd('menu', menuSchema);
   }
 };
 
@@ -1725,6 +1844,9 @@ const renderCategoryPage = async () => {
   const payload = await fetchJson(getApiUrl(`/api/categories/${encodeURIComponent(slug)}`));
   const { category, items } = payload;
   cacheMenuItems(items);
+  const activeItems = Array.isArray(items) ? items.filter(isItemActive) : [];
+  const orderMap = new Map((items || []).map((item, index) => [item.slug, index]));
+  const displayItems = sortItemsForDisplay(activeItems, orderMap);
 
   const setText = (selector, value) => {
     const node = document.querySelector(selector);
@@ -1748,16 +1870,36 @@ const renderCategoryPage = async () => {
   if (listGrid) {
     const filterPanel = document.querySelector('[data-filter-target="category-list-grid"]');
     if (filterPanel) {
-      setupDietaryFilterPanel(filterPanel, items, listGrid, createCategoryDishCard);
+      setupDietaryFilterPanel(filterPanel, displayItems, listGrid, createCategoryDishCard);
     } else {
-      listGrid.innerHTML = items.map(createCategoryDishCard).join('');
+      listGrid.innerHTML = displayItems.map(createCategoryDishCard).join('');
     }
-    listGrid.classList.toggle('category-list-grid--three', items.length <= 6 && slug !== 'breakfast');
+    listGrid.classList.toggle('category-list-grid--three', displayItems.length <= 6 && slug !== 'breakfast');
   }
 
   const pairingNode = document.querySelector('#category-pairings');
   if (pairingNode) {
     pairingNode.innerHTML = (category.pairings || []).map((link) => `<a class="btn btn-secondary" href="${link.href}">${link.label}</a>`).join('');
+  }
+
+  if (category) {
+    const sectionSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'MenuSection',
+      name: category.name,
+      description: category.description,
+      hasMenuItem: displayItems.map((item) => ({
+        '@type': 'MenuItem',
+        name: item.name,
+        description: item.shortDescription,
+        offers: {
+          '@type': 'Offer',
+          price: Number(item.price || 0),
+          priceCurrency: 'TWD'
+        }
+      }))
+    };
+    upsertJsonLd(`menu-section-${slug}`, sectionSchema);
   }
 
   document.title = `樂沐 La Miu ${category.name}頁 | ${category.english}`;
@@ -1814,6 +1956,31 @@ const renderItemDetailPage = async () => {
   const relatedGrid = document.querySelector('#related-items-grid');
   if (relatedGrid) {
     relatedGrid.innerHTML = related.map(createCategoryDishCard).join('');
+  }
+
+  if (item) {
+    const itemSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'MenuItem',
+      name: item.name,
+      description: item.description || item.shortDescription,
+      image: item.image,
+      offers: {
+        '@type': 'Offer',
+        price: Number(item.price || 0),
+        priceCurrency: 'TWD'
+      }
+    };
+    upsertJsonLd(`menu-item-${item.slug}`, itemSchema);
+
+    const titleText = `樂沐 La Miu | ${item.name}`;
+    const descText = item.shortDescription || item.description || '';
+    setMetaProperty('og:title', titleText);
+    setMetaProperty('og:description', descText);
+    setMetaProperty('og:image', item.image);
+    setMetaName('twitter:title', titleText);
+    setMetaName('twitter:description', descText);
+    setMetaName('twitter:image', item.image);
   }
 
   document.title = `樂沐 La Miu | ${item.name}`;
@@ -1982,6 +2149,7 @@ setupAnchorScroll();
 setupHeroPointer();
 syncHeader();
 syncHeroParallax();
+syncSeoMeta();
 window.addEventListener('scroll', requestScrollSync, { passive: true });
 window.addEventListener('resize', requestScrollSync);
 setupRevealAnimations();

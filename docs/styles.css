@@ -529,6 +529,12 @@ body.search-open .search-panel {
   transition: opacity 720ms ease, transform 720ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+[data-reveal="section"],
+[data-reveal="footer"] {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 800px;
+}
+
 .reveal-on-scroll.reveal-visible {
   opacity: 1;
   transform: translateY(0);
