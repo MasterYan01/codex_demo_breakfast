@@ -231,6 +231,31 @@
             <h2>空間、光線與餐桌比例，共同構成用餐的完整感受。</h2>
           </div>
         </div>
+        <div class="space-carousel" aria-label="店內環境照片導覽">
+          <button class="space-carousel__nav" type="button" data-space-prev aria-label="上一張">←</button>
+          <div class="space-carousel__frame">
+            <div class="space-carousel__track" data-space-track>
+              <figure class="space-carousel__slide is-active" data-space-slide>
+                <div class="space-carousel__image interior-frame"></div>
+                <figcaption>晨間自然光與木質桌面</figcaption>
+              </figure>
+              <figure class="space-carousel__slide" data-space-slide>
+                <div class="space-carousel__image chef-frame"></div>
+                <figcaption>主廚備餐的靜謐節奏</figcaption>
+              </figure>
+              <figure class="space-carousel__slide" data-space-slide>
+                <div class="space-carousel__image produce-frame"></div>
+                <figcaption>季節食材與暖調器皿</figcaption>
+              </figure>
+            </div>
+          </div>
+          <button class="space-carousel__nav" type="button" data-space-next aria-label="下一張">→</button>
+          <div class="space-carousel__dots" role="tablist" aria-label="選擇照片">
+            <button class="space-carousel__dot is-active" type="button" data-space-dot aria-label="第 1 張"></button>
+            <button class="space-carousel__dot" type="button" data-space-dot aria-label="第 2 張"></button>
+            <button class="space-carousel__dot" type="button" data-space-dot aria-label="第 3 張"></button>
+          </div>
+        </div>
         <div class="space-layout">
           <div class="space-card">
             <h3>材質</h3>
@@ -476,6 +501,10 @@
   </div>
 
   <a class="cta-fab" href="#reserve" aria-label="立即訂位">立即訂位</a>
+  <div class="mobile-quick-actions" aria-label="行動快速操作">
+    <a class="mobile-quick-action" href="#reserve">快速訂位</a>
+    <button class="mobile-quick-action" type="button" data-scroll-top>回到頂部</button>
+  </div>
 
   <script src="config.js"></script>
   <script src="script.js"></script>

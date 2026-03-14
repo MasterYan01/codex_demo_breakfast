@@ -1434,6 +1434,53 @@ const setupQuickPreview = () => {
   });
 };
 
+const setupSpaceCarousel = () => {
+  const track = document.querySelector('[data-space-track]');
+  const slides = Array.from(document.querySelectorAll('[data-space-slide]'));
+  const dots = Array.from(document.querySelectorAll('[data-space-dot]'));
+  const prevButton = document.querySelector('[data-space-prev]');
+  const nextButton = document.querySelector('[data-space-next]');
+  if (!track || !slides.length) return;
+  let index = 0;
+
+  const update = () => {
+    track.style.transform = `translateX(-${index * 100}%)`;
+    slides.forEach((slide, idx) => slide.classList.toggle('is-active', idx === index));
+    dots.forEach((dot, idx) => dot.classList.toggle('is-active', idx === index));
+  };
+
+  const goTo = (next) => {
+    index = (next + slides.length) % slides.length;
+    update();
+  };
+
+  prevButton?.addEventListener('click', () => goTo(index - 1));
+  nextButton?.addEventListener('click', () => goTo(index + 1));
+  dots.forEach((dot, idx) => {
+    dot.addEventListener('click', () => goTo(idx));
+  });
+  update();
+};
+
+const setupMobileQuickActions = () => {
+  const scrollButton = document.querySelector('[data-scroll-top]');
+  if (!scrollButton) return;
+  const toggleButtons = () => {
+    const hidden = window.scrollY < 240;
+    scrollButton.classList.toggle('is-hidden', hidden);
+  };
+
+  scrollButton.addEventListener('click', () => {
+    window.scrollTo({
+      top: 0,
+      behavior: reduceMotion ? 'auto' : 'smooth'
+    });
+  });
+
+  window.addEventListener('scroll', toggleButtons, { passive: true });
+  toggleButtons();
+};
+
 const renderSearchResults = async (panel, query) => {
   const resultsNode = panel.querySelector('.search-results');
   const titleNode = panel.querySelector('.search-panel__title');
@@ -1942,5 +1989,7 @@ setupActiveSections();
 setupRecentItemTracking();
 setupGlobalSearch();
 setupQuickPreview();
+setupSpaceCarousel();
+setupMobileQuickActions();
 finishLoadingAfterReady();
 initDataDrivenPages();
