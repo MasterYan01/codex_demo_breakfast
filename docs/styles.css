@@ -171,9 +171,43 @@ body.is-ready .page-loader {
 
 .brand {
   display: inline-flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
   text-decoration: none;
   color: var(--ink);
+}
+
+.brand-logo {
+  width: 56px;
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 18px;
+  border: 1px solid rgba(98, 65, 44, 0.12);
+  background: rgba(255, 250, 244, 0.92);
+  box-shadow: 0 12px 24px rgba(74, 47, 31, 0.16);
+}
+
+.brand-logo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+.brand-text {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.site-header.is-stuck .brand-logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  box-shadow: 0 10px 20px rgba(74, 47, 31, 0.12);
 }
 
 .brand-mark,
