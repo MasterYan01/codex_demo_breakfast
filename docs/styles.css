@@ -1209,8 +1209,8 @@ body.search-open .search-panel {
 
 .site-footer {
   display: grid;
-  grid-template-columns: 1.3fr repeat(4, minmax(0, 1fr));
-  gap: 24px;
+  grid-template-columns: minmax(240px, 1.25fr) repeat(4, minmax(170px, 1fr));
+  gap: 20px 24px;
   margin: 12px 18px 18px;
   padding: 30px 32px;
   background:
@@ -1218,7 +1218,23 @@ body.search-open .search-panel {
 }
 
 .footer-brand-block h2 {
+  max-width: 16ch;
+}
+
+.footer-brand-block h2 {
   margin-bottom: 10px;
+}
+
+.footer-column,
+.footer-brand-block {
+  min-width: 0;
+}
+
+.footer-column p,
+.footer-column a,
+.footer-brand-block p {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .footer-column a {
@@ -1675,6 +1691,7 @@ body.is-ready .hero.reveal-visible .hero-visual > .hero-floating-card { animatio
 .site-footer .footer-column a {
   position: relative;
   display: inline-block;
+  max-width: 100%;
 }
 
 .site-footer .footer-column a::after {
