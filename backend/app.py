@@ -75,6 +75,34 @@ def send_reservation_webhook(entry):
         return None
 
 
+def parse_iso_timestamp(value):
+    if not value:
+        return None
+    try:
+        if value.endswith('Z'):
+            value = value.replace('Z', '+00:00')
+        return datetime.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def find_duplicate_reservation(entry, reservations, window_seconds=120):
+    if not reservations:
+        return None
+    keys = ['name', 'phone', 'email', 'date', 'time', 'guests']
+    now = datetime.now(timezone.utc)
+    for prev in reversed(reservations[-5:]):
+        if not prev:
+            continue
+        if all(str(prev.get(key, '')).strip() == str(entry.get(key, '')).strip() for key in keys):
+            prev_time = parse_iso_timestamp(prev.get('createdAt'))
+            if prev_time is None:
+                return prev
+            if abs((now - prev_time).total_seconds()) <= window_seconds:
+                return prev
+    return None
+
+
 class MenuHandler(BaseHTTPRequestHandler):
     server_version = 'LaMiuHTTP/1.1'
 
@@ -180,6 +208,10 @@ class MenuHandler(BaseHTTPRequestHandler):
             }
 
             reservations = load_reservations()
+            duplicate = find_duplicate_reservation(entry, reservations)
+            if duplicate:
+                return self.send_json({'ok': True, 'reservation': duplicate, 'deduped': True})
+
             reservations.append(entry)
             if len(reservations) > RESERVATION_LIMIT:
                 reservations = reservations[-RESERVATION_LIMIT:]

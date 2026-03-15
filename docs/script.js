@@ -150,7 +150,7 @@ const i18n = {
     'reserve.summary.name': '姓名',
     'reserve.submit': '送出訂位需求',
     'reserve.success.eyebrow': 'Reservation',
-    'reserve.success.title': '已收到你的預約',
+    'reserve.success.title': '訂位成功！',
     'reserve.success.google': '加入 Google 日曆',
     'reserve.success.ics': '下載 .ics',
     'access.eyebrow': 'Access & Directions',
@@ -344,8 +344,9 @@ const i18n = {
     'reserve.step.error.basic': '請先選擇日期、時段與人數。',
     'reserve.step.error.contact': '請填寫姓名、電話與 Email。',
     'reserve.submit.sending': '訂位送出中，請稍候。',
-    'reserve.submit.success': '訂位需求已送出：{summary} 我們將以電話或 Email 與你確認。',
+    'reserve.submit.success': '已成功訂位：{summary} 我們將以電話或 Email 與你確認。',
     'reserve.submit.error': '送出失敗，請稍後再試或直接來電。',
+    'reserve.submit.already': '已送出訂位，如需更改請調整資訊後再送出。',
     'reserve.submit.successSummary': '預約完成：{summary} 可點擊下方加入行事曆。',
     'reserve.summary.inline': '{date} {time}，{guests} 位，{name}。',
     'reserve.calendar.title': '樂沐 La Miu 訂位',
@@ -479,7 +480,7 @@ const i18n = {
     'reserve.summary.name': 'Name',
     'reserve.submit': 'Submit Reservation',
     'reserve.success.eyebrow': 'Reservation',
-    'reserve.success.title': 'Reservation received',
+    'reserve.success.title': 'Reservation Confirmed!',
     'reserve.success.google': 'Add to Google Calendar',
     'reserve.success.ics': 'Download .ics',
     'access.eyebrow': 'Access & Directions',
@@ -673,8 +674,9 @@ const i18n = {
     'reserve.step.error.basic': 'Please select date, time, and guests first.',
     'reserve.step.error.contact': 'Please enter name, phone, and email.',
     'reserve.submit.sending': 'Submitting your reservation...',
-    'reserve.submit.success': 'Reservation submitted: {summary} We\'ll confirm by phone or email.',
+    'reserve.submit.success': 'Reservation confirmed: {summary} We\'ll confirm by phone or email.',
     'reserve.submit.error': 'Submission failed. Please try again or call us.',
+    'reserve.submit.already': 'Your reservation was already sent. Update the details to submit again.',
     'reserve.submit.successSummary': 'Reservation complete: {summary} Add it to your calendar below.',
     'reserve.summary.inline': '{date} {time}, {guests} guests, {name}.',
     'reserve.calendar.title': 'La Miu Reservation',
@@ -1779,19 +1781,42 @@ const setupReservationForm = () => {
   const successPanel = document.querySelector('#reservation-success');
   const successSummary = document.querySelector('#reservation-success-summary');
   const submitButton = reservationForm.querySelector('.reservation-submit');
+  const submitDebounceMs = 1200;
+  let isSubmitting = false;
+  let isLocked = false;
+  let lastSubmitAt = 0;
   const hideSuccess = () => {
     if (successPanel) {
       successPanel.hidden = true;
     }
   };
-  const setSubmitting = (isSubmitting) => {
+  const updateSubmitState = () => {
     if (!submitButton) return;
-    submitButton.disabled = isSubmitting;
+    submitButton.disabled = isSubmitting || isLocked;
+  };
+  const unlockAfterInput = () => {
+    if (!isLocked) return;
+    isLocked = false;
+    updateSubmitState();
   };
 
-  reservationForm.addEventListener('input', hideSuccess);
+  reservationForm.addEventListener('input', () => {
+    hideSuccess();
+    unlockAfterInput();
+  });
   reservationForm.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
+    if (isLocked) {
+      updateReservationStatus(t('reserve.submit.already'), 'success');
+      return;
+    }
+    const now = Date.now();
+    if (now - lastSubmitAt < submitDebounceMs) {
+      updateReservationStatus(t('reserve.submit.sending'), 'loading');
+      return;
+    }
+    lastSubmitAt = now;
     const formData = new FormData(reservationForm);
     const error = validateReservation(formData);
 
@@ -1816,7 +1841,8 @@ const setupReservationForm = () => {
       name: payload.name
     });
     updateReservationStatus(t('reserve.submit.sending'), 'loading');
-    setSubmitting(true);
+    isSubmitting = true;
+    updateSubmitState();
     try {
       const response = await fetch(getApiUrl('/api/reservations'), {
         method: 'POST',
@@ -1834,14 +1860,18 @@ const setupReservationForm = () => {
       }
       if (successPanel) {
         successPanel.hidden = false;
+        successPanel.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
       }
+      isLocked = true;
+      updateSubmitState();
       setReservationMinDate();
       availability?.render();
     } catch (submitError) {
       console.warn(submitError);
       updateReservationStatus(t('reserve.submit.error'), 'error');
     } finally {
-      setSubmitting(false);
+      isSubmitting = false;
+      updateSubmitState();
     }
   });
 };
