@@ -37,6 +37,8 @@ Main files:
 - `app.py`
 - `data/menu.json`
 - `data/reservations.json`
+- `data/waitlist.json`
+- `data/takeout.json`
 - `styles.css`
 - `script.js`
 - `config.js`
@@ -49,7 +51,12 @@ Recommended Render settings:
 - Environment variables:
   - `HOST=0.0.0.0`
   - `ALLOWED_ORIGINS=https://your-user.github.io`
-  - `RESERVATION_WEBHOOK_URL` (optional: send a notification webhook on new bookings)
+  - `NOTIFY_WEBHOOK_URL` (optional: webhook for new reservations/waitlist/takeout)
+  - `RESERVATION_WEBHOOK_URL` (backward compatible with existing webhook config)
+  - `LINE_NOTIFY_TOKEN` (optional: LINE Notify token)
+  - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `SMTP_TO` (optional: email notifications)
+  - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` (optional: SMS for waitlist notify)
+  - `WAITLIST_SMS_TEMPLATE` (optional: customize SMS message)
   - `PORT` is provided by Render automatically
 
 ## Admin access
@@ -59,6 +66,8 @@ Open the admin from the Render domain:
 ## Notes
 - `backend/data/menu.json` is the editable data source.
 - `backend/data/reservations.json` stores incoming reservation requests.
+- `backend/data/waitlist.json` stores waitlist submissions.
+- `backend/data/takeout.json` stores takeout orders.
 - If you want edits to persist on Render, attach a Persistent Disk.
 - `docs/` should stay public and read-only.
 - `backend/` should be treated as the editable service side.

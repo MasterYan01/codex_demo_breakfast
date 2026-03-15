@@ -56,6 +56,24 @@
             </div>
             <div id="admin-reservation-list" class="admin-reservation-list"></div>
           </div>
+          <div class="admin-panel admin-waitlist">
+            <div class="admin-reservations__header">
+              <p class="eyebrow">Waitlist</p>
+              <h2>候位清單</h2>
+              <button class="btn btn-secondary admin-reservations__refresh" id="admin-waitlist-refresh" type="button">重新整理</button>
+              <p class="form-status" id="admin-waitlist-status" aria-live="polite"></p>
+            </div>
+            <div id="admin-waitlist-list" class="admin-reservation-list"></div>
+          </div>
+          <div class="admin-panel admin-takeout">
+            <div class="admin-reservations__header">
+              <p class="eyebrow">Takeout</p>
+              <h2>外帶訂單</h2>
+              <button class="btn btn-secondary admin-reservations__refresh" id="admin-takeout-refresh" type="button">重新整理</button>
+              <p class="form-status" id="admin-takeout-status" aria-live="polite"></p>
+            </div>
+            <div id="admin-takeout-list" class="admin-reservation-list"></div>
+          </div>
         </aside>
         <section class="admin-editor">
           <form class="admin-form admin-panel" id="admin-item-form">

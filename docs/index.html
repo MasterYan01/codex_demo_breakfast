@@ -436,6 +436,100 @@
         </div>
       </section>
 
+      <section class="service-section reveal-on-scroll" id="services" data-reveal="section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow" data-i18n="service.eyebrow">Guest Services</p>
+            <h2 data-i18n="service.title">候位與外帶服務</h2>
+          </div>
+        </div>
+        <div class="service-grid">
+          <form class="service-card" id="waitlist-form" novalidate>
+            <p class="eyebrow" data-i18n="waitlist.eyebrow">Waitlist</p>
+            <h3 data-i18n="waitlist.title">即時候位</h3>
+            <p data-i18n="waitlist.text">加入候位後，現場有座位將以簡訊通知。</p>
+            <div class="reservation-grid">
+              <label class="field">
+                <span data-i18n="waitlist.field.date">日期</span>
+                <input type="date" name="date" id="waitlist-date" required>
+              </label>
+              <label class="field">
+                <span data-i18n="waitlist.field.time">時段</span>
+                <input type="time" name="time" required>
+              </label>
+              <label class="field">
+                <span data-i18n="waitlist.field.guests">人數</span>
+                <select name="guests" required>
+                  <option value="" data-i18n="waitlist.field.guests.placeholder">請選擇人數</option>
+                  <option value="1" data-i18n="waitlist.field.guests.1">1 位</option>
+                  <option value="2" data-i18n="waitlist.field.guests.2">2 位</option>
+                  <option value="3" data-i18n="waitlist.field.guests.3">3 位</option>
+                  <option value="4" data-i18n="waitlist.field.guests.4">4 位</option>
+                  <option value="5" data-i18n="waitlist.field.guests.5">5 位</option>
+                  <option value="6+" data-i18n="waitlist.field.guests.6">6 位以上</option>
+                </select>
+              </label>
+              <label class="field">
+                <span data-i18n="waitlist.field.name">姓名</span>
+                <input type="text" name="name" placeholder="請輸入姓名" data-i18n-placeholder="waitlist.field.name.placeholder" required>
+              </label>
+              <label class="field">
+                <span data-i18n="waitlist.field.phone">手機</span>
+                <input type="tel" name="phone" placeholder="09xx-xxx-xxx" data-i18n-placeholder="waitlist.field.phone.placeholder" inputmode="tel" required>
+              </label>
+              <label class="field field-full">
+                <span data-i18n="waitlist.field.notes">備註</span>
+                <textarea name="notes" rows="3" placeholder="例如：希望窗邊、兒童椅" data-i18n-placeholder="waitlist.field.notes.placeholder"></textarea>
+              </label>
+            </div>
+            <p class="form-status" id="waitlist-status" aria-live="polite"></p>
+            <div class="reservation-actions">
+              <div class="reservation-actions__buttons">
+                <button class="btn btn-primary" type="submit" data-i18n="waitlist.submit">加入候位</button>
+              </div>
+            </div>
+          </form>
+
+          <form class="service-card" id="takeout-form" novalidate>
+            <p class="eyebrow" data-i18n="takeout.eyebrow">Takeout</p>
+            <h3 data-i18n="takeout.title">外帶預訂</h3>
+            <p data-i18n="takeout.text">填寫外帶品項與取餐時間，我們會先為你保留。</p>
+            <div class="reservation-grid">
+              <label class="field">
+                <span data-i18n="takeout.field.date">取餐日期</span>
+                <input type="date" name="date" id="takeout-date" required>
+              </label>
+              <label class="field">
+                <span data-i18n="takeout.field.time">取餐時段</span>
+                <input type="time" name="time" required>
+              </label>
+              <label class="field">
+                <span data-i18n="takeout.field.name">姓名</span>
+                <input type="text" name="name" placeholder="請輸入姓名" data-i18n-placeholder="takeout.field.name.placeholder" required>
+              </label>
+              <label class="field">
+                <span data-i18n="takeout.field.phone">手機</span>
+                <input type="tel" name="phone" placeholder="09xx-xxx-xxx" data-i18n-placeholder="takeout.field.phone.placeholder" inputmode="tel" required>
+              </label>
+              <label class="field field-full">
+                <span data-i18n="takeout.field.items">外帶品項</span>
+                <textarea name="items" rows="3" placeholder="例如：晨光鬆餅早餐盤 x1、拿鐵 x1" data-i18n-placeholder="takeout.field.items.placeholder" required></textarea>
+              </label>
+              <label class="field field-full">
+                <span data-i18n="takeout.field.notes">備註</span>
+                <textarea name="notes" rows="3" placeholder="例如：少糖、醬分開" data-i18n-placeholder="takeout.field.notes.placeholder"></textarea>
+              </label>
+            </div>
+            <p class="form-status" id="takeout-status" aria-live="polite"></p>
+            <div class="reservation-actions">
+              <div class="reservation-actions__buttons">
+                <button class="btn btn-primary" type="submit" data-i18n="takeout.submit">送出外帶</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </section>
+
       <section class="access-section reveal-on-scroll" id="access" data-reveal="section">
         <div class="section-heading">
           <div>

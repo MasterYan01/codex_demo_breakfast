@@ -7,6 +7,12 @@ const heroFloatingCard = document.querySelector('.hero-floating-card');
 const reservationForm = document.querySelector('#reservation-form');
 const reservationDate = document.querySelector('#reservation-date');
 const reservationStatus = document.querySelector('#reservation-status');
+const waitlistForm = document.querySelector('#waitlist-form');
+const waitlistDate = document.querySelector('#waitlist-date');
+const waitlistStatus = document.querySelector('#waitlist-status');
+const takeoutForm = document.querySelector('#takeout-form');
+const takeoutDate = document.querySelector('#takeout-date');
+const takeoutStatus = document.querySelector('#takeout-status');
 const revealNodes = document.querySelectorAll('.reveal-on-scroll');
 const navLinks = Array.from(document.querySelectorAll('.nav a[href^="#"], .menu-pills a[href^="#"]'));
 const sectionTargets = navLinks
@@ -153,6 +159,56 @@ const i18n = {
     'reserve.success.title': '訂位成功！',
     'reserve.success.google': '加入 Google 日曆',
     'reserve.success.ics': '下載 .ics',
+    'service.eyebrow': 'Guest Services',
+    'service.title': '候位與外帶服務',
+    'waitlist.eyebrow': 'Waitlist',
+    'waitlist.title': '即時候位',
+    'waitlist.text': '加入候位後，現場有座位將以簡訊通知。',
+    'waitlist.field.date': '日期',
+    'waitlist.field.time': '時段',
+    'waitlist.field.guests': '人數',
+    'waitlist.field.guests.placeholder': '請選擇人數',
+    'waitlist.field.guests.1': '1 位',
+    'waitlist.field.guests.2': '2 位',
+    'waitlist.field.guests.3': '3 位',
+    'waitlist.field.guests.4': '4 位',
+    'waitlist.field.guests.5': '5 位',
+    'waitlist.field.guests.6': '6 位以上',
+    'waitlist.field.name': '姓名',
+    'waitlist.field.name.placeholder': '請輸入姓名',
+    'waitlist.field.phone': '手機',
+    'waitlist.field.phone.placeholder': '09xx-xxx-xxx',
+    'waitlist.field.notes': '備註',
+    'waitlist.field.notes.placeholder': '例如：希望窗邊、兒童椅',
+    'waitlist.submit': '加入候位',
+    'waitlist.submit.sending': '候位送出中，請稍候。',
+    'waitlist.submit.success': '已加入候位：{summary} 我們會以簡訊通知。',
+    'waitlist.submit.error': '候位送出失敗，請稍後再試或直接來電。',
+    'waitlist.submit.already': '已送出候位，如需更新請修改資料後再送出。',
+    'waitlist.summary.inline': '{date} {time}，{guests} 位，{name}。',
+    'waitlist.validation.required': '請完整填寫日期、時段、人數與聯絡資訊。',
+    'waitlist.validation.phone': '請輸入正確的手機或電話格式。',
+    'takeout.eyebrow': 'Takeout',
+    'takeout.title': '外帶預訂',
+    'takeout.text': '填寫外帶品項與取餐時間，我們會先為你保留。',
+    'takeout.field.date': '取餐日期',
+    'takeout.field.time': '取餐時段',
+    'takeout.field.name': '姓名',
+    'takeout.field.name.placeholder': '請輸入姓名',
+    'takeout.field.phone': '手機',
+    'takeout.field.phone.placeholder': '09xx-xxx-xxx',
+    'takeout.field.items': '外帶品項',
+    'takeout.field.items.placeholder': '例如：晨光鬆餅早餐盤 x1、拿鐵 x1',
+    'takeout.field.notes': '備註',
+    'takeout.field.notes.placeholder': '例如：少糖、醬分開',
+    'takeout.submit': '送出外帶',
+    'takeout.submit.sending': '外帶送出中，請稍候。',
+    'takeout.submit.success': '已收到外帶預訂：{summary} 我們會再確認取餐時間。',
+    'takeout.submit.error': '外帶送出失敗，請稍後再試或直接來電。',
+    'takeout.submit.already': '已送出外帶預訂，如需更新請修改資料後再送出。',
+    'takeout.summary.inline': '{date} {time}，{name}。',
+    'takeout.validation.required': '請完整填寫取餐日期、時段、品項與聯絡資訊。',
+    'takeout.validation.phone': '請輸入正確的手機或電話格式。',
     'access.eyebrow': 'Access & Directions',
     'access.title': '地圖與交通資訊',
     'access.address.label': '地址',
@@ -483,6 +539,56 @@ const i18n = {
     'reserve.success.title': 'Reservation Confirmed!',
     'reserve.success.google': 'Add to Google Calendar',
     'reserve.success.ics': 'Download .ics',
+    'service.eyebrow': 'Guest Services',
+    'service.title': 'Waitlist & Takeout',
+    'waitlist.eyebrow': 'Waitlist',
+    'waitlist.title': 'Instant Waitlist',
+    'waitlist.text': 'Join the queue and we will notify you by SMS when a table opens.',
+    'waitlist.field.date': 'Date',
+    'waitlist.field.time': 'Time',
+    'waitlist.field.guests': 'Guests',
+    'waitlist.field.guests.placeholder': 'Select guests',
+    'waitlist.field.guests.1': '1 guest',
+    'waitlist.field.guests.2': '2 guests',
+    'waitlist.field.guests.3': '3 guests',
+    'waitlist.field.guests.4': '4 guests',
+    'waitlist.field.guests.5': '5 guests',
+    'waitlist.field.guests.6': '6+ guests',
+    'waitlist.field.name': 'Name',
+    'waitlist.field.name.placeholder': 'Enter your name',
+    'waitlist.field.phone': 'Phone',
+    'waitlist.field.phone.placeholder': '09xx-xxx-xxx',
+    'waitlist.field.notes': 'Notes',
+    'waitlist.field.notes.placeholder': 'Window seat, baby chair, etc.',
+    'waitlist.submit': 'Join Waitlist',
+    'waitlist.submit.sending': 'Submitting waitlist...',
+    'waitlist.submit.success': 'Waitlist confirmed: {summary} We will notify you by SMS.',
+    'waitlist.submit.error': 'Submission failed. Please try again or call us.',
+    'waitlist.submit.already': 'Waitlist already submitted. Update the details to submit again.',
+    'waitlist.summary.inline': '{date} {time}, {guests}, {name}.',
+    'waitlist.validation.required': 'Please enter date, time, guests, and contact details.',
+    'waitlist.validation.phone': 'Please enter a valid phone number.',
+    'takeout.eyebrow': 'Takeout',
+    'takeout.title': 'Takeout Preorder',
+    'takeout.text': 'Send your items and pickup time, and we will reserve it for you.',
+    'takeout.field.date': 'Pickup Date',
+    'takeout.field.time': 'Pickup Time',
+    'takeout.field.name': 'Name',
+    'takeout.field.name.placeholder': 'Enter your name',
+    'takeout.field.phone': 'Phone',
+    'takeout.field.phone.placeholder': '09xx-xxx-xxx',
+    'takeout.field.items': 'Items',
+    'takeout.field.items.placeholder': 'Example: pancakes x1, latte x1',
+    'takeout.field.notes': 'Notes',
+    'takeout.field.notes.placeholder': 'Less sugar, sauce on the side',
+    'takeout.submit': 'Submit Takeout',
+    'takeout.submit.sending': 'Submitting takeout...',
+    'takeout.submit.success': 'Takeout received: {summary} We will confirm pickup time.',
+    'takeout.submit.error': 'Submission failed. Please try again or call us.',
+    'takeout.submit.already': 'Takeout already submitted. Update details to submit again.',
+    'takeout.summary.inline': '{date} {time}, {name}.',
+    'takeout.validation.required': 'Please enter pickup date, time, items, and contact details.',
+    'takeout.validation.phone': 'Please enter a valid phone number.',
     'access.eyebrow': 'Access & Directions',
     'access.title': 'Map & Directions',
     'access.address.label': 'Address',
@@ -1434,13 +1540,17 @@ const setActiveNav = (id) => {
   });
 };
 
-const setReservationMinDate = () => {
-  if (!reservationDate) return;
+const setMinDate = (input) => {
+  if (!input) return;
   const today = new Date();
   const yyyy = today.getFullYear();
   const mm = String(today.getMonth() + 1).padStart(2, '0');
   const dd = String(today.getDate()).padStart(2, '0');
-  reservationDate.min = `${yyyy}-${mm}-${dd}`;
+  input.min = `${yyyy}-${mm}-${dd}`;
+};
+
+const setReservationMinDate = () => {
+  setMinDate(reservationDate);
 };
 
 const getTodayString = () => {
@@ -1654,6 +1764,11 @@ const setupAvailabilityPanel = () => {
   return { render };
 };
 
+const isValidPhone = (value) => {
+  const phone = safeText(value);
+  return /^09\d{2}-?\d{3}-?\d{3}$/.test(phone) || /^0\d{1,2}-?\d{6,8}$/.test(phone);
+};
+
 const validateReservation = (formData) => {
   const name = safeText(formData.get('name'));
   const phone = safeText(formData.get('phone'));
@@ -1666,7 +1781,7 @@ const validateReservation = (formData) => {
     return t('reserve.validation.required');
   }
 
-  if (!/^09\d{2}-?\d{3}-?\d{3}$/.test(phone) && !/^0\d{1,2}-?\d{6,8}$/.test(phone)) {
+  if (!isValidPhone(phone)) {
     return t('reserve.validation.phone');
   }
 
@@ -1681,10 +1796,58 @@ const validateReservation = (formData) => {
   return '';
 };
 
+const validateWaitlist = (formData) => {
+  const name = safeText(formData.get('name'));
+  const phone = safeText(formData.get('phone'));
+  const date = safeText(formData.get('date'));
+  const time = safeText(formData.get('time'));
+  const guests = safeText(formData.get('guests'));
+
+  if (!date || !time || !guests || !name || !phone) {
+    return t('waitlist.validation.required');
+  }
+
+  if (!isValidPhone(phone)) {
+    return t('waitlist.validation.phone');
+  }
+
+  return '';
+};
+
+const validateTakeout = (formData) => {
+  const name = safeText(formData.get('name'));
+  const phone = safeText(formData.get('phone'));
+  const date = safeText(formData.get('date'));
+  const time = safeText(formData.get('time'));
+  const items = safeText(formData.get('items'));
+
+  if (!date || !time || !items || !name || !phone) {
+    return t('takeout.validation.required');
+  }
+
+  if (!isValidPhone(phone)) {
+    return t('takeout.validation.phone');
+  }
+
+  return '';
+};
+
 const updateReservationStatus = (message, status) => {
   if (!reservationStatus) return;
   reservationStatus.textContent = message;
   reservationStatus.dataset.state = status;
+};
+
+const updateWaitlistStatus = (message, status) => {
+  if (!waitlistStatus) return;
+  waitlistStatus.textContent = message;
+  waitlistStatus.dataset.state = status;
+};
+
+const updateTakeoutStatus = (message, status) => {
+  if (!takeoutStatus) return;
+  takeoutStatus.textContent = message;
+  takeoutStatus.dataset.state = status;
 };
 
 const setupReservationSteps = () => {
@@ -1869,6 +2032,175 @@ const setupReservationForm = () => {
     } catch (submitError) {
       console.warn(submitError);
       updateReservationStatus(t('reserve.submit.error'), 'error');
+    } finally {
+      isSubmitting = false;
+      updateSubmitState();
+    }
+  });
+};
+
+const setupWaitlistForm = () => {
+  if (!waitlistForm) return;
+  setMinDate(waitlistDate);
+  const submitButton = waitlistForm.querySelector('button[type="submit"]');
+  const submitDebounceMs = 1200;
+  let isSubmitting = false;
+  let isLocked = false;
+  let lastSubmitAt = 0;
+
+  const updateSubmitState = () => {
+    if (!submitButton) return;
+    submitButton.disabled = isSubmitting || isLocked;
+  };
+
+  const unlockAfterInput = () => {
+    if (!isLocked) return;
+    isLocked = false;
+    updateSubmitState();
+  };
+
+  waitlistForm.addEventListener('input', () => {
+    unlockAfterInput();
+    updateWaitlistStatus('', '');
+  });
+  waitlistForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (isSubmitting) return;
+    if (isLocked) {
+      updateWaitlistStatus(t('waitlist.submit.already'), 'success');
+      return;
+    }
+    const now = Date.now();
+    if (now - lastSubmitAt < submitDebounceMs) {
+      updateWaitlistStatus(t('waitlist.submit.sending'), 'loading');
+      return;
+    }
+    lastSubmitAt = now;
+
+    const formData = new FormData(waitlistForm);
+    const error = validateWaitlist(formData);
+    if (error) {
+      updateWaitlistStatus(error, 'error');
+      return;
+    }
+
+    const payload = {
+      date: safeText(formData.get('date')),
+      time: safeText(formData.get('time')),
+      guests: safeText(formData.get('guests')),
+      name: safeText(formData.get('name')),
+      phone: safeText(formData.get('phone')),
+      notes: safeText(formData.get('notes'))
+    };
+    const summary = t('waitlist.summary.inline', {
+      date: payload.date,
+      time: payload.time,
+      guests: payload.guests,
+      name: payload.name
+    });
+    updateWaitlistStatus(t('waitlist.submit.sending'), 'loading');
+    isSubmitting = true;
+    updateSubmitState();
+    try {
+      const response = await fetch(getApiUrl('/api/waitlist'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || result.ok === false) {
+        throw new Error(result.error || `Request failed: ${response.status}`);
+      }
+      updateWaitlistStatus(t('waitlist.submit.success', { summary }), 'success');
+      isLocked = true;
+      updateSubmitState();
+    } catch (submitError) {
+      console.warn(submitError);
+      updateWaitlistStatus(t('waitlist.submit.error'), 'error');
+    } finally {
+      isSubmitting = false;
+      updateSubmitState();
+    }
+  });
+};
+
+const setupTakeoutForm = () => {
+  if (!takeoutForm) return;
+  setMinDate(takeoutDate);
+  const submitButton = takeoutForm.querySelector('button[type="submit"]');
+  const submitDebounceMs = 1200;
+  let isSubmitting = false;
+  let isLocked = false;
+  let lastSubmitAt = 0;
+
+  const updateSubmitState = () => {
+    if (!submitButton) return;
+    submitButton.disabled = isSubmitting || isLocked;
+  };
+
+  const unlockAfterInput = () => {
+    if (!isLocked) return;
+    isLocked = false;
+    updateSubmitState();
+  };
+
+  takeoutForm.addEventListener('input', () => {
+    unlockAfterInput();
+    updateTakeoutStatus('', '');
+  });
+  takeoutForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (isSubmitting) return;
+    if (isLocked) {
+      updateTakeoutStatus(t('takeout.submit.already'), 'success');
+      return;
+    }
+    const now = Date.now();
+    if (now - lastSubmitAt < submitDebounceMs) {
+      updateTakeoutStatus(t('takeout.submit.sending'), 'loading');
+      return;
+    }
+    lastSubmitAt = now;
+
+    const formData = new FormData(takeoutForm);
+    const error = validateTakeout(formData);
+    if (error) {
+      updateTakeoutStatus(error, 'error');
+      return;
+    }
+
+    const payload = {
+      date: safeText(formData.get('date')),
+      time: safeText(formData.get('time')),
+      name: safeText(formData.get('name')),
+      phone: safeText(formData.get('phone')),
+      items: safeText(formData.get('items')),
+      notes: safeText(formData.get('notes'))
+    };
+    const summary = t('takeout.summary.inline', {
+      date: payload.date,
+      time: payload.time,
+      name: payload.name
+    });
+    updateTakeoutStatus(t('takeout.submit.sending'), 'loading');
+    isSubmitting = true;
+    updateSubmitState();
+    try {
+      const response = await fetch(getApiUrl('/api/takeout'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || result.ok === false) {
+        throw new Error(result.error || `Request failed: ${response.status}`);
+      }
+      updateTakeoutStatus(t('takeout.submit.success', { summary }), 'success');
+      isLocked = true;
+      updateSubmitState();
+    } catch (submitError) {
+      console.warn(submitError);
+      updateTakeoutStatus(t('takeout.submit.error'), 'error');
     } finally {
       isSubmitting = false;
       updateSubmitState();
@@ -3279,6 +3611,8 @@ applyPageMeta();
 syncSeoMeta();
 syncLanguageMeta();
 setupReservationForm();
+setupWaitlistForm();
+setupTakeoutForm();
 setupAnchorScroll();
 setupHeroPointer();
 syncHeader();

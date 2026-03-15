@@ -1040,7 +1040,8 @@ body.search-open .search-panel {
 .signature,
 .story-section,
 .space-section,
-.reserve-section {
+.reserve-section,
+.service-section {
   padding: 0 18px 32px;
 }
 
@@ -1057,6 +1058,38 @@ body.search-open .search-panel {
   line-height: 0.96;
   font-weight: 600;
   text-wrap: balance;
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: stretch;
+}
+
+.service-card {
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  padding: 22px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.18), transparent 26%),
+    var(--panel);
+  box-shadow: var(--shadow-soft);
+  display: grid;
+  gap: 12px;
+}
+
+.service-card h3 {
+  margin: 0;
+  font-family: "Noto Serif TC", serif;
+  font-size: 1.65rem;
+  line-height: 1.05;
+}
+
+.service-card > p:not(.eyebrow) {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
 }
 
 .menu-feature-grid {
@@ -1444,6 +1477,7 @@ body.search-open .search-panel {
 @media (max-width: 1080px) {
   .hero,
   .menu-feature-grid,
+  .service-grid,
   .story-grid,
   .space-layout,
   .reserve-card,
@@ -1518,6 +1552,10 @@ body.search-open .search-panel {
 
   .nav {
     gap: 14px;
+  }
+
+  .service-card {
+    padding: 18px;
   }
 
   .lang-toggle {

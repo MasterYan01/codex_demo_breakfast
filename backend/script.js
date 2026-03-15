@@ -26,6 +26,8 @@ const appConfig = window.LA_MIU_CONFIG || {};
 const apiBase = String(appConfig.apiBase || window.location.origin).replace(/\/$/, '');
 const menuApiUrl = `${apiBase}/api/menu`;
 const reservationApiUrl = `${apiBase}/api/reservations`;
+const waitlistApiUrl = `${apiBase}/api/waitlist`;
+const takeoutApiUrl = `${apiBase}/api/takeout`;
 const getApiUrl = (path) => `${apiBase}${path}`;
 
 const finishLoading = () => {
@@ -515,6 +517,132 @@ const setupReservationInbox = async () => {
   await load();
 };
 
+const renderWaitlistList = (items) => {
+  const listNode = document.querySelector('#admin-waitlist-list');
+  if (!listNode) return;
+  if (!items.length) {
+    listNode.innerHTML = '<div class="admin-reservation-empty">目前沒有候位資料。</div>';
+    return;
+  }
+  listNode.innerHTML = items.map((entry) => {
+    const notes = safeText(entry.notes);
+    const notifiedAt = safeText(entry.notifiedAt);
+    const meta = [
+      `${escapeHtml(entry.phone || '')}`,
+      escapeHtml(formatReservationTimestamp(entry.createdAt))
+    ].filter(Boolean).join('<br>');
+    const notifyBlock = notifiedAt
+      ? `<div class="admin-reservation-note">已通知：${escapeHtml(formatReservationTimestamp(notifiedAt))}</div>`
+      : `<div class="admin-waitlist-actions"><button class="btn btn-secondary" type="button" data-waitlist-id="${escapeHtml(entry.id || '')}">發送簡訊</button></div>`;
+    return `
+      <article class="admin-reservation-card">
+        <strong>${escapeHtml(entry.name || '')} · ${escapeHtml(entry.guests || '')} 位</strong>
+        <div>${escapeHtml(entry.date || '')} ${escapeHtml(entry.time || '')}</div>
+        <div class="admin-reservation-meta">${meta}</div>
+        ${notes ? `<div class="admin-reservation-note">備註：${escapeHtml(notes)}</div>` : ''}
+        ${notifyBlock}
+      </article>
+    `;
+  }).join('');
+};
+
+const setupWaitlistInbox = async () => {
+  const listNode = document.querySelector('#admin-waitlist-list');
+  if (!listNode) return;
+  const refreshButton = document.querySelector('#admin-waitlist-refresh');
+  const statusNode = document.querySelector('#admin-waitlist-status');
+
+  const updateStatus = (message, status) => {
+    if (!statusNode) return;
+    statusNode.textContent = message;
+    statusNode.dataset.state = status;
+  };
+
+  const load = async () => {
+    updateStatus('載入候位資料中…', '');
+    try {
+      const payload = await fetchJson(`${waitlistApiUrl}?limit=50`);
+      renderWaitlistList(payload.waitlist || []);
+      updateStatus('已更新候位清單。', 'success');
+    } catch (error) {
+      updateStatus(`載入失敗：${error.message}`, 'error');
+    }
+  };
+
+  listNode.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-waitlist-id]');
+    if (!button) return;
+    const id = button.dataset.waitlistId;
+    updateStatus('發送簡訊中…', '');
+    try {
+      await fetchJson(`${waitlistApiUrl}/notify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      updateStatus('已發送簡訊通知。', 'success');
+      await load();
+    } catch (error) {
+      updateStatus(`發送失敗：${error.message}`, 'error');
+    }
+  });
+
+  refreshButton?.addEventListener('click', load);
+  await load();
+};
+
+const renderTakeoutList = (items) => {
+  const listNode = document.querySelector('#admin-takeout-list');
+  if (!listNode) return;
+  if (!items.length) {
+    listNode.innerHTML = '<div class="admin-reservation-empty">目前沒有外帶訂單。</div>';
+    return;
+  }
+  listNode.innerHTML = items.map((entry) => {
+    const notes = safeText(entry.notes);
+    const meta = [
+      `${escapeHtml(entry.phone || '')}`,
+      escapeHtml(formatReservationTimestamp(entry.createdAt))
+    ].filter(Boolean).join('<br>');
+    return `
+      <article class="admin-reservation-card">
+        <strong>${escapeHtml(entry.name || '')}</strong>
+        <div>取餐：${escapeHtml(entry.date || '')} ${escapeHtml(entry.time || '')}</div>
+        <div class="admin-reservation-meta">${meta}</div>
+        <div class="admin-reservation-note">內容：${escapeHtml(entry.items || '')}</div>
+        ${notes ? `<div class="admin-reservation-note">備註：${escapeHtml(notes)}</div>` : ''}
+      </article>
+    `;
+  }).join('');
+};
+
+const setupTakeoutInbox = async () => {
+  const listNode = document.querySelector('#admin-takeout-list');
+  if (!listNode) return;
+  const refreshButton = document.querySelector('#admin-takeout-refresh');
+  const statusNode = document.querySelector('#admin-takeout-status');
+
+  const updateStatus = (message, status) => {
+    if (!statusNode) return;
+    statusNode.textContent = message;
+    statusNode.dataset.state = status;
+  };
+
+  const load = async () => {
+    updateStatus('載入外帶訂單中…', '');
+    try {
+      const payload = await fetchJson(`${takeoutApiUrl}?limit=50`);
+      renderTakeoutList(payload.takeout || []);
+      updateStatus('已更新外帶訂單。', 'success');
+    } catch (error) {
+      updateStatus(`載入失敗：${error.message}`, 'error');
+    }
+  };
+
+  refreshButton?.addEventListener('click', load);
+  await load();
+};
+
 const setupAdminPage = async () => {
   adminState = await fetchJson(menuApiUrl);
   adminSelectedSlug = adminState.items[0]?.slug || '';
@@ -591,6 +719,8 @@ const setupAdminPage = async () => {
   }
 
   await setupReservationInbox();
+  await setupWaitlistInbox();
+  await setupTakeoutInbox();
 };
 
 const initDataDrivenPages = async () => {
