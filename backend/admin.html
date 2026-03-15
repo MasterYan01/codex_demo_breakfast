@@ -101,6 +101,35 @@
           </form>
         </section>
       </section>
+
+      <section class="admin-analytics" id="analytics">
+        <div class="admin-panel">
+          <div class="admin-reservations__header">
+            <p class="eyebrow">Analytics</p>
+            <h2>熱門時段與來源</h2>
+            <button class="btn btn-secondary admin-reservations__refresh" id="admin-analytics-refresh" type="button">重新整理</button>
+            <p class="form-status" id="admin-analytics-status" aria-live="polite"></p>
+          </div>
+          <div class="admin-analytics-grid">
+            <div class="admin-analytics-card">
+              <h3>訂位熱門時段</h3>
+              <div class="admin-bar-list" id="analytics-reservation-times"></div>
+            </div>
+            <div class="admin-analytics-card">
+              <h3>候位熱門時段</h3>
+              <div class="admin-bar-list" id="analytics-waitlist-times"></div>
+            </div>
+            <div class="admin-analytics-card">
+              <h3>外帶熱門時段</h3>
+              <div class="admin-bar-list" id="analytics-takeout-times"></div>
+            </div>
+            <div class="admin-analytics-card">
+              <h3>來客來源</h3>
+              <div class="admin-bar-list" id="analytics-sources"></div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
   <script src="config.js"></script>

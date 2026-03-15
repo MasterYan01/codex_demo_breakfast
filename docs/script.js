@@ -256,6 +256,7 @@ const i18n = {
     'footer.quick.admin': '菜單後台',
     'footer.reserve.title': '訂位',
     'footer.reserve.cta': '線上訂位',
+    'footer.review.cta': '留下 Google 評論',
     'menu.pills.overview': '總覽',
     'menu.pills.today': '今日推薦',
     'menu.pills.hot': '熱門榜',
@@ -636,6 +637,7 @@ const i18n = {
     'footer.quick.admin': 'Menu Admin',
     'footer.reserve.title': 'Reservations',
     'footer.reserve.cta': 'Reserve Online',
+    'footer.review.cta': 'Leave a Google Review',
     'menu.pills.overview': 'Overview',
     'menu.pills.today': 'Today',
     'menu.pills.hot': 'Popular',
@@ -1007,6 +1009,17 @@ const apiBase = String(appConfig.apiBase || window.location.origin).replace(/\/$
 const menuApiUrl = `${apiBase}/api/menu`;
 const getApiUrl = (path) => `${apiBase}${path}`;
 
+const setupReviewCta = () => {
+  const link = document.querySelector('[data-review-link]');
+  if (!link) return;
+  const reviewUrl = safeText(appConfig.googleReviewUrl);
+  if (!reviewUrl) {
+    link.style.display = 'none';
+    return;
+  }
+  link.setAttribute('href', reviewUrl);
+};
+
 const syncSeoMeta = () => {
   const cleanUrl = currentLang === 'zh' ? buildLangUrl('zh') : window.location.href.split('#')[0];
   let canonical = document.querySelector('link[rel="canonical"]');
@@ -1113,6 +1126,23 @@ const finishLoading = () => {
 
 const safeText = (value) => String(value || '').trim();
 const formatPrice = (value) => `NT$ ${Number(value || 0)}`;
+const getAttribution = () => {
+  const params = new URLSearchParams(window.location.search);
+  const utm = {
+    source: safeText(params.get('utm_source')),
+    medium: safeText(params.get('utm_medium')),
+    campaign: safeText(params.get('utm_campaign')),
+    content: safeText(params.get('utm_content')),
+    term: safeText(params.get('utm_term'))
+  };
+  const hasUtm = Object.values(utm).some(Boolean);
+  return {
+    utm: hasUtm ? utm : {},
+    referrer: safeText(document.referrer),
+    landing: `${window.location.pathname}${window.location.search}`
+  };
+};
+const attribution = getAttribution();
 const withLangParam = (href) => {
   if (currentLang !== 'en') return href;
   try {
@@ -1995,7 +2025,10 @@ const setupReservationForm = () => {
       name: safeText(formData.get('name')),
       phone: safeText(formData.get('phone')),
       email: safeText(formData.get('email')),
-      notes: safeText(formData.get('notes'))
+      notes: safeText(formData.get('notes')),
+      utm: attribution.utm,
+      referrer: attribution.referrer,
+      landing: attribution.landing
     };
     const summary = t('reserve.summary.inline', {
       date: payload.date,
@@ -2090,7 +2123,10 @@ const setupWaitlistForm = () => {
       guests: safeText(formData.get('guests')),
       name: safeText(formData.get('name')),
       phone: safeText(formData.get('phone')),
-      notes: safeText(formData.get('notes'))
+      notes: safeText(formData.get('notes')),
+      utm: attribution.utm,
+      referrer: attribution.referrer,
+      landing: attribution.landing
     };
     const summary = t('waitlist.summary.inline', {
       date: payload.date,
@@ -2175,7 +2211,10 @@ const setupTakeoutForm = () => {
       name: safeText(formData.get('name')),
       phone: safeText(formData.get('phone')),
       items: safeText(formData.get('items')),
-      notes: safeText(formData.get('notes'))
+      notes: safeText(formData.get('notes')),
+      utm: attribution.utm,
+      referrer: attribution.referrer,
+      landing: attribution.landing
     };
     const summary = t('takeout.summary.inline', {
       date: payload.date,
@@ -3610,6 +3649,7 @@ syncLanguageLinks();
 applyPageMeta();
 syncSeoMeta();
 syncLanguageMeta();
+setupReviewCta();
 setupReservationForm();
 setupWaitlistForm();
 setupTakeoutForm();

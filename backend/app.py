@@ -377,6 +377,9 @@ class MenuHandler(BaseHTTPRequestHandler):
                 'time': str(payload.get('time', '')).strip(),
                 'guests': str(payload.get('guests', '')).strip(),
                 'notes': str(payload.get('notes', '')).strip(),
+                'utm': payload.get('utm', {}) if isinstance(payload.get('utm', {}), dict) else {},
+                'referrer': str(payload.get('referrer', '')).strip(),
+                'landing': str(payload.get('landing', '')).strip(),
                 'source': self.headers.get('Origin', '') or self.headers.get('Referer', ''),
                 'userAgent': self.headers.get('User-Agent', '')
             }
@@ -428,6 +431,9 @@ class MenuHandler(BaseHTTPRequestHandler):
                 'guests': str(payload.get('guests', '')).strip(),
                 'notes': str(payload.get('notes', '')).strip(),
                 'notifiedAt': '',
+                'utm': payload.get('utm', {}) if isinstance(payload.get('utm', {}), dict) else {},
+                'referrer': str(payload.get('referrer', '')).strip(),
+                'landing': str(payload.get('landing', '')).strip(),
                 'source': self.headers.get('Origin', '') or self.headers.get('Referer', ''),
                 'userAgent': self.headers.get('User-Agent', '')
             }
@@ -499,6 +505,9 @@ class MenuHandler(BaseHTTPRequestHandler):
                 'time': str(payload.get('time', '')).strip(),
                 'items': str(payload.get('items', '')).strip(),
                 'notes': str(payload.get('notes', '')).strip(),
+                'utm': payload.get('utm', {}) if isinstance(payload.get('utm', {}), dict) else {},
+                'referrer': str(payload.get('referrer', '')).strip(),
+                'landing': str(payload.get('landing', '')).strip(),
                 'source': self.headers.get('Origin', '') or self.headers.get('Referer', ''),
                 'userAgent': self.headers.get('User-Agent', '')
             }

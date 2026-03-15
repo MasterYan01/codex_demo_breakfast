@@ -643,6 +643,95 @@ const setupTakeoutInbox = async () => {
   await load();
 };
 
+const getSourceLabel = (entry) => {
+  const utm = entry.utm || {};
+  const source = safeText(utm.source);
+  const medium = safeText(utm.medium);
+  if (source) {
+    return medium ? `${source} / ${medium}` : source;
+  }
+  const referrer = safeText(entry.referrer || entry.source);
+  if (!referrer) return 'Direct';
+  try {
+    const url = new URL(referrer);
+    return url.hostname || referrer;
+  } catch (error) {
+    return referrer;
+  }
+};
+
+const buildCountList = (entries, keyFn) => {
+  const map = new Map();
+  entries.forEach((entry) => {
+    const key = safeText(keyFn(entry));
+    if (!key) return;
+    map.set(key, (map.get(key) || 0) + 1);
+  });
+  return Array.from(map.entries())
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count);
+};
+
+const renderBarList = (node, items, emptyText) => {
+  if (!node) return;
+  if (!items.length) {
+    node.innerHTML = `<div class="admin-bar-empty">${emptyText}</div>`;
+    return;
+  }
+  const max = Math.max(...items.map((item) => item.count));
+  node.innerHTML = items.slice(0, 8).map((item) => {
+    const width = max ? Math.round((item.count / max) * 100) : 0;
+    return `
+      <div class="admin-bar-row">
+        <span class="admin-bar-label">${escapeHtml(item.label)}</span>
+        <span class="admin-bar-track"><span class="admin-bar-fill" style="width:${width}%"></span></span>
+        <span class="admin-bar-value">${item.count}</span>
+      </div>
+    `;
+  }).join('');
+};
+
+const setupAnalyticsDashboard = async () => {
+  const refreshButton = document.querySelector('#admin-analytics-refresh');
+  const statusNode = document.querySelector('#admin-analytics-status');
+  const reservationNode = document.querySelector('#analytics-reservation-times');
+  const waitlistNode = document.querySelector('#analytics-waitlist-times');
+  const takeoutNode = document.querySelector('#analytics-takeout-times');
+  const sourceNode = document.querySelector('#analytics-sources');
+  if (!reservationNode || !waitlistNode || !takeoutNode || !sourceNode) return;
+
+  const updateStatus = (message, status) => {
+    if (!statusNode) return;
+    statusNode.textContent = message;
+    statusNode.dataset.state = status;
+  };
+
+  const load = async () => {
+    updateStatus('載入分析資料中…', '');
+    try {
+      const [reservationPayload, waitlistPayload, takeoutPayload] = await Promise.all([
+        fetchJson(`${reservationApiUrl}?limit=200`),
+        fetchJson(`${waitlistApiUrl}?limit=200`),
+        fetchJson(`${takeoutApiUrl}?limit=200`)
+      ]);
+      const reservations = reservationPayload.reservations || [];
+      const waitlist = waitlistPayload.waitlist || [];
+      const takeout = takeoutPayload.takeout || [];
+      const sources = buildCountList([...reservations, ...waitlist, ...takeout], getSourceLabel);
+      renderBarList(reservationNode, buildCountList(reservations, (entry) => entry.time), '目前沒有訂位資料。');
+      renderBarList(waitlistNode, buildCountList(waitlist, (entry) => entry.time), '目前沒有候位資料。');
+      renderBarList(takeoutNode, buildCountList(takeout, (entry) => entry.time), '目前沒有外帶資料。');
+      renderBarList(sourceNode, sources, '目前沒有來源資料。');
+      updateStatus('已更新分析資料。', 'success');
+    } catch (error) {
+      updateStatus(`載入失敗：${error.message}`, 'error');
+    }
+  };
+
+  refreshButton?.addEventListener('click', load);
+  await load();
+};
+
 const setupAdminPage = async () => {
   adminState = await fetchJson(menuApiUrl);
   adminSelectedSlug = adminState.items[0]?.slug || '';
@@ -721,6 +810,7 @@ const setupAdminPage = async () => {
   await setupReservationInbox();
   await setupWaitlistInbox();
   await setupTakeoutInbox();
+  await setupAnalyticsDashboard();
 };
 
 const initDataDrivenPages = async () => {

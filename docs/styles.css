@@ -1423,6 +1423,11 @@ body.search-open .search-panel {
   margin-bottom: 10px;
 }
 
+.review-cta {
+  margin-top: 16px;
+  width: fit-content;
+}
+
 .footer-column,
 .footer-brand-block {
   min-width: 0;
