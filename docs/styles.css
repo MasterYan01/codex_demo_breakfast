@@ -2539,9 +2539,18 @@ body {
   color: #56724a;
 }
 
+.form-status[data-state="loading"] {
+  color: #7a5b45;
+}
+
 .reservation-submit {
   border: 0;
   cursor: pointer;
+}
+
+.reservation-submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 .reservation-success {

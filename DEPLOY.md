@@ -36,6 +36,7 @@ Main files:
 - `admin.html`
 - `app.py`
 - `data/menu.json`
+- `data/reservations.json`
 - `styles.css`
 - `script.js`
 - `config.js`
@@ -48,6 +49,7 @@ Recommended Render settings:
 - Environment variables:
   - `HOST=0.0.0.0`
   - `ALLOWED_ORIGINS=https://your-user.github.io`
+  - `RESERVATION_WEBHOOK_URL` (optional: send a notification webhook on new bookings)
   - `PORT` is provided by Render automatically
 
 ## Admin access
@@ -56,6 +58,7 @@ Open the admin from the Render domain:
 
 ## Notes
 - `backend/data/menu.json` is the editable data source.
+- `backend/data/reservations.json` stores incoming reservation requests.
 - If you want edits to persist on Render, attach a Persistent Disk.
 - `docs/` should stay public and read-only.
 - `backend/` should be treated as the editable service side.

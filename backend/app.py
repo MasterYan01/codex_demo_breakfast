@@ -1,18 +1,25 @@
 ﻿import json
 import mimetypes
 import os
+import uuid
+from datetime import datetime, timezone
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.error import URLError
+from urllib.parse import parse_qs, unquote, urlparse
+from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parent
 DATA_FILE = ROOT / 'data' / 'menu.json'
+RESERVATION_FILE = ROOT / 'data' / 'reservations.json'
 HOST = os.getenv('HOST', '127.0.0.1')
 PORT = int(os.getenv('PORT', '8020'))
 DEFAULT_ALLOWED_ORIGINS = 'http://127.0.0.1:8020,http://localhost:8020,http://127.0.0.1:5500,http://localhost:5500,https://masteryan01.github.io'
 ALLOWED_ORIGINS = {origin.strip() for origin in os.getenv('ALLOWED_ORIGINS', DEFAULT_ALLOWED_ORIGINS).split(',') if origin.strip()}
 ALLOW_ALL_ORIGINS = '*' in ALLOWED_ORIGINS
+RESERVATION_LIMIT = int(os.getenv('RESERVATION_LIMIT', '500'))
+RESERVATION_WEBHOOK_URL = os.getenv('RESERVATION_WEBHOOK_URL', '').strip()
 
 
 def load_menu():
@@ -28,6 +35,44 @@ def save_menu(payload):
 
 def json_bytes(payload):
     return json.dumps(payload, ensure_ascii=False).encode('utf-8')
+
+
+def load_reservations():
+    if not RESERVATION_FILE.exists():
+        return []
+    try:
+        with RESERVATION_FILE.open('r', encoding='utf-8-sig') as fh:
+            payload = json.load(fh)
+            return payload if isinstance(payload, list) else []
+    except (json.JSONDecodeError, OSError):
+        return []
+
+
+def save_reservations(payload):
+    RESERVATION_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with RESERVATION_FILE.open('w', encoding='utf-8') as fh:
+        json.dump(payload, fh, ensure_ascii=False, indent=2)
+
+
+def send_reservation_webhook(entry):
+    if not RESERVATION_WEBHOOK_URL:
+        return None
+    message = (
+        f"新訂位：{entry['date']} {entry['time']}，{entry['guests']} 位，{entry['name']}。"
+        f" 聯絡：{entry['phone']} / {entry['email']}"
+    )
+    payload = {
+        'text': message,
+        'content': message,
+        'reservation': entry
+    }
+    data = json_bytes(payload)
+    try:
+        req = Request(RESERVATION_WEBHOOK_URL, data=data, headers={'Content-Type': 'application/json'})
+        with urlopen(req, timeout=5) as response:
+            return response.status
+    except URLError:
+        return None
 
 
 class MenuHandler(BaseHTTPRequestHandler):
@@ -61,6 +106,9 @@ class MenuHandler(BaseHTTPRequestHandler):
         if path == '/api/menu':
             return self.send_json(load_menu())
 
+        if path == '/api/reservations':
+            return self.handle_reservations_list(parsed)
+
         if path.startswith('/api/categories/'):
             slug = unquote(path.split('/api/categories/', 1)[1]).strip('/')
             return self.handle_category(slug)
@@ -75,6 +123,8 @@ class MenuHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         if parsed.path == '/api/menu':
             return self.handle_menu_write()
+        if parsed.path == '/api/reservations':
+            return self.handle_reservation_create()
         self.send_error(HTTPStatus.NOT_FOUND, 'Endpoint not found')
 
     def do_PUT(self):
@@ -94,6 +144,55 @@ class MenuHandler(BaseHTTPRequestHandler):
             self.send_json({'ok': True, 'saved': True})
         except Exception as exc:
             self.send_json({'ok': False, 'error': str(exc)}, status=HTTPStatus.BAD_REQUEST)
+
+    def handle_reservations_list(self, parsed):
+        query = parse_qs(parsed.query)
+        try:
+            limit = int(query.get('limit', ['50'])[0])
+        except ValueError:
+            limit = 50
+        limit = max(1, min(limit, 200))
+        entries = load_reservations()
+        entries = list(reversed(entries))[:limit]
+        return self.send_json({'ok': True, 'reservations': entries})
+
+    def handle_reservation_create(self):
+        try:
+            length = int(self.headers.get('Content-Length', '0'))
+            raw = self.rfile.read(length)
+            payload = json.loads(raw.decode('utf-8'))
+            required = ['name', 'phone', 'email', 'date', 'time', 'guests']
+            if not all(payload.get(field) for field in required):
+                raise ValueError('Missing required fields')
+
+            entry = {
+                'id': uuid.uuid4().hex,
+                'createdAt': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
+                'name': str(payload.get('name', '')).strip(),
+                'phone': str(payload.get('phone', '')).strip(),
+                'email': str(payload.get('email', '')).strip(),
+                'date': str(payload.get('date', '')).strip(),
+                'time': str(payload.get('time', '')).strip(),
+                'guests': str(payload.get('guests', '')).strip(),
+                'notes': str(payload.get('notes', '')).strip(),
+                'source': self.headers.get('Origin', '') or self.headers.get('Referer', ''),
+                'userAgent': self.headers.get('User-Agent', '')
+            }
+
+            reservations = load_reservations()
+            reservations.append(entry)
+            if len(reservations) > RESERVATION_LIMIT:
+                reservations = reservations[-RESERVATION_LIMIT:]
+            save_reservations(reservations)
+            webhook_status = send_reservation_webhook(entry)
+            response = {'ok': True, 'reservation': entry}
+            if webhook_status is None and RESERVATION_WEBHOOK_URL:
+                response['notify'] = {'ok': False}
+            elif webhook_status is not None:
+                response['notify'] = {'ok': True, 'status': webhook_status}
+            return self.send_json(response)
+        except Exception as exc:
+            return self.send_json({'ok': False, 'error': str(exc)}, status=HTTPStatus.BAD_REQUEST)
 
     def handle_category(self, slug):
         data = load_menu()

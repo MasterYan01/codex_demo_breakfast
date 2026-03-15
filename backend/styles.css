@@ -2574,6 +2574,51 @@ body {
   overflow: auto;
 }
 
+.admin-reservations__header {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-reservations__refresh {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.admin-reservation-list {
+  display: grid;
+  gap: 10px;
+  max-height: 360px;
+  overflow: auto;
+  margin-top: 12px;
+}
+
+.admin-reservation-card {
+  border: 1px solid rgba(104, 64, 45, 0.14);
+  background: rgba(255,255,255,0.78);
+  border-radius: 18px;
+  padding: 12px 14px;
+  display: grid;
+  gap: 6px;
+}
+
+.admin-reservation-card strong {
+  font-family: "Noto Serif TC", serif;
+  font-size: 1.02rem;
+}
+
+.admin-reservation-meta,
+.admin-reservation-note {
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.admin-reservation-empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 8px 2px;
+}
+
 .admin-item-button {
   text-align: left;
   border: 1px solid rgba(104, 64, 45, 0.14);

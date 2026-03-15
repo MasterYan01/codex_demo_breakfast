@@ -47,6 +47,15 @@
             <button class="btn btn-secondary admin-add-button" id="admin-add-item" type="button">新增單品</button>
             <div id="admin-item-list" class="admin-item-list"></div>
           </div>
+          <div class="admin-panel admin-reservations">
+            <div class="admin-reservations__header">
+              <p class="eyebrow">Reservations</p>
+              <h2>最新訂位</h2>
+              <button class="btn btn-secondary admin-reservations__refresh" id="admin-reservation-refresh" type="button">重新整理</button>
+              <p class="form-status" id="admin-reservation-status" aria-live="polite"></p>
+            </div>
+            <div id="admin-reservation-list" class="admin-reservation-list"></div>
+          </div>
         </aside>
         <section class="admin-editor">
           <form class="admin-form admin-panel" id="admin-item-form">

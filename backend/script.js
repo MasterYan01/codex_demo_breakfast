@@ -25,6 +25,7 @@ const getHeaderOffset = () => (header ? header.getBoundingClientRect().height + 
 const appConfig = window.LA_MIU_CONFIG || {};
 const apiBase = String(appConfig.apiBase || window.location.origin).replace(/\/$/, '');
 const menuApiUrl = `${apiBase}/api/menu`;
+const reservationApiUrl = `${apiBase}/api/reservations`;
 const getApiUrl = (path) => `${apiBase}${path}`;
 
 const finishLoading = () => {
@@ -33,6 +34,12 @@ const finishLoading = () => {
 };
 
 const safeText = (value) => String(value || '').trim();
+const escapeHtml = (value) => String(value || '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
 const formatPrice = (value) => `NT$ ${Number(value || 0)}`;
 const getCategoryPageHref = (slug) => `${slug}.html`;
 const getItemPageHref = (slug) => `item.html?slug=${encodeURIComponent(slug)}`;
@@ -450,6 +457,64 @@ const getFormItemPayload = (form) => ({
   tags: safeText(form.tags.value).split(',').map((entry) => safeText(entry)).filter(Boolean)
 });
 
+const formatReservationTimestamp = (value) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString('zh-TW', { hour12: false });
+};
+
+const renderReservationList = (items) => {
+  const listNode = document.querySelector('#admin-reservation-list');
+  if (!listNode) return;
+  if (!items.length) {
+    listNode.innerHTML = '<div class="admin-reservation-empty">目前沒有訂位資料。</div>';
+    return;
+  }
+  listNode.innerHTML = items.map((entry) => {
+    const notes = safeText(entry.notes);
+    const meta = [
+      `${escapeHtml(entry.phone || '')} · ${escapeHtml(entry.email || '')}`,
+      escapeHtml(formatReservationTimestamp(entry.createdAt))
+    ].filter(Boolean).join('<br>');
+    return `
+      <article class="admin-reservation-card">
+        <strong>${escapeHtml(entry.name || '')} · ${escapeHtml(entry.guests || '')} 位</strong>
+        <div>${escapeHtml(entry.date || '')} ${escapeHtml(entry.time || '')}</div>
+        <div class="admin-reservation-meta">${meta}</div>
+        ${notes ? `<div class="admin-reservation-note">備註：${escapeHtml(notes)}</div>` : ''}
+      </article>
+    `;
+  }).join('');
+};
+
+const setupReservationInbox = async () => {
+  const listNode = document.querySelector('#admin-reservation-list');
+  if (!listNode) return;
+  const refreshButton = document.querySelector('#admin-reservation-refresh');
+  const statusNode = document.querySelector('#admin-reservation-status');
+
+  const updateStatus = (message, status) => {
+    if (!statusNode) return;
+    statusNode.textContent = message;
+    statusNode.dataset.state = status;
+  };
+
+  const load = async () => {
+    updateStatus('載入訂位資料中…', '');
+    try {
+      const payload = await fetchJson(`${reservationApiUrl}?limit=50`);
+      renderReservationList(payload.reservations || []);
+      updateStatus('已更新最新訂位。', 'success');
+    } catch (error) {
+      updateStatus(`載入失敗：${error.message}`, 'error');
+    }
+  };
+
+  refreshButton?.addEventListener('click', load);
+  await load();
+};
+
 const setupAdminPage = async () => {
   adminState = await fetchJson(menuApiUrl);
   adminSelectedSlug = adminState.items[0]?.slug || '';
@@ -524,6 +589,8 @@ const setupAdminPage = async () => {
       }
     });
   }
+
+  await setupReservationInbox();
 };
 
 const initDataDrivenPages = async () => {
