@@ -272,6 +272,10 @@ const i18n = {
     'cta.reserve': '立即訂位',
     'cta.reserve.quick': '快速訂位',
     'cta.scrollTop': '回到頂部',
+    'audio.toggle.on': '開啟音樂',
+    'audio.toggle.off': '靜音',
+    'audio.toggle.loading': '載入音樂',
+    'audio.toggle.aria': '背景音樂控制',
     'dietary.vegetarian': '素食',
     'dietary.eggDairy': '含蛋奶',
     'dietary.nuts': '含堅果',
@@ -595,6 +599,10 @@ const i18n = {
     'cta.reserve': 'Reserve Now',
     'cta.reserve.quick': 'Quick Reserve',
     'cta.scrollTop': 'Back to Top',
+    'audio.toggle.on': 'Enable Sound',
+    'audio.toggle.off': 'Mute',
+    'audio.toggle.loading': 'Loading Audio',
+    'audio.toggle.aria': 'Background music control',
     'dietary.vegetarian': 'Vegetarian',
     'dietary.eggDairy': 'Egg & Dairy',
     'dietary.nuts': 'Contains nuts',
@@ -2504,6 +2512,117 @@ const setupMobileQuickActions = () => {
   toggleButtons();
 };
 
+const setupBackgroundAudio = () => {
+  if (pageType !== 'home') return;
+  const audioRoot = document.querySelector('.bg-audio');
+  if (!audioRoot) return;
+  const playerHost = audioRoot.querySelector('#yt-bg-player');
+  const toggle = audioRoot.querySelector('.bg-audio-toggle');
+  const label = audioRoot.querySelector('.bg-audio-label');
+  const videoId = (audioRoot.dataset.youtubeId || '').trim();
+  if (!playerHost || !toggle || !label || !videoId) return;
+
+  let player = null;
+  let isReady = false;
+  let isMuted = true;
+
+  const setLabel = (key) => {
+    label.textContent = t(key);
+  };
+
+  const syncToggle = () => {
+    toggle.setAttribute('aria-pressed', String(!isMuted));
+    toggle.classList.toggle('is-playing', !isMuted);
+    setLabel(isMuted ? 'audio.toggle.on' : 'audio.toggle.off');
+  };
+
+  const ensureApi = () => new Promise((resolve) => {
+    if (window.YT && window.YT.Player) {
+      resolve();
+      return;
+    }
+    const existing = document.querySelector('script[src="https://www.youtube.com/iframe_api"]');
+    if (!existing) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    }
+    const previous = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      if (typeof previous === 'function') {
+        previous();
+      }
+      resolve();
+    };
+  });
+
+  const playMuted = () => {
+    if (!player || !isReady) return;
+    player.mute();
+    player.setVolume(60);
+    player.playVideo();
+    isMuted = true;
+    syncToggle();
+  };
+
+  const enableSound = () => {
+    if (!player || !isReady) return;
+    player.unMute();
+    player.setVolume(60);
+    player.playVideo();
+    isMuted = false;
+    syncToggle();
+  };
+
+  const disableSound = () => {
+    if (!player || !isReady) return;
+    player.mute();
+    isMuted = true;
+    syncToggle();
+  };
+
+  toggle.addEventListener('click', () => {
+    if (!isReady) return;
+    if (isMuted) {
+      enableSound();
+    } else {
+      disableSound();
+    }
+  });
+
+  setLabel('audio.toggle.loading');
+
+  ensureApi().then(() => {
+    const origin = window.location.origin || '';
+    const playerVars = {
+      autoplay: 1,
+      controls: 0,
+      disablekb: 1,
+      fs: 0,
+      playsinline: 1,
+      loop: 1,
+      playlist: videoId,
+      modestbranding: 1,
+      rel: 0,
+      mute: 1
+    };
+    if (origin.startsWith('http')) {
+      playerVars.origin = origin;
+    }
+
+    player = new YT.Player(playerHost, {
+      videoId,
+      playerVars,
+      events: {
+        onReady: () => {
+          isReady = true;
+          playMuted();
+        }
+      }
+    });
+  });
+};
+
 const renderSearchResults = async (panel, query) => {
   const resultsNode = panel.querySelector('.search-results');
   const titleNode = panel.querySelector('.search-panel__title');
@@ -3114,5 +3233,6 @@ setupGlobalSearch();
 setupQuickPreview();
 setupSpaceCarousel();
 setupMobileQuickActions();
+setupBackgroundAudio();
 finishLoadingAfterReady();
 initDataDrivenPages();
