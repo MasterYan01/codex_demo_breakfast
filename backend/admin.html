@@ -114,7 +114,7 @@
               <label class="field"><span>分類</span><select name="category" required><option value="breakfast">早餐</option><option value="coffee">咖啡</option><option value="dessert">甜點</option></select></label>
               <label class="field"><span>價格</span><input type="number" name="price" min="0" required></label>
               <label class="field"><span>排序權重</span><input type="number" name="sortWeight" min="-100" max="1000" step="1" value="0"></label>
-              <label class="field"><span>上架狀態</span><select name="status"><option value="active">上架</option><option value="inactive">下架</option></select></label>
+              <label class="field"><span>上架狀態</span><select name="status"><option value="active">上架</option><option value="draft">草稿</option><option value="inactive">下架</option></select></label>
               <label class="field field-full"><span>圖片</span><input type="url" name="image" required data-admin-image></label>
               <div class="admin-image-preview" data-admin-image-preview hidden>
                 <img alt="圖片預覽">
@@ -161,6 +161,18 @@
               <div class="admin-bar-list" id="analytics-sources"></div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section class="admin-audit" id="audit">
+        <div class="admin-panel">
+          <div class="admin-reservations__header">
+            <p class="eyebrow">Audit</p>
+            <h2>後台操作記錄</h2>
+            <button class="btn btn-secondary admin-reservations__refresh" id="admin-audit-refresh" type="button">重新整理</button>
+            <p class="form-status" id="admin-audit-status" aria-live="polite"></p>
+          </div>
+          <div id="admin-audit-list" class="admin-audit-list"></div>
         </div>
       </section>
     </main>

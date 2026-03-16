@@ -19,6 +19,7 @@ DATA_FILE = ROOT / 'data' / 'menu.json'
 RESERVATION_FILE = ROOT / 'data' / 'reservations.json'
 WAITLIST_FILE = ROOT / 'data' / 'waitlist.json'
 TAKEOUT_FILE = ROOT / 'data' / 'takeout.json'
+AUDIT_LOG_FILE = ROOT / 'data' / 'audit-log.json'
 HOST = os.getenv('HOST', '127.0.0.1')
 PORT = int(os.getenv('PORT', '8020'))
 DEFAULT_ALLOWED_ORIGINS = 'http://127.0.0.1:8020,http://localhost:8020,http://127.0.0.1:5500,http://localhost:5500,https://masteryan01.github.io'
@@ -37,6 +38,10 @@ SMTP_PASS = os.getenv('SMTP_PASS', '').strip()
 SMTP_FROM = os.getenv('SMTP_FROM', '').strip() or SMTP_USER
 SMTP_TO = [value.strip() for value in os.getenv('SMTP_TO', '').split(',') if value.strip()]
 SMTP_STARTTLS = os.getenv('SMTP_STARTTLS', '1').strip() != '0'
+ADMIN_USER = os.getenv('ADMIN_USER', '').strip()
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', '').strip()
+ADMIN_ENABLED = bool(ADMIN_USER and ADMIN_PASSWORD)
+AUDIT_LOG_LIMIT = int(os.getenv('AUDIT_LOG_LIMIT', '1000'))
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID', '').strip()
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN', '').strip()
 TWILIO_FROM = os.getenv('TWILIO_FROM', '').strip()
@@ -100,6 +105,14 @@ def load_takeout():
 
 def save_takeout(payload):
     save_list(TAKEOUT_FILE, payload)
+
+
+def load_audit_log():
+    return load_list(AUDIT_LOG_FILE)
+
+
+def save_audit_log(payload):
+    save_list(AUDIT_LOG_FILE, payload)
 
 
 def build_notify_message(event_type, entry):
@@ -265,8 +278,111 @@ def find_duplicate_entry(entry, entries, keys, window_seconds=120):
     return None
 
 
+def parse_basic_auth(header_value):
+    if not header_value:
+        return None, None
+    if not header_value.startswith('Basic '):
+        return None, None
+    token = header_value.split(' ', 1)[1].strip()
+    try:
+        decoded = base64.b64decode(token).decode('utf-8')
+    except (ValueError, UnicodeDecodeError):
+        return None, None
+    if ':' not in decoded:
+        return None, None
+    user, password = decoded.split(':', 1)
+    return user, password
+
+
+def normalize_item_snapshot(item):
+    if not isinstance(item, dict):
+        return {}
+    return {key: item.get(key) for key in sorted(item.keys())}
+
+
+def diff_items(old_items, new_items):
+    old_map = {entry.get('slug'): entry for entry in old_items if entry.get('slug')}
+    new_map = {entry.get('slug'): entry for entry in new_items if entry.get('slug')}
+    changes = []
+
+    for slug, new_item in new_map.items():
+        old_item = old_map.get(slug)
+        if old_item is None:
+            changes.append({
+                'action': 'create',
+                'item': {'slug': slug, 'name': new_item.get('name', '')},
+                'changes': {'created': True}
+            })
+            continue
+        old_snapshot = normalize_item_snapshot(old_item)
+        new_snapshot = normalize_item_snapshot(new_item)
+        if old_snapshot == new_snapshot:
+            continue
+        diff = {}
+        for key in sorted(set(old_snapshot.keys()) | set(new_snapshot.keys())):
+            if old_snapshot.get(key) != new_snapshot.get(key):
+                diff[key] = {'from': old_snapshot.get(key), 'to': new_snapshot.get(key)}
+        changes.append({
+            'action': 'update',
+            'item': {'slug': slug, 'name': new_item.get('name', '')},
+            'changes': diff
+        })
+
+    for slug, old_item in old_map.items():
+        if slug in new_map:
+            continue
+        changes.append({
+            'action': 'delete',
+            'item': {'slug': slug, 'name': old_item.get('name', '')},
+            'changes': {'deleted': True}
+        })
+
+    return changes
+
+
+def append_audit_entries(entries, actor, ip_address, user_agent):
+    if not entries:
+        return
+    log = load_audit_log()
+    now = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+    for entry in entries:
+        log.append({
+            'id': uuid.uuid4().hex,
+            'timestamp': now,
+            'actor': actor or 'unknown',
+            'action': entry.get('action', ''),
+            'item': entry.get('item', {}),
+            'changes': entry.get('changes', {}),
+            'ip': ip_address,
+            'userAgent': user_agent
+        })
+    if len(log) > AUDIT_LOG_LIMIT:
+        log = log[-AUDIT_LOG_LIMIT:]
+    save_audit_log(log)
+
+
 class MenuHandler(BaseHTTPRequestHandler):
     server_version = 'LaMiuHTTP/1.1'
+
+    def get_auth_user(self):
+        if not ADMIN_ENABLED:
+            return None
+        header = self.headers.get('Authorization', '')
+        user, password = parse_basic_auth(header)
+        if user == ADMIN_USER and password == ADMIN_PASSWORD:
+            return user
+        return None
+
+    def require_admin(self):
+        if not ADMIN_ENABLED:
+            return True
+        user = self.get_auth_user()
+        if user:
+            return True
+        self.send_response(HTTPStatus.UNAUTHORIZED)
+        self.send_header('WWW-Authenticate', 'Basic realm="La Miu Admin"')
+        self.end_headers()
+        return False
 
     def get_cors_origin(self):
         origin = self.headers.get('Origin', '')
@@ -297,13 +413,24 @@ class MenuHandler(BaseHTTPRequestHandler):
             return self.send_json(load_menu())
 
         if path == '/api/reservations':
+            if not self.require_admin():
+                return None
             return self.handle_reservations_list(parsed)
 
         if path == '/api/waitlist':
+            if not self.require_admin():
+                return None
             return self.handle_waitlist_list(parsed)
 
         if path == '/api/takeout':
+            if not self.require_admin():
+                return None
             return self.handle_takeout_list(parsed)
+
+        if path == '/api/audit':
+            if not self.require_admin():
+                return None
+            return self.handle_audit_list(parsed)
 
         if path.startswith('/api/categories/'):
             slug = unquote(path.split('/api/categories/', 1)[1]).strip('/')
@@ -318,12 +445,16 @@ class MenuHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         parsed = urlparse(self.path)
         if parsed.path == '/api/menu':
+            if not self.require_admin():
+                return None
             return self.handle_menu_write()
         if parsed.path == '/api/reservations':
             return self.handle_reservation_create()
         if parsed.path == '/api/waitlist':
             return self.handle_waitlist_create()
         if parsed.path == '/api/waitlist/notify':
+            if not self.require_admin():
+                return None
             return self.handle_waitlist_notify()
         if parsed.path == '/api/takeout':
             return self.handle_takeout_create()
@@ -332,6 +463,8 @@ class MenuHandler(BaseHTTPRequestHandler):
     def do_PUT(self):
         parsed = urlparse(self.path)
         if parsed.path == '/api/menu':
+            if not self.require_admin():
+                return None
             return self.handle_menu_write()
         self.send_error(HTTPStatus.NOT_FOUND, 'Endpoint not found')
 
@@ -342,7 +475,11 @@ class MenuHandler(BaseHTTPRequestHandler):
             payload = json.loads(raw.decode('utf-8'))
             if not isinstance(payload, dict) or 'categories' not in payload or 'items' not in payload:
                 raise ValueError('Invalid payload shape')
+            old_menu = load_menu()
             save_menu(payload)
+            changes = diff_items(old_menu.get('items', []), payload.get('items', []))
+            actor = self.get_auth_user() or 'anonymous'
+            append_audit_entries(changes, actor, self.client_address[0], self.headers.get('User-Agent', ''))
             self.send_json({'ok': True, 'saved': True})
         except Exception as exc:
             self.send_json({'ok': False, 'error': str(exc)}, status=HTTPStatus.BAD_REQUEST)
@@ -487,6 +624,17 @@ class MenuHandler(BaseHTTPRequestHandler):
         entries = list(reversed(entries))[:limit]
         return self.send_json({'ok': True, 'takeout': entries})
 
+    def handle_audit_list(self, parsed):
+        query = parse_qs(parsed.query)
+        try:
+            limit = int(query.get('limit', ['50'])[0])
+        except ValueError:
+            limit = 50
+        limit = max(1, min(limit, 200))
+        entries = load_audit_log()
+        entries = list(reversed(entries))[:limit]
+        return self.send_json({'ok': True, 'entries': entries})
+
     def handle_takeout_create(self):
         try:
             length = int(self.headers.get('Content-Length', '0'))
@@ -549,6 +697,9 @@ class MenuHandler(BaseHTTPRequestHandler):
     def serve_static(self, path):
         rel_path = path.lstrip('/') or 'index.html'
         rel_path = rel_path.split('?', 1)[0]
+        if rel_path == 'admin.html':
+            if not self.require_admin():
+                return None
         file_path = (ROOT / rel_path).resolve()
         if ROOT not in file_path.parents and file_path != ROOT:
             return self.send_error(HTTPStatus.FORBIDDEN, 'Forbidden')

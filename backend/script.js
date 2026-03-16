@@ -526,7 +526,7 @@ const renderAdminList = () => {
   list.innerHTML = items.length ? items.map((item) => `
     <button type="button" class="admin-item-button${item.slug === adminSelectedSlug ? ' is-selected' : ''}" data-slug="${item.slug}">
       <strong>${item.name}</strong>
-      <span>${item.category} / ${formatPrice(item.price)} · 權重 ${Number.isFinite(item.sortWeight) ? item.sortWeight : 0}${item.status === 'inactive' ? ' · 下架' : ''}</span>
+      <span>${item.category} / ${formatPrice(item.price)} · 權重 ${Number.isFinite(item.sortWeight) ? item.sortWeight : 0}${item.status === 'inactive' ? ' · 下架' : item.status === 'draft' ? ' · 草稿' : ''}</span>
     </button>
   `).join('') : '<div class="admin-reservation-empty">目前沒有符合條件的單品。</div>';
   updateAdminFilterCount(items.length, adminState.items.length);
@@ -873,6 +873,56 @@ const setupAnalyticsDashboard = async () => {
   await load();
 };
 
+const renderAuditList = (entries) => {
+  const listNode = document.querySelector('#admin-audit-list');
+  if (!listNode) return;
+  if (!entries.length) {
+    listNode.innerHTML = '<div class="admin-reservation-empty">目前沒有操作記錄。</div>';
+    return;
+  }
+  listNode.innerHTML = entries.map((entry) => {
+    const actor = escapeHtml(entry.actor || 'unknown');
+    const action = escapeHtml(entry.action || '');
+    const itemLabel = entry.item ? `${escapeHtml(entry.item.name || '')} (${escapeHtml(entry.item.slug || '')})` : '';
+    const time = escapeHtml(formatReservationTimestamp(entry.timestamp || ''));
+    const notes = entry.changes ? Object.keys(entry.changes).join(', ') : '';
+    return `
+      <article class="admin-audit-card">
+        <strong>${action}${itemLabel ? ` · ${itemLabel}` : ''}</strong>
+        <div class="admin-audit-meta">${actor} · ${time}</div>
+        ${notes ? `<div class="admin-audit-note">變更欄位：${escapeHtml(notes)}</div>` : ''}
+      </article>
+    `;
+  }).join('');
+};
+
+const setupAuditLog = async () => {
+  const listNode = document.querySelector('#admin-audit-list');
+  if (!listNode) return;
+  const refreshButton = document.querySelector('#admin-audit-refresh');
+  const statusNode = document.querySelector('#admin-audit-status');
+
+  const updateStatus = (message, status) => {
+    if (!statusNode) return;
+    statusNode.textContent = message;
+    statusNode.dataset.state = status;
+  };
+
+  const load = async () => {
+    updateStatus('載入操作記錄中…', '');
+    try {
+      const payload = await fetchJson(`${getApiUrl('/api/audit')}?limit=50`);
+      renderAuditList(payload.entries || []);
+      updateStatus('已更新操作記錄。', 'success');
+    } catch (error) {
+      updateStatus(`載入失敗：${error.message}`, 'error');
+    }
+  };
+
+  refreshButton?.addEventListener('click', load);
+  await load();
+};
+
 const setupAdminPage = async () => {
   adminState = await fetchJson(menuApiUrl);
   adminSelectedSlug = adminState.items[0]?.slug || '';
@@ -989,7 +1039,7 @@ const setupAdminPage = async () => {
       form.reset();
       form.category.value = 'breakfast';
       form.sortWeight.value = 0;
-      form.status.value = 'active';
+      form.status.value = 'draft';
       slugTouched = false;
       snapshotAdminForm();
       if (imageInput && imagePreview) {
@@ -1045,6 +1095,7 @@ const setupAdminPage = async () => {
   await setupWaitlistInbox();
   await setupTakeoutInbox();
   await setupAnalyticsDashboard();
+  await setupAuditLog();
 };
 
 const initDataDrivenPages = async () => {

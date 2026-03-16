@@ -2734,6 +2734,39 @@ body {
   width: 100%;
 }
 
+.admin-audit {
+  margin: 0 18px 32px;
+}
+
+.admin-audit-list {
+  display: grid;
+  gap: 10px;
+  max-height: 360px;
+  overflow: auto;
+  margin-top: 12px;
+}
+
+.admin-audit-card {
+  border: 1px solid rgba(104, 64, 45, 0.14);
+  background: rgba(255,255,255,0.78);
+  border-radius: 18px;
+  padding: 12px 14px;
+  display: grid;
+  gap: 6px;
+}
+
+.admin-audit-card strong {
+  font-family: "Noto Serif TC", serif;
+  font-size: 1.02rem;
+}
+
+.admin-audit-meta,
+.admin-audit-note {
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
 .admin-analytics {
   margin: 0 18px 32px;
 }

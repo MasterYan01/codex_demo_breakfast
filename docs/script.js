@@ -1399,7 +1399,7 @@ const getHotItems = (items) => items
   .slice(0, 6)
   .map((entry) => entry.item);
 
-const isItemActive = (item) => item && item.status !== 'inactive';
+const isItemActive = (item) => item && (item.status || 'active') === 'active';
 
 const getSortWeight = (item) => {
   const weight = Number(item?.sortWeight);
