@@ -41,6 +41,7 @@ SMTP_STARTTLS = os.getenv('SMTP_STARTTLS', '1').strip() != '0'
 ADMIN_USER = os.getenv('ADMIN_USER', '').strip()
 ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', '').strip()
 ADMIN_ENABLED = bool(ADMIN_USER and ADMIN_PASSWORD)
+ACTIVE_TOKENS = {}
 AUDIT_LOG_LIMIT = int(os.getenv('AUDIT_LOG_LIMIT', '1000'))
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID', '').strip()
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN', '').strip()
@@ -278,22 +279,6 @@ def find_duplicate_entry(entry, entries, keys, window_seconds=120):
     return None
 
 
-def parse_basic_auth(header_value):
-    if not header_value:
-        return None, None
-    if not header_value.startswith('Basic '):
-        return None, None
-    token = header_value.split(' ', 1)[1].strip()
-    try:
-        decoded = base64.b64decode(token).decode('utf-8')
-    except (ValueError, UnicodeDecodeError):
-        return None, None
-    if ':' not in decoded:
-        return None, None
-    user, password = decoded.split(':', 1)
-    return user, password
-
-
 def normalize_item_snapshot(item):
     if not isinstance(item, dict):
         return {}
@@ -364,24 +349,24 @@ def append_audit_entries(entries, actor, ip_address, user_agent):
 class MenuHandler(BaseHTTPRequestHandler):
     server_version = 'LaMiuHTTP/1.1'
 
-    def get_auth_user(self):
+    def get_token_user(self):
         if not ADMIN_ENABLED:
             return None
-        header = self.headers.get('Authorization', '')
-        user, password = parse_basic_auth(header)
-        if user == ADMIN_USER and password == ADMIN_PASSWORD:
-            return user
-        return None
+        token = self.headers.get('X-Admin-Token', '').strip()
+        if not token:
+            return None
+        entry = ACTIVE_TOKENS.get(token)
+        if not entry:
+            return None
+        return entry.get('user')
 
     def require_admin(self):
         if not ADMIN_ENABLED:
             return True
-        user = self.get_auth_user()
+        user = self.get_token_user()
         if user:
             return True
-        self.send_response(HTTPStatus.UNAUTHORIZED)
-        self.send_header('WWW-Authenticate', 'Basic realm="La Miu Admin"')
-        self.end_headers()
+        self.send_json({'ok': False, 'error': 'Unauthorized'}, status=HTTPStatus.UNAUTHORIZED)
         return False
 
     def get_cors_origin(self):
@@ -398,7 +383,7 @@ class MenuHandler(BaseHTTPRequestHandler):
             self.send_header('Access-Control-Allow-Origin', origin)
             self.send_header('Vary', 'Origin')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Token')
 
     def do_OPTIONS(self):
         self.send_response(HTTPStatus.NO_CONTENT)
@@ -447,6 +432,12 @@ class MenuHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urlparse(self.path)
+        if parsed.path == '/api/login':
+            return self.handle_login()
+        if parsed.path == '/api/logout':
+            if not self.require_admin():
+                return None
+            return self.handle_logout()
         if parsed.path == '/api/menu':
             if not self.require_admin():
                 return None
@@ -481,7 +472,7 @@ class MenuHandler(BaseHTTPRequestHandler):
             old_menu = load_menu()
             save_menu(payload)
             changes = diff_items(old_menu.get('items', []), payload.get('items', []))
-            actor = self.get_auth_user() or 'anonymous'
+            actor = self.get_token_user() or 'anonymous'
             append_audit_entries(changes, actor, self.client_address[0], self.headers.get('User-Agent', ''))
             self.send_json({'ok': True, 'saved': True})
         except Exception as exc:
@@ -638,15 +629,38 @@ class MenuHandler(BaseHTTPRequestHandler):
         entries = list(reversed(entries))[:limit]
         return self.send_json({'ok': True, 'entries': entries})
 
+    def handle_login(self):
+        if not ADMIN_ENABLED:
+            return self.send_json({'ok': True, 'enabled': False, 'token': '', 'user': ''})
+        try:
+            length = int(self.headers.get('Content-Length', '0'))
+            raw = self.rfile.read(length)
+            payload = json.loads(raw.decode('utf-8'))
+            user = str(payload.get('user', '')).strip()
+            password = str(payload.get('password', '')).strip()
+            if user != ADMIN_USER or password != ADMIN_PASSWORD:
+                return self.send_json({'ok': False, 'error': 'Invalid credentials'}, status=HTTPStatus.UNAUTHORIZED)
+            token = uuid.uuid4().hex
+            ACTIVE_TOKENS[token] = {
+                'user': user,
+                'createdAt': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+            }
+            return self.send_json({'ok': True, 'enabled': True, 'token': token, 'user': user})
+        except Exception as exc:
+            return self.send_json({'ok': False, 'error': str(exc)}, status=HTTPStatus.BAD_REQUEST)
+
+    def handle_logout(self):
+        token = self.headers.get('X-Admin-Token', '').strip()
+        if token and token in ACTIVE_TOKENS:
+            ACTIVE_TOKENS.pop(token, None)
+        return self.send_json({'ok': True})
+
     def handle_whoami(self):
         if not ADMIN_ENABLED:
             return self.send_json({'ok': True, 'enabled': False, 'user': ''})
-        user = self.get_auth_user()
+        user = self.get_token_user()
         if not user:
-            self.send_response(HTTPStatus.UNAUTHORIZED)
-            self.send_header('WWW-Authenticate', 'Basic realm="La Miu Admin"')
-            self.end_headers()
-            return None
+            return self.send_json({'ok': False, 'enabled': True, 'error': 'Unauthorized'}, status=HTTPStatus.UNAUTHORIZED)
         return self.send_json({'ok': True, 'enabled': True, 'user': user})
 
     def handle_takeout_create(self):

@@ -45,22 +45,22 @@ const auditFilters = {
 let auditEntries = [];
 let auditFiltered = [];
 
-const AUTH_STORAGE_KEY = 'la_miu_admin_auth';
+const ADMIN_TOKEN_KEY = 'la_miu_admin_token';
 
-const getStoredAuth = () => {
+const getStoredToken = () => {
   try {
-    return window.sessionStorage.getItem(AUTH_STORAGE_KEY) || '';
+    return window.sessionStorage.getItem(ADMIN_TOKEN_KEY) || '';
   } catch (error) {
     return '';
   }
 };
 
-const setStoredAuth = (token) => {
+const setStoredToken = (token) => {
   try {
     if (token) {
-      window.sessionStorage.setItem(AUTH_STORAGE_KEY, token);
+      window.sessionStorage.setItem(ADMIN_TOKEN_KEY, token);
     } else {
-      window.sessionStorage.removeItem(AUTH_STORAGE_KEY);
+      window.sessionStorage.removeItem(ADMIN_TOKEN_KEY);
     }
   } catch (error) {
     // Ignore storage errors.
@@ -68,9 +68,9 @@ const setStoredAuth = (token) => {
 };
 
 const getAuthHeader = () => {
-  const token = getStoredAuth();
+  const token = getStoredToken();
   if (!token) return {};
-  return { Authorization: `Basic ${token}` };
+  return { 'X-Admin-Token': token };
 };
 
 const finishLoading = () => {
@@ -356,10 +356,10 @@ const setupActiveSections = () => {
 const fetchJson = async (url, options) => {
   const init = options ? { ...options } : {};
   const headers = new Headers(init.headers || {});
-  if (!headers.has('Authorization')) {
+  if (!headers.has('X-Admin-Token')) {
     const authHeader = getAuthHeader();
-    if (authHeader.Authorization) {
-      headers.set('Authorization', authHeader.Authorization);
+    if (authHeader['X-Admin-Token']) {
+      headers.set('X-Admin-Token', authHeader['X-Admin-Token']);
     }
   }
   init.headers = headers;
@@ -1078,10 +1078,10 @@ const setupLoginPage = () => {
   };
 
   const attemptExisting = async () => {
-    const token = getStoredAuth();
+    const token = getStoredToken();
     try {
       const identity = await fetchJson(getApiUrl('/api/whoami'), {
-        headers: token ? { Authorization: `Basic ${token}` } : {}
+        headers: token ? { 'X-Admin-Token': token } : {}
       });
       if (!identity.enabled) {
         window.location.href = 'admin.html';
@@ -1091,7 +1091,7 @@ const setupLoginPage = () => {
         window.location.href = 'admin.html';
       }
     } catch (error) {
-      setStoredAuth('');
+      setStoredToken('');
     }
   };
 
@@ -1105,25 +1105,26 @@ const setupLoginPage = () => {
       setStatus('請輸入帳號與密碼。', 'error');
       return;
     }
-    const token = btoa(`${user}:${pass}`);
     setStatus('登入中…', '');
     try {
-      const identity = await fetchJson(getApiUrl('/api/whoami'), {
-        headers: { Authorization: `Basic ${token}` }
+      const result = await fetchJson(getApiUrl('/api/login'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user, password: pass })
       });
-      if (!identity.enabled) {
-        setStoredAuth('');
+      if (!result.enabled) {
+        setStoredToken('');
         window.location.href = 'admin.html';
         return;
       }
-      if (identity.user) {
-        setStoredAuth(token);
+      if (result.token) {
+        setStoredToken(result.token);
         window.location.href = 'admin.html';
         return;
       }
       setStatus('帳號或密碼錯誤。', 'error');
     } catch (error) {
-      setStoredAuth('');
+      setStoredToken('');
       if (error.status === 401) {
         setStatus('帳號或密碼錯誤。', 'error');
         return;
@@ -1320,8 +1321,13 @@ const setupAdminPage = async () => {
     setAdminUser('');
   }
 
-  logoutButton?.addEventListener('click', () => {
-    setStoredAuth('');
+  logoutButton?.addEventListener('click', async () => {
+    try {
+      await fetchJson(getApiUrl('/api/logout'), { method: 'POST' });
+    } catch (error) {
+      // Ignore logout errors.
+    }
+    setStoredToken('');
     window.location.href = 'login.html';
   });
 
