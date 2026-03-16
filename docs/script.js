@@ -1044,6 +1044,8 @@ const setupNewsletterForms = () => {
   const action = safeText(newsletterConfig.action);
   const method = safeText(newsletterConfig.method || 'post').toLowerCase();
   const emailField = safeText(newsletterConfig.emailField || 'EMAIL');
+  const sendingMessage = safeText(newsletterConfig.sendingMessage) || t('footer.newsletter.sending');
+  const successMessage = safeText(newsletterConfig.successMessage) || t('footer.newsletter.success');
   const hiddenFields = newsletterConfig.hiddenFields && typeof newsletterConfig.hiddenFields === 'object'
     ? newsletterConfig.hiddenFields
     : null;
@@ -1071,8 +1073,15 @@ const setupNewsletterForms = () => {
 
     form.setAttribute('action', action);
     form.setAttribute('method', method || 'post');
-    form.setAttribute('target', '_blank');
-    form.setAttribute('rel', 'noreferrer');
+
+    const iframeName = `newsletter-target-${Math.random().toString(36).slice(2, 9)}`;
+    const iframe = document.createElement('iframe');
+    iframe.name = iframeName;
+    iframe.className = 'newsletter-iframe';
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.tabIndex = -1;
+    form.appendChild(iframe);
+    form.setAttribute('target', iframeName);
 
     if (hiddenFields) {
       Object.entries(hiddenFields).forEach(([name, value]) => {
@@ -1087,11 +1096,12 @@ const setupNewsletterForms = () => {
 
     form.addEventListener('submit', () => {
       if (status) {
-        status.textContent = t('footer.newsletter.sending');
+        status.textContent = sendingMessage;
         status.dataset.state = '';
         window.setTimeout(() => {
-          status.textContent = t('footer.newsletter.success');
+          status.textContent = successMessage;
           status.dataset.state = 'success';
+          if (emailInput) emailInput.value = '';
         }, 400);
       }
       if (submitButton) {

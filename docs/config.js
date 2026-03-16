@@ -5,6 +5,8 @@
     action: 'https://gmail.us5.list-manage.com/subscribe/post',
     method: 'post',
     emailField: 'MERGE0',
+    sendingMessage: '',
+    successMessage: '',
     hiddenFields: {
       u: '1f2e9b6a8945af20d46687e4e',
       id: '1db3bb1f1e',
