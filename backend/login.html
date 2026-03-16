@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>樂沐 La Miu 後台登入</title>
+  <meta name="description" content="樂沐 La Miu 後台登入頁。">
+  <meta name="theme-color" content="#f2e6d8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="is-loading menu-page admin-page" data-page="login">
+  <div class="page-loader" aria-hidden="true"><div class="page-loader__inner"><span class="page-loader__mark">樂沐</span><span class="page-loader__line"></span><span class="page-loader__label">La Miu</span></div></div>
+  <div class="page-shell">
+    <header class="site-header reveal-on-scroll" data-reveal="header">
+      <a class="brand" href="index.html"><span class="brand-mark">樂沐</span><span class="brand-sub">La Miu</span></a>
+      <nav class="nav">
+        <a href="menu.html">菜單總覽</a>
+        <a href="index.html">返回前台</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="admin-hero reveal-on-scroll reveal-visible" data-reveal="hero">
+        <div class="admin-hero__copy">
+          <p class="eyebrow">Admin Login</p>
+          <h1>後台登入</h1>
+          <p class="hero-text">請輸入管理帳號與密碼。若忘記密碼請聯繫管理員。</p>
+        </div>
+      </section>
+
+      <section class="admin-layout reveal-on-scroll" data-reveal="section">
+        <section class="admin-editor">
+          <form class="admin-form admin-panel login-panel" id="login-form">
+            <p class="eyebrow">Credentials</p>
+            <h2>登入資訊</h2>
+            <div class="admin-grid">
+              <label class="field field-full">
+                <span>帳號</span>
+                <input type="text" id="login-user" autocomplete="username" required>
+              </label>
+              <label class="field field-full">
+                <span>密碼</span>
+                <input type="password" id="login-pass" autocomplete="current-password" required>
+              </label>
+            </div>
+            <div class="hero-actions">
+              <button class="btn btn-primary" type="submit">登入</button>
+              <a class="btn btn-secondary" href="menu.html">取消</a>
+            </div>
+            <p class="form-status" id="login-status" aria-live="polite"></p>
+          </form>
+        </section>
+      </section>
+    </main>
+  </div>
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

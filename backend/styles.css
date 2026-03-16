@@ -2592,6 +2592,12 @@ body {
   text-transform: uppercase;
 }
 
+.admin-logout {
+  min-height: 36px;
+  padding: 0 16px;
+  font-size: 0.8rem;
+}
+
 .admin-status-bar[data-state="success"] {
   border-color: rgba(83, 129, 65, 0.3);
 }
@@ -2695,6 +2701,10 @@ body {
 .admin-reservations__refresh {
   width: 100%;
   margin-top: 8px;
+}
+
+.admin-reservations__refresh + .admin-reservations__refresh {
+  margin-top: 10px;
 }
 
 .admin-reservation-list {
@@ -2957,5 +2967,9 @@ body {
 
   .admin-status-user {
     display: none;
+  }
+
+  .admin-logout {
+    padding: 0 12px;
   }
 }

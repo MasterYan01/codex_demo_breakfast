@@ -29,6 +29,7 @@
       <span class="admin-status-pill is-hidden" id="admin-dirty"></span>
       <span class="admin-status-message" id="admin-status"></span>
       <span class="admin-status-user" id="admin-user"></span>
+      <button class="btn btn-secondary admin-logout" id="admin-logout" type="button">登出</button>
     </div>
     <main>
       <section class="admin-hero reveal-on-scroll reveal-visible" data-reveal="hero">
@@ -68,6 +69,7 @@
                   <select id="admin-filter-status">
                     <option value="all">全部</option>
                     <option value="active">上架</option>
+                    <option value="draft">草稿</option>
                     <option value="inactive">下架</option>
                   </select>
                 </label>
@@ -171,6 +173,7 @@
             <p class="eyebrow">Audit</p>
             <h2>後台操作記錄</h2>
             <button class="btn btn-secondary admin-reservations__refresh" id="admin-audit-refresh" type="button">重新整理</button>
+            <button class="btn btn-secondary admin-reservations__refresh" id="admin-audit-export" type="button">導出 CSV</button>
             <p class="form-status" id="admin-audit-status" aria-live="polite"></p>
           </div>
           <div class="admin-audit-filter">

@@ -43,6 +43,35 @@ const auditFilters = {
   rangeDays: 'all'
 };
 let auditEntries = [];
+let auditFiltered = [];
+
+const AUTH_STORAGE_KEY = 'la_miu_admin_auth';
+
+const getStoredAuth = () => {
+  try {
+    return window.sessionStorage.getItem(AUTH_STORAGE_KEY) || '';
+  } catch (error) {
+    return '';
+  }
+};
+
+const setStoredAuth = (token) => {
+  try {
+    if (token) {
+      window.sessionStorage.setItem(AUTH_STORAGE_KEY, token);
+    } else {
+      window.sessionStorage.removeItem(AUTH_STORAGE_KEY);
+    }
+  } catch (error) {
+    // Ignore storage errors.
+  }
+};
+
+const getAuthHeader = () => {
+  const token = getStoredAuth();
+  if (!token) return {};
+  return { Authorization: `Basic ${token}` };
+};
 
 const finishLoading = () => {
   body.classList.remove('is-loading');
@@ -100,6 +129,11 @@ const setAdminUser = (user) => {
     return;
   }
   node.textContent = `登入：${user}`;
+};
+
+const redirectToLogin = () => {
+  if (pageType === 'login') return;
+  window.location.href = 'login.html';
 };
 
 const syncImagePreview = (input, preview) => {
@@ -320,9 +354,20 @@ const setupActiveSections = () => {
 };
 
 const fetchJson = async (url, options) => {
-  const response = await fetch(url, options);
+  const init = options ? { ...options } : {};
+  const headers = new Headers(init.headers || {});
+  if (!headers.has('Authorization')) {
+    const authHeader = getAuthHeader();
+    if (authHeader.Authorization) {
+      headers.set('Authorization', authHeader.Authorization);
+    }
+  }
+  init.headers = headers;
+  const response = await fetch(url, init);
   if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`);
+    const error = new Error(`Request failed: ${response.status}`);
+    error.status = response.status;
+    throw error;
   }
   return response.json();
 };
@@ -931,6 +976,7 @@ const filterAuditEntries = () => {
       });
     }
   }
+  auditFiltered = filtered;
   const countNode = document.querySelector('#admin-audit-count');
   if (countNode) {
     countNode.textContent = `顯示 ${filtered.length} / ${auditEntries.length} 筆`;
@@ -942,6 +988,7 @@ const setupAuditLog = async () => {
   const listNode = document.querySelector('#admin-audit-list');
   if (!listNode) return;
   const refreshButton = document.querySelector('#admin-audit-refresh');
+  const exportButton = document.querySelector('#admin-audit-export');
   const statusNode = document.querySelector('#admin-audit-status');
   const queryInput = document.querySelector('#admin-audit-query');
   const actionSelect = document.querySelector('#admin-audit-action');
@@ -980,8 +1027,110 @@ const setupAuditLog = async () => {
     filterAuditEntries();
   });
 
+  exportButton?.addEventListener('click', () => {
+    const rows = (auditFiltered.length ? auditFiltered : auditEntries).map((entry) => ({
+      timestamp: entry.timestamp || '',
+      actor: entry.actor || '',
+      action: entry.action || '',
+      item_slug: entry.item?.slug || '',
+      item_name: entry.item?.name || '',
+      changes: entry.changes ? JSON.stringify(entry.changes) : ''
+    }));
+    if (!rows.length) {
+      updateStatus('目前沒有可導出的記錄。', 'error');
+      return;
+    }
+    const headers = ['timestamp', 'actor', 'action', 'item_slug', 'item_name', 'changes'];
+    const csvLines = [
+      headers.join(','),
+      ...rows.map((row) => headers.map((key) => {
+        const value = String(row[key] ?? '');
+        const escaped = value.replace(/"/g, '""');
+        return `"${escaped}"`;
+      }).join(','))
+    ];
+    const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  });
+
   refreshButton?.addEventListener('click', load);
   await load();
+};
+
+const setupLoginPage = () => {
+  const form = document.querySelector('#login-form');
+  if (!form) return;
+  const userInput = form.querySelector('#login-user');
+  const passInput = form.querySelector('#login-pass');
+  const statusNode = document.querySelector('#login-status');
+
+  const setStatus = (message, state) => {
+    if (!statusNode) return;
+    statusNode.textContent = message;
+    statusNode.dataset.state = state || '';
+  };
+
+  const attemptExisting = async () => {
+    const token = getStoredAuth();
+    try {
+      const identity = await fetchJson(getApiUrl('/api/whoami'), {
+        headers: token ? { Authorization: `Basic ${token}` } : {}
+      });
+      if (!identity.enabled) {
+        window.location.href = 'admin.html';
+        return;
+      }
+      if (identity.user) {
+        window.location.href = 'admin.html';
+      }
+    } catch (error) {
+      setStoredAuth('');
+    }
+  };
+
+  attemptExisting();
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const user = safeText(userInput?.value);
+    const pass = safeText(passInput?.value);
+    if (!user || !pass) {
+      setStatus('請輸入帳號與密碼。', 'error');
+      return;
+    }
+    const token = btoa(`${user}:${pass}`);
+    setStatus('登入中…', '');
+    try {
+      const identity = await fetchJson(getApiUrl('/api/whoami'), {
+        headers: { Authorization: `Basic ${token}` }
+      });
+      if (!identity.enabled) {
+        setStoredAuth('');
+        window.location.href = 'admin.html';
+        return;
+      }
+      if (identity.user) {
+        setStoredAuth(token);
+        window.location.href = 'admin.html';
+        return;
+      }
+      setStatus('帳號或密碼錯誤。', 'error');
+    } catch (error) {
+      setStoredAuth('');
+      if (error.status === 401) {
+        setStatus('帳號或密碼錯誤。', 'error');
+        return;
+      }
+      setStatus('登入失敗，請稍後再試。', 'error');
+    }
+  });
 };
 
 const setupAdminPage = async () => {
@@ -1001,6 +1150,7 @@ const setupAdminPage = async () => {
   const filterQuery = document.querySelector('#admin-filter-query');
   const filterCategory = document.querySelector('#admin-filter-category');
   const filterStatus = document.querySelector('#admin-filter-status');
+  const logoutButton = document.querySelector('#admin-logout');
 
   if (filterQuery) {
     filterQuery.addEventListener('input', () => {
@@ -1154,10 +1304,26 @@ const setupAdminPage = async () => {
 
   try {
     const identity = await fetchJson(getApiUrl('/api/whoami'));
+    if (identity.enabled && !identity.user) {
+      redirectToLogin();
+      return;
+    }
+    if (!identity.enabled) {
+      if (logoutButton) logoutButton.style.display = 'none';
+    }
     setAdminUser(identity.user || '');
   } catch (error) {
+    if (error.status === 401) {
+      redirectToLogin();
+      return;
+    }
     setAdminUser('');
   }
+
+  logoutButton?.addEventListener('click', () => {
+    setStoredAuth('');
+    window.location.href = 'login.html';
+  });
 
   await setupReservationInbox();
   await setupWaitlistInbox();
@@ -1179,6 +1345,9 @@ const initDataDrivenPages = async () => {
     }
     if (pageType === 'admin') {
       await setupAdminPage();
+    }
+    if (pageType === 'login') {
+      setupLoginPage();
     }
   } catch (error) {
     console.error(error);

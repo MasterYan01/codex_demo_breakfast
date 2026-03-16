@@ -711,9 +711,6 @@ class MenuHandler(BaseHTTPRequestHandler):
     def serve_static(self, path):
         rel_path = path.lstrip('/') or 'index.html'
         rel_path = rel_path.split('?', 1)[0]
-        if rel_path == 'admin.html':
-            if not self.require_admin():
-                return None
         file_path = (ROOT / rel_path).resolve()
         if ROOT not in file_path.parents and file_path != ROOT:
             return self.send_error(HTTPStatus.FORBIDDEN, 'Forbidden')
