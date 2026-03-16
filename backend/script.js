@@ -37,6 +37,12 @@ const reservationApiUrl = `${apiBase}/api/reservations`;
 const waitlistApiUrl = `${apiBase}/api/waitlist`;
 const takeoutApiUrl = `${apiBase}/api/takeout`;
 const getApiUrl = (path) => `${apiBase}${path}`;
+const auditFilters = {
+  query: '',
+  action: 'all',
+  rangeDays: 'all'
+};
+let auditEntries = [];
 
 const finishLoading = () => {
   body.classList.remove('is-loading');
@@ -84,6 +90,16 @@ const setAdminDirty = (dirty) => {
 const confirmDiscardChanges = (message = '你有未儲存的變更，確定要切換嗎？') => {
   if (!adminDirty) return true;
   return window.confirm(message);
+};
+
+const setAdminUser = (user) => {
+  const node = document.querySelector('#admin-user');
+  if (!node) return;
+  if (!user) {
+    node.textContent = '';
+    return;
+  }
+  node.textContent = `登入：${user}`;
 };
 
 const syncImagePreview = (input, preview) => {
@@ -896,11 +912,40 @@ const renderAuditList = (entries) => {
   }).join('');
 };
 
+const filterAuditEntries = () => {
+  let filtered = auditEntries.slice();
+  const query = auditFilters.query.trim().toLowerCase();
+  if (query) {
+    filtered = filtered.filter((entry) => String(entry.actor || '').toLowerCase().includes(query));
+  }
+  if (auditFilters.action !== 'all') {
+    filtered = filtered.filter((entry) => entry.action === auditFilters.action);
+  }
+  if (auditFilters.rangeDays !== 'all') {
+    const days = Number(auditFilters.rangeDays);
+    if (Number.isFinite(days) && days > 0) {
+      const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+      filtered = filtered.filter((entry) => {
+        const ts = Date.parse(entry.timestamp || '');
+        return Number.isFinite(ts) && ts >= cutoff;
+      });
+    }
+  }
+  const countNode = document.querySelector('#admin-audit-count');
+  if (countNode) {
+    countNode.textContent = `顯示 ${filtered.length} / ${auditEntries.length} 筆`;
+  }
+  renderAuditList(filtered);
+};
+
 const setupAuditLog = async () => {
   const listNode = document.querySelector('#admin-audit-list');
   if (!listNode) return;
   const refreshButton = document.querySelector('#admin-audit-refresh');
   const statusNode = document.querySelector('#admin-audit-status');
+  const queryInput = document.querySelector('#admin-audit-query');
+  const actionSelect = document.querySelector('#admin-audit-action');
+  const rangeSelect = document.querySelector('#admin-audit-range');
 
   const updateStatus = (message, status) => {
     if (!statusNode) return;
@@ -912,12 +957,28 @@ const setupAuditLog = async () => {
     updateStatus('載入操作記錄中…', '');
     try {
       const payload = await fetchJson(`${getApiUrl('/api/audit')}?limit=50`);
-      renderAuditList(payload.entries || []);
+      auditEntries = payload.entries || [];
+      filterAuditEntries();
       updateStatus('已更新操作記錄。', 'success');
     } catch (error) {
       updateStatus(`載入失敗：${error.message}`, 'error');
     }
   };
+
+  queryInput?.addEventListener('input', () => {
+    auditFilters.query = queryInput.value || '';
+    filterAuditEntries();
+  });
+
+  actionSelect?.addEventListener('change', () => {
+    auditFilters.action = actionSelect.value || 'all';
+    filterAuditEntries();
+  });
+
+  rangeSelect?.addEventListener('change', () => {
+    auditFilters.rangeDays = rangeSelect.value || 'all';
+    filterAuditEntries();
+  });
 
   refreshButton?.addEventListener('click', load);
   await load();
@@ -1090,6 +1151,13 @@ const setupAdminPage = async () => {
     event.preventDefault();
     event.returnValue = '';
   });
+
+  try {
+    const identity = await fetchJson(getApiUrl('/api/whoami'));
+    setAdminUser(identity.user || '');
+  } catch (error) {
+    setAdminUser('');
+  }
 
   await setupReservationInbox();
   await setupWaitlistInbox();

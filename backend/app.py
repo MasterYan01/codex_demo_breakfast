@@ -432,6 +432,9 @@ class MenuHandler(BaseHTTPRequestHandler):
                 return None
             return self.handle_audit_list(parsed)
 
+        if path == '/api/whoami':
+            return self.handle_whoami()
+
         if path.startswith('/api/categories/'):
             slug = unquote(path.split('/api/categories/', 1)[1]).strip('/')
             return self.handle_category(slug)
@@ -634,6 +637,17 @@ class MenuHandler(BaseHTTPRequestHandler):
         entries = load_audit_log()
         entries = list(reversed(entries))[:limit]
         return self.send_json({'ok': True, 'entries': entries})
+
+    def handle_whoami(self):
+        if not ADMIN_ENABLED:
+            return self.send_json({'ok': True, 'enabled': False, 'user': ''})
+        user = self.get_auth_user()
+        if not user:
+            self.send_response(HTTPStatus.UNAUTHORIZED)
+            self.send_header('WWW-Authenticate', 'Basic realm="La Miu Admin"')
+            self.end_headers()
+            return None
+        return self.send_json({'ok': True, 'enabled': True, 'user': user})
 
     def handle_takeout_create(self):
         try:

@@ -28,6 +28,7 @@
     <div class="admin-status-bar" role="status" aria-live="polite">
       <span class="admin-status-pill is-hidden" id="admin-dirty"></span>
       <span class="admin-status-message" id="admin-status"></span>
+      <span class="admin-status-user" id="admin-user"></span>
     </div>
     <main>
       <section class="admin-hero reveal-on-scroll reveal-visible" data-reveal="hero">
@@ -171,6 +172,33 @@
             <h2>後台操作記錄</h2>
             <button class="btn btn-secondary admin-reservations__refresh" id="admin-audit-refresh" type="button">重新整理</button>
             <p class="form-status" id="admin-audit-status" aria-live="polite"></p>
+          </div>
+          <div class="admin-audit-filter">
+            <label class="field">
+              <span>人名</span>
+              <input type="search" id="admin-audit-query" placeholder="搜尋帳號" autocomplete="off">
+            </label>
+            <div class="admin-audit-filter-row">
+              <label class="field">
+                <span>動作</span>
+                <select id="admin-audit-action">
+                  <option value="all">全部</option>
+                  <option value="create">新增</option>
+                  <option value="update">更新</option>
+                  <option value="delete">刪除</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>時間</span>
+                <select id="admin-audit-range">
+                  <option value="all">全部</option>
+                  <option value="1">今天</option>
+                  <option value="7">近 7 天</option>
+                  <option value="30">近 30 天</option>
+                </select>
+              </label>
+            </div>
+            <p class="admin-audit-count" id="admin-audit-count"></p>
           </div>
           <div id="admin-audit-list" class="admin-audit-list"></div>
         </div>
