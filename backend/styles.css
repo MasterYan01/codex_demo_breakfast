@@ -2546,6 +2546,111 @@ body {
   padding: 30px 32px;
 }
 
+.admin-status-bar {
+  position: sticky;
+  top: 84px;
+  z-index: 18;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 18px 14px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(104, 64, 45, 0.16);
+  background: rgba(255, 250, 244, 0.92);
+  box-shadow: 0 12px 28px rgba(74, 47, 31, 0.08);
+  min-height: 44px;
+}
+
+.admin-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: rgba(143, 91, 60, 0.1);
+  color: var(--wood-deep);
+}
+
+.admin-status-pill.is-hidden {
+  display: none;
+}
+
+.admin-status-message {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.admin-status-bar[data-state="success"] {
+  border-color: rgba(83, 129, 65, 0.3);
+}
+
+.admin-status-bar[data-state="error"] {
+  border-color: rgba(160, 72, 60, 0.35);
+}
+
+.admin-filter {
+  display: grid;
+  gap: 12px;
+  margin: 12px 0 18px;
+}
+
+.admin-filter-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-filter-count {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.field-hint {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.field input.is-invalid {
+  border-color: rgba(160, 72, 60, 0.6);
+  box-shadow: 0 0 0 3px rgba(160, 72, 60, 0.12);
+}
+
+.admin-image-preview {
+  grid-column: 1 / -1;
+  border-radius: 18px;
+  border: 1px dashed rgba(104, 64, 45, 0.18);
+  background: rgba(255, 255, 255, 0.72);
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+  text-align: center;
+}
+
+.admin-image-preview img {
+  max-width: 100%;
+  max-height: 240px;
+  object-fit: contain;
+  border-radius: 12px;
+  display: block;
+  margin: 0 auto;
+}
+
+.admin-image-preview.is-error {
+  border-color: rgba(160, 72, 60, 0.35);
+}
+
+.admin-image-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
 .admin-layout {
   display: grid;
   grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr);
@@ -2742,6 +2847,10 @@ body {
   .admin-analytics-grid {
     grid-template-columns: 1fr;
   }
+
+  .admin-status-bar {
+    top: 76px;
+  }
 }
 
 @media (max-width: 720px) {
@@ -2771,6 +2880,15 @@ body {
   }
 
   .admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-status-bar {
+    top: 68px;
+    margin: 0 8px 12px;
+  }
+
+  .admin-filter-row {
     grid-template-columns: 1fr;
   }
 }

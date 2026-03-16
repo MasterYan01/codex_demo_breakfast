@@ -20,6 +20,14 @@ let heroPointerY = 0;
 let heroPointerActive = false;
 let adminState = null;
 let adminSelectedSlug = '';
+let adminFormSnapshot = '';
+let adminDirty = false;
+let slugTouched = false;
+const adminFilters = {
+  query: '',
+  category: 'all',
+  status: 'all'
+};
 
 const getHeaderOffset = () => (header ? header.getBoundingClientRect().height + 24 : 96);
 const appConfig = window.LA_MIU_CONFIG || {};
@@ -45,6 +53,56 @@ const escapeHtml = (value) => String(value || '')
 const formatPrice = (value) => `NT$ ${Number(value || 0)}`;
 const getCategoryPageHref = (slug) => `${slug}.html`;
 const getItemPageHref = (slug) => `item.html?slug=${encodeURIComponent(slug)}`;
+const slugify = (value) => {
+  const cleaned = String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return cleaned;
+};
+
+const updateDirtyIndicator = () => {
+  const indicator = document.querySelector('#admin-dirty');
+  if (!indicator) return;
+  if (adminDirty) {
+    indicator.textContent = '未儲存';
+    indicator.dataset.state = 'dirty';
+    indicator.classList.remove('is-hidden');
+  } else {
+    indicator.textContent = '';
+    indicator.dataset.state = '';
+    indicator.classList.add('is-hidden');
+  }
+};
+
+const setAdminDirty = (dirty) => {
+  adminDirty = dirty;
+  updateDirtyIndicator();
+};
+
+const confirmDiscardChanges = (message = '你有未儲存的變更，確定要切換嗎？') => {
+  if (!adminDirty) return true;
+  return window.confirm(message);
+};
+
+const syncImagePreview = (input, preview) => {
+  if (!input || !preview) return;
+  const img = preview.querySelector('img');
+  const hint = preview.querySelector('.admin-image-hint');
+  const url = safeText(input.value);
+  if (!url) {
+    preview.hidden = true;
+    preview.classList.remove('is-error');
+    if (img) img.removeAttribute('src');
+    if (hint) hint.textContent = '圖片預覽';
+    return;
+  }
+  if (img) {
+    img.src = url;
+  }
+  preview.hidden = false;
+};
 
 const finishLoadingAfterReady = () => {
   if (document.readyState === 'complete') {
@@ -403,6 +461,14 @@ const updateAdminStatus = (message, state) => {
   if (!status) return;
   status.textContent = message;
   status.dataset.state = state;
+  const bar = document.querySelector('.admin-status-bar');
+  if (bar) {
+    if (state) {
+      bar.dataset.state = state;
+    } else {
+      delete bar.dataset.state;
+    }
+  }
 };
 
 const fillAdminForm = (item) => {
@@ -421,20 +487,54 @@ const fillAdminForm = (item) => {
   form.availability.value = item.availability || '';
   form.ingredients.value = Array.isArray(item.ingredients) ? item.ingredients.join(', ') : '';
   form.tags.value = Array.isArray(item.tags) ? item.tags.join(', ') : '';
+  slugTouched = Boolean(item.slug);
+  const imageInput = form.querySelector('[data-admin-image]');
+  const preview = form.querySelector('[data-admin-image-preview]');
+  if (imageInput && preview) {
+    syncImagePreview(imageInput, preview);
+  }
+  snapshotAdminForm();
+};
+
+const getFilteredAdminItems = () => {
+  if (!adminState || !Array.isArray(adminState.items)) return [];
+  const query = adminFilters.query.trim().toLowerCase();
+  return adminState.items.filter((item) => {
+    if (adminFilters.category !== 'all' && item.category !== adminFilters.category) {
+      return false;
+    }
+    const status = item.status || 'active';
+    if (adminFilters.status !== 'all' && status !== adminFilters.status) {
+      return false;
+    }
+    if (!query) return true;
+    const haystack = `${item.name || ''} ${item.slug || ''}`.toLowerCase();
+    return haystack.includes(query);
+  });
+};
+
+const updateAdminFilterCount = (filteredCount, totalCount) => {
+  const node = document.querySelector('#admin-filter-count');
+  if (!node) return;
+  node.textContent = `顯示 ${filteredCount} / ${totalCount} 項`;
 };
 
 const renderAdminList = () => {
   const list = getAdminItemList();
   if (!list || !adminState) return;
-  list.innerHTML = adminState.items.map((item) => `
+  const items = getFilteredAdminItems();
+  list.innerHTML = items.length ? items.map((item) => `
     <button type="button" class="admin-item-button${item.slug === adminSelectedSlug ? ' is-selected' : ''}" data-slug="${item.slug}">
       <strong>${item.name}</strong>
       <span>${item.category} / ${formatPrice(item.price)} · 權重 ${Number.isFinite(item.sortWeight) ? item.sortWeight : 0}${item.status === 'inactive' ? ' · 下架' : ''}</span>
     </button>
-  `).join('');
+  `).join('') : '<div class="admin-reservation-empty">目前沒有符合條件的單品。</div>';
+  updateAdminFilterCount(items.length, adminState.items.length);
 
   list.querySelectorAll('.admin-item-button').forEach((button) => {
     button.addEventListener('click', () => {
+      if (button.dataset.slug === adminSelectedSlug) return;
+      if (!confirmDiscardChanges('你有未儲存的變更，確定要切換單品嗎？')) return;
       adminSelectedSlug = button.dataset.slug || '';
       const selected = adminState.items.find((item) => item.slug === adminSelectedSlug);
       fillAdminForm(selected);
@@ -458,6 +558,47 @@ const getFormItemPayload = (form) => ({
   ingredients: safeText(form.ingredients.value).split(',').map((entry) => safeText(entry)).filter(Boolean),
   tags: safeText(form.tags.value).split(',').map((entry) => safeText(entry)).filter(Boolean)
 });
+
+const snapshotAdminForm = () => {
+  const form = getAdminForm();
+  if (!form) return;
+  adminFormSnapshot = JSON.stringify(getFormItemPayload(form));
+  setAdminDirty(false);
+};
+
+const checkAdminDirty = () => {
+  const form = getAdminForm();
+  if (!form) return false;
+  const nextSnapshot = JSON.stringify(getFormItemPayload(form));
+  const dirty = nextSnapshot !== adminFormSnapshot;
+  setAdminDirty(dirty);
+  return dirty;
+};
+
+const isSlugDuplicate = (slug) => {
+  if (!adminState || !slug) return false;
+  return adminState.items.some((item) => item.slug === slug && item.slug !== adminSelectedSlug);
+};
+
+const updateSlugValidity = (input) => {
+  if (!input) return true;
+  const slug = safeText(input.value);
+  let message = '';
+  if (slug && isSlugDuplicate(slug)) {
+    message = 'Slug 已存在，請更換。';
+  }
+  input.setCustomValidity(message);
+  input.classList.toggle('is-invalid', Boolean(message));
+  const status = getAdminStatus();
+  if (message) {
+    if (status) status.dataset.reason = 'slug';
+    updateAdminStatus(message, 'error');
+  } else if (status && status.dataset.reason === 'slug') {
+    delete status.dataset.reason;
+    updateAdminStatus('', '');
+  }
+  return !message;
+};
 
 const formatReservationTimestamp = (value) => {
   if (!value) return '';
@@ -739,13 +880,61 @@ const setupAdminPage = async () => {
   renderAdminList();
 
   const form = getAdminForm();
+  const nameInput = form?.querySelector('[data-admin-name]');
+  const slugInput = form?.querySelector('[data-admin-slug]');
+  const imageInput = form?.querySelector('[data-admin-image]');
+  const imagePreview = form?.querySelector('[data-admin-image-preview]');
   const addButton = document.querySelector('#admin-add-item');
   const saveButton = document.querySelector('#admin-save-button');
   const deleteButton = document.querySelector('#admin-delete-item');
+  const filterQuery = document.querySelector('#admin-filter-query');
+  const filterCategory = document.querySelector('#admin-filter-category');
+  const filterStatus = document.querySelector('#admin-filter-status');
+
+  if (filterQuery) {
+    filterQuery.addEventListener('input', () => {
+      adminFilters.query = filterQuery.value || '';
+      renderAdminList();
+    });
+  }
+
+  if (filterCategory) {
+    filterCategory.addEventListener('change', () => {
+      adminFilters.category = filterCategory.value || 'all';
+      renderAdminList();
+    });
+  }
+
+  if (filterStatus) {
+    filterStatus.addEventListener('change', () => {
+      adminFilters.status = filterStatus.value || 'all';
+      renderAdminList();
+    });
+  }
+
+  if (imageInput && imagePreview) {
+    syncImagePreview(imageInput, imagePreview);
+    const img = imagePreview.querySelector('img');
+    const hint = imagePreview.querySelector('.admin-image-hint');
+    img?.addEventListener('load', () => {
+      imagePreview.classList.remove('is-error');
+      if (hint) hint.textContent = '圖片預覽';
+    });
+    img?.addEventListener('error', () => {
+      imagePreview.classList.add('is-error');
+      if (hint) hint.textContent = '圖片載入失敗，請確認網址';
+    });
+    imageInput.addEventListener('input', () => {
+      syncImagePreview(imageInput, imagePreview);
+    });
+  }
 
   if (form) {
     form.addEventListener('submit', (event) => {
       event.preventDefault();
+      if (slugInput && !updateSlugValidity(slugInput)) {
+        return;
+      }
       const payload = getFormItemPayload(form);
       if (!payload.slug || !payload.name) {
         updateAdminStatus('Slug 與名稱為必填。', 'error');
@@ -761,16 +950,51 @@ const setupAdminPage = async () => {
       adminSelectedSlug = payload.slug;
       renderAdminList();
       updateAdminStatus('已更新暫存內容，記得按上方「儲存全部變更」。', 'success');
+      snapshotAdminForm();
+    });
+
+    form.addEventListener('input', () => {
+      checkAdminDirty();
+      if (slugInput) {
+        updateSlugValidity(slugInput);
+      }
+    });
+  }
+
+  if (nameInput && slugInput) {
+    nameInput.addEventListener('input', () => {
+      if (!slugTouched) {
+        const nextSlug = slugify(nameInput.value);
+        if (nextSlug) {
+          slugInput.value = nextSlug;
+        }
+      }
+      checkAdminDirty();
+      updateSlugValidity(slugInput);
+    });
+  }
+
+  if (slugInput) {
+    slugInput.addEventListener('input', () => {
+      slugTouched = Boolean(safeText(slugInput.value));
+      updateSlugValidity(slugInput);
+      checkAdminDirty();
     });
   }
 
   if (addButton) {
     addButton.addEventListener('click', () => {
+      if (!confirmDiscardChanges('你有未儲存的變更，確定要新增單品嗎？')) return;
       adminSelectedSlug = '';
       form.reset();
       form.category.value = 'breakfast';
       form.sortWeight.value = 0;
       form.status.value = 'active';
+      slugTouched = false;
+      snapshotAdminForm();
+      if (imageInput && imagePreview) {
+        syncImagePreview(imageInput, imagePreview);
+      }
       renderAdminList();
       updateAdminStatus('已建立空白單品表單。', 'success');
     });
@@ -782,6 +1006,9 @@ const setupAdminPage = async () => {
         updateAdminStatus('目前沒有選定可刪除的單品。', 'error');
         return;
       }
+      if (!window.confirm('確定要刪除這個單品？此操作無法復原。')) {
+        return;
+      }
       adminState.items = adminState.items.filter((item) => item.slug !== adminSelectedSlug);
       adminSelectedSlug = adminState.items[0]?.slug || '';
       fillAdminForm(adminState.items[0] || {
@@ -789,6 +1016,7 @@ const setupAdminPage = async () => {
       });
       renderAdminList();
       updateAdminStatus('已從暫存內容移除此單品。記得儲存全部變更。', 'success');
+      snapshotAdminForm();
     });
   }
 
@@ -806,6 +1034,12 @@ const setupAdminPage = async () => {
       }
     });
   }
+
+  window.addEventListener('beforeunload', (event) => {
+    if (!adminDirty) return;
+    event.preventDefault();
+    event.returnValue = '';
+  });
 
   await setupReservationInbox();
   await setupWaitlistInbox();

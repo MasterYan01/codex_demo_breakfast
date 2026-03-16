@@ -25,6 +25,10 @@
         <a href="dessert.html">甜點頁</a>
       </nav>
     </header>
+    <div class="admin-status-bar" role="status" aria-live="polite">
+      <span class="admin-status-pill is-hidden" id="admin-dirty"></span>
+      <span class="admin-status-message" id="admin-status"></span>
+    </div>
     <main>
       <section class="admin-hero reveal-on-scroll reveal-visible" data-reveal="hero">
         <div class="admin-hero__copy">
@@ -35,7 +39,6 @@
             <button class="btn btn-primary" id="admin-save-button" type="button">儲存全部變更</button>
             <a class="btn btn-secondary" href="menu.html">返回前台</a>
           </div>
-          <p class="form-status" id="admin-status" aria-live="polite"></p>
         </div>
       </section>
 
@@ -44,6 +47,32 @@
           <div class="admin-panel">
             <p class="eyebrow">Items</p>
             <h2>單品列表</h2>
+            <div class="admin-filter">
+              <label class="field">
+                <span>搜尋</span>
+                <input type="search" id="admin-filter-query" placeholder="名稱或 slug" autocomplete="off">
+              </label>
+              <div class="admin-filter-row">
+                <label class="field">
+                  <span>分類</span>
+                  <select id="admin-filter-category">
+                    <option value="all">全部</option>
+                    <option value="breakfast">早餐</option>
+                    <option value="coffee">咖啡</option>
+                    <option value="dessert">甜點</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>狀態</span>
+                  <select id="admin-filter-status">
+                    <option value="all">全部</option>
+                    <option value="active">上架</option>
+                    <option value="inactive">下架</option>
+                  </select>
+                </label>
+              </div>
+              <p class="admin-filter-count" id="admin-filter-count"></p>
+            </div>
             <button class="btn btn-secondary admin-add-button" id="admin-add-item" type="button">新增單品</button>
             <div id="admin-item-list" class="admin-item-list"></div>
           </div>
@@ -80,13 +109,17 @@
             <p class="eyebrow">Editor</p>
             <h2>單品編輯</h2>
             <div class="admin-grid">
-              <label class="field"><span>Slug</span><input type="text" name="slug" required></label>
-              <label class="field"><span>名稱</span><input type="text" name="name" required></label>
+              <label class="field"><span>Slug</span><input type="text" name="slug" required data-admin-slug><small class="field-hint">由名稱自動產生，可自行修改。</small></label>
+              <label class="field"><span>名稱</span><input type="text" name="name" required data-admin-name></label>
               <label class="field"><span>分類</span><select name="category" required><option value="breakfast">早餐</option><option value="coffee">咖啡</option><option value="dessert">甜點</option></select></label>
               <label class="field"><span>價格</span><input type="number" name="price" min="0" required></label>
               <label class="field"><span>排序權重</span><input type="number" name="sortWeight" min="-100" max="1000" step="1" value="0"></label>
               <label class="field"><span>上架狀態</span><select name="status"><option value="active">上架</option><option value="inactive">下架</option></select></label>
-              <label class="field field-full"><span>圖片</span><input type="url" name="image" required></label>
+              <label class="field field-full"><span>圖片</span><input type="url" name="image" required data-admin-image></label>
+              <div class="admin-image-preview" data-admin-image-preview hidden>
+                <img alt="圖片預覽">
+                <p class="admin-image-hint">圖片預覽</p>
+              </div>
               <label class="field field-full"><span>短描述</span><input type="text" name="shortDescription" required></label>
               <label class="field field-full"><span>完整描述</span><textarea name="description" rows="5" required></textarea></label>
               <label class="field field-full"><span>搭配建議</span><input type="text" name="pairing"></label>
