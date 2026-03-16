@@ -11,3 +11,7 @@
         value: 0.0.0.0
       - key: ALLOWED_ORIGINS
         sync: false
+      - key: ADMIN_USER
+        value: admin001
+      - key: ADMIN_PASSWORD
+        value: "123456"
