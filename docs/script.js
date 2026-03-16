@@ -257,6 +257,14 @@ const i18n = {
     'footer.reserve.title': '訂位',
     'footer.reserve.cta': '線上訂位',
     'footer.review.cta': '留下 Google 評論',
+    'footer.newsletter.title': '電子報',
+    'footer.newsletter.text': '每週或每月寄出主廚推薦與限定餐點。',
+    'footer.newsletter.label': 'Email',
+    'footer.newsletter.placeholder': 'name@example.com',
+    'footer.newsletter.button': '訂閱',
+    'footer.newsletter.sending': '訂閱送出中，請稍候。',
+    'footer.newsletter.success': '已送出訂閱，請留意信箱確認。',
+    'footer.newsletter.unconfigured': '請先在 config.js 設定 EDM 訂閱連結。',
     'menu.pills.overview': '總覽',
     'menu.pills.today': '今日推薦',
     'menu.pills.hot': '熱門榜',
@@ -638,6 +646,14 @@ const i18n = {
     'footer.reserve.title': 'Reservations',
     'footer.reserve.cta': 'Reserve Online',
     'footer.review.cta': 'Leave a Google Review',
+    'footer.newsletter.title': 'Newsletter',
+    'footer.newsletter.text': 'Weekly or monthly chef picks and seasonal dishes.',
+    'footer.newsletter.label': 'Email',
+    'footer.newsletter.placeholder': 'name@example.com',
+    'footer.newsletter.button': 'Subscribe',
+    'footer.newsletter.sending': 'Submitting your subscription...',
+    'footer.newsletter.success': 'Subscription sent. Please check your inbox.',
+    'footer.newsletter.unconfigured': 'Please set the newsletter action in config.js first.',
     'menu.pills.overview': 'Overview',
     'menu.pills.today': 'Today',
     'menu.pills.hot': 'Popular',
@@ -1018,6 +1034,74 @@ const setupReviewCta = () => {
     return;
   }
   link.setAttribute('href', reviewUrl);
+};
+
+const setupNewsletterForms = () => {
+  const forms = Array.from(document.querySelectorAll('[data-newsletter-form]'));
+  if (!forms.length) return;
+
+  const newsletterConfig = appConfig.newsletter || {};
+  const action = safeText(newsletterConfig.action);
+  const method = safeText(newsletterConfig.method || 'post').toLowerCase();
+  const emailField = safeText(newsletterConfig.emailField || 'EMAIL');
+  const hiddenFields = newsletterConfig.hiddenFields && typeof newsletterConfig.hiddenFields === 'object'
+    ? newsletterConfig.hiddenFields
+    : null;
+
+  forms.forEach((form) => {
+    const status = form.querySelector('[data-newsletter-status]');
+    const submitButton = form.querySelector('button[type="submit"]');
+    const emailInput = form.querySelector('[data-newsletter-email]');
+
+    if (emailInput && emailField) {
+      emailInput.setAttribute('name', emailField);
+    }
+
+    if (!action) {
+      if (submitButton) submitButton.disabled = true;
+      if (status) {
+        status.textContent = t('footer.newsletter.unconfigured');
+        status.dataset.state = 'error';
+      }
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+      });
+      return;
+    }
+
+    form.setAttribute('action', action);
+    form.setAttribute('method', method || 'post');
+    form.setAttribute('target', '_blank');
+    form.setAttribute('rel', 'noreferrer');
+
+    if (hiddenFields) {
+      Object.entries(hiddenFields).forEach(([name, value]) => {
+        if (!name) return;
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = String(value ?? '');
+        form.appendChild(input);
+      });
+    }
+
+    form.addEventListener('submit', () => {
+      if (status) {
+        status.textContent = t('footer.newsletter.sending');
+        status.dataset.state = '';
+        window.setTimeout(() => {
+          status.textContent = t('footer.newsletter.success');
+          status.dataset.state = 'success';
+        }, 400);
+      }
+      if (submitButton) {
+        submitButton.disabled = true;
+        window.setTimeout(() => {
+          submitButton.disabled = false;
+        }, 1500);
+      }
+    });
+  });
 };
 
 const syncSeoMeta = () => {
@@ -3650,6 +3734,7 @@ applyPageMeta();
 syncSeoMeta();
 syncLanguageMeta();
 setupReviewCta();
+setupNewsletterForms();
 setupReservationForm();
 setupWaitlistForm();
 setupTakeoutForm();
