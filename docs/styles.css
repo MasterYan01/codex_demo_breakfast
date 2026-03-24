@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --ink: #352319;
   --muted: #716053;
   --muted-soft: rgba(113, 96, 83, 0.72);
@@ -934,7 +934,6 @@ body.search-open .search-panel {
 }
 
 .hero-photo-main {
-  background-image: url('https://images.pexels.com/photos/12815026/pexels-photo-12815026.jpeg?cs=srgb&dl=pexels-ioanamtc-12815026.jpg&fm=jpg');
 }
 
 .hero-overlay {
@@ -1142,22 +1141,18 @@ body.search-open .search-panel {
 }
 
 .image-platter {
-  background-image: url('https://images.pexels.com/photos/12815026/pexels-photo-12815026.jpeg?cs=srgb&dl=pexels-ioanamtc-12815026.jpg&fm=jpg');
   background-position: center 58%;
 }
 
 .image-benedict {
-  background-image: url('https://images.pexels.com/photos/17478684/pexels-photo-17478684.jpeg?cs=srgb&dl=pexels-nadin-sh-78971847-17478684.jpg&fm=jpg');
   background-position: center center;
 }
 
 .image-salmon {
-  background-image: url('https://images.pexels.com/photos/30471825/pexels-photo-30471825.jpeg?cs=srgb&dl=pexels-aliaksandra-babko-2148943026-30471825.jpg&fm=jpg');
   background-position: center 48%;
 }
 
 .image-roll {
-  background-image: url('https://images.pexels.com/photos/11842183/pexels-photo-11842183.jpeg?cs=srgb&dl=pexels-eat-kubba-15863701-11842183.jpg&fm=jpg');
   background-position: center 52%;
 }
 
@@ -1242,17 +1237,14 @@ body.search-open .search-panel {
 }
 
 .chef-frame {
-  background-image: url('https://images.pexels.com/photos/18977451/pexels-photo-18977451.jpeg?cs=srgb&dl=pexels-canerb-18977451.jpg&fm=jpg');
   background-position: center 44%;
 }
 
 .produce-frame {
-  background-image: url('https://images.pexels.com/photos/2739760/pexels-photo-2739760.jpeg?cs=srgb&dl=pexels-joe-mcgill-1407638-2739760.jpg&fm=jpg');
   background-position: center center;
 }
 
 .interior-frame {
-  background-image: url('https://images.pexels.com/photos/17478684/pexels-photo-17478684.jpeg?cs=srgb&dl=pexels-nadin-sh-78971847-17478684.jpg&fm=jpg');
   background-position: center 58%;
 }
 
@@ -2176,35 +2168,27 @@ body {
 }
 
 .hero-photo-main {
-  background-image: url('https://unsplash.com/photos/DnZiQ0hSk6M/download?force=true&w=1800&q=80');
 }
 
 .image-platter {
-  background-image: url('https://unsplash.com/photos/cJQXKWVtuy8/download?force=true&w=1400&q=80');
 }
 
 .image-benedict {
-  background-image: url('https://unsplash.com/photos/v-gulYVVehs/download?force=true&w=1200&q=80');
 }
 
 .image-salmon {
-  background-image: url('https://unsplash.com/photos/okRwdVuu_zE/download?force=true&w=1200&q=80');
 }
 
 .image-roll {
-  background-image: url('https://unsplash.com/photos/O80jXvTP9LM/download?force=true&w=1200&q=80');
 }
 
 .chef-frame {
-  background-image: url('https://unsplash.com/photos/sQg28nQnCTA/download?force=true&w=1200&q=80');
 }
 
 .produce-frame {
-  background-image: url('https://unsplash.com/photos/kV6finvoSd0/download?force=true&w=1200&q=80');
 }
 
 .interior-frame {
-  background-image: url('https://unsplash.com/photos/0i5clWZBit0/download?force=true&w=1200&q=80');
 }
 
 @media (max-width: 720px) {
@@ -3047,7 +3031,6 @@ body {
 
 .menu-hero-photo {
   position: relative;
-  background-image: url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1600&q=80');
 }
 
 .menu-page-note {
@@ -3482,15 +3465,12 @@ body {
 }
 
 .seasonal-card--asparagus {
-  background-image: url('https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80');
 }
 
 .seasonal-card--toast {
-  background-image: url('https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=1200&q=80');
 }
 
 .seasonal-card--skillet {
-  background-image: url('https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=1200&q=80');
 }
 
 .seasonal-card__copy {
@@ -3743,15 +3723,12 @@ body {
 }
 
 .category-hero__visual--breakfast {
-  background-image: url('https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=1600&q=80');
 }
 
 .category-hero__visual--coffee {
-  background-image: url('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1600&q=80');
 }
 
 .category-hero__visual--dessert {
-  background-image: url('https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1600&q=80');
 }
 
 .category-list-grid {
@@ -4072,51 +4049,39 @@ body.preview-open {
 }
 
 .seasonal-breakfast-photo {
-  background-image: url('https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=1200&q=80');
 }
 
 .category-coffee-photo {
-  background-image: url('https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1200&q=80');
 }
 
 .category-americano-photo {
-  background-image: url('https://images.unsplash.com/photo-1494314671902-399b18174975?auto=format&fit=crop&w=1200&q=80');
 }
 
 .category-filter-photo {
-  background-image: url('https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=1200&q=80');
 }
 
 .category-tea-photo {
-  background-image: url('https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=1200&q=80');
 }
 
 .category-citrus-photo {
-  background-image: url('https://images.unsplash.com/photo-1461823385004-d7660947a7c0?auto=format&fit=crop&w=1200&q=80');
 }
 
 .category-chamomile-photo {
-  background-image: url('https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=1200&q=80');
 }
 
 .category-basque-photo {
-  background-image: url('https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=1200&q=80');
 }
 
 .category-tart-photo {
-  background-image: url('https://images.unsplash.com/photo-1464306076886-da185f6a9d05?auto=format&fit=crop&w=1200&q=80');
 }
 
 .category-pudding-photo {
-  background-image: url('https://images.unsplash.com/photo-1488477304112-4944851de03d?auto=format&fit=crop&w=1200&q=80');
 }
 
 .category-cookie-photo {
-  background-image: url('https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=1200&q=80');
 }
 
 .category-seasonal-dessert-photo {
-  background-image: url('https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=1200&q=80');
 }
 
 @media (max-width: 1080px) {

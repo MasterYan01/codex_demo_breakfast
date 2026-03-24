@@ -22,6 +22,8 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="site.webmanifest">
   <link rel="stylesheet" href="styles.css">
+  <link rel="preload" href="styles-images.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="styles-images.css"></noscript>
 </head>
 <body class="is-loading menu-page item-detail-page" data-page="item-detail">
   <div class="page-loader" aria-hidden="true"><div class="page-loader__inner">
@@ -108,7 +110,13 @@
       <div class="footer-column"><h3 data-i18n="footer.reserve.title">訂位</h3><p><a href="index.html#reserve" data-i18n="footer.reserve.cta">線上訂位</a></p><p data-i18n="footer.address.line1">台南市中西區衛民街129號</p></div>
     </footer>
   </div>
-  <script src="config.js"></script>
-  <script src="script.js"></script>
+  <script defer src="config.js"></script>
+  <script defer src="i18n.js"></script>
+  <script defer src="script.js"></script>
+  <script defer src="script-deferred.js"></script>
 </body>
 </html>
+
+
+
+

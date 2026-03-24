@@ -9,6 +9,7 @@ import threading
 import uuid
 from datetime import datetime, timezone
 from email.message import EmailMessage
+from email.utils import formatdate, parsedate_to_datetime
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -806,13 +807,51 @@ class MenuHandler(BaseHTTPRequestHandler):
         if not file_path.exists():
             return self.send_error(HTTPStatus.NOT_FOUND, 'File not found')
 
+        stat_result = file_path.stat()
+        etag = f'W/"{int(stat_result.st_mtime)}-{stat_result.st_size}"'
+        last_modified = formatdate(stat_result.st_mtime, usegmt=True)
+        cache_control = self.get_cache_control(file_path)
+        if self.client_cache_hit(etag, stat_result.st_mtime):
+            self.send_response(HTTPStatus.NOT_MODIFIED)
+            self.send_header('ETag', etag)
+            self.send_header('Last-Modified', last_modified)
+            self.send_header('Cache-Control', cache_control)
+            self.end_headers()
+            return None
+
         mime_type, _ = mimetypes.guess_type(str(file_path))
         self.send_response(HTTPStatus.OK)
         self.send_header('Content-Type', mime_type or 'application/octet-stream')
-        self.send_header('Content-Length', str(file_path.stat().st_size))
+        self.send_header('Content-Length', str(stat_result.st_size))
+        self.send_header('ETag', etag)
+        self.send_header('Last-Modified', last_modified)
+        self.send_header('Cache-Control', cache_control)
         self.end_headers()
         with file_path.open('rb') as fh:
             self.wfile.write(fh.read())
+
+    def get_cache_control(self, file_path):
+        suffix = file_path.suffix.lower()
+        if suffix == '.html':
+            return 'no-cache'
+        return 'public, max-age=86400'
+
+    def client_cache_hit(self, etag, modified_ts):
+        if_none_match = self.headers.get('If-None-Match', '').strip()
+        if if_none_match and if_none_match == etag:
+            return True
+        if_modified_since = self.headers.get('If-Modified-Since', '').strip()
+        if not if_modified_since:
+            return False
+        try:
+            since_dt = parsedate_to_datetime(if_modified_since)
+        except (TypeError, ValueError, IndexError):
+            return False
+        if since_dt is None:
+            return False
+        if since_dt.tzinfo is None:
+            since_dt = since_dt.replace(tzinfo=timezone.utc)
+        return since_dt.timestamp() >= int(modified_ts)
 
     def send_json(self, payload, status=HTTPStatus.OK):
         content = json_bytes(payload)
