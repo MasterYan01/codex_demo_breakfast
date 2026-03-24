@@ -29,9 +29,14 @@ let adminSelectedSlug = '';
 const menuItemLookup = new Map();
 const searchStorageKey = 'la_miu_recent_items_v1';
 const favoriteStorageKey = 'la_miu_favorites_v1';
+const compareStorageKey = 'la_miu_compare_items_v1';
 const searchResultLimit = 8;
 const recentResultLimit = 6;
+const compareMaxItems = 3;
 let searchIndexPromise = null;
+let compareItems = [];
+let compareUi = null;
+let compareHandlersBound = false;
 const reservationSlotCapacities = {
   '09:00': 8,
   '10:30': 10,
@@ -1653,6 +1658,96 @@ const fetchJson = async (url, options) => {
   return response.json();
 };
 
+const normalizeCompareItem = (entry) => {
+  if (!entry || !entry.slug) return null;
+  return {
+    slug: String(entry.slug).trim(),
+    name: String(entry.name || '').trim(),
+    category: String(entry.category || '').trim(),
+    image: String(entry.image || '').trim(),
+    price: Number(entry.price || 0),
+    shortDescription: String(entry.shortDescription || '').trim(),
+    ingredients: Array.isArray(entry.ingredients) ? entry.ingredients.map((value) => String(value).trim()).filter(Boolean).slice(0, 6) : [],
+    tags: Array.isArray(entry.tags) ? entry.tags.map((value) => String(value).trim()).filter(Boolean).slice(0, 6) : [],
+    availability: String(entry.availability || '').trim(),
+    pairing: String(entry.pairing || '').trim(),
+    vegetarian: Boolean(entry.vegetarian),
+    eggDairy: Boolean(entry.eggDairy),
+    nuts: Boolean(entry.nuts),
+    glutenFree: Boolean(entry.glutenFree)
+  };
+};
+
+const readCompareItems = () => {
+  try {
+    const raw = JSON.parse(localStorage.getItem(compareStorageKey) || '[]');
+    if (!Array.isArray(raw)) return [];
+    const unique = [];
+    const seen = new Set();
+    raw.forEach((entry) => {
+      const normalized = normalizeCompareItem(entry);
+      if (!normalized || !normalized.slug || seen.has(normalized.slug)) return;
+      seen.add(normalized.slug);
+      unique.push(normalized);
+    });
+    return unique.slice(0, compareMaxItems);
+  } catch (error) {
+    console.warn(error);
+    return [];
+  }
+};
+
+const writeCompareItems = () => {
+  try {
+    localStorage.setItem(compareStorageKey, JSON.stringify(compareItems.slice(0, compareMaxItems)));
+  } catch (error) {
+    console.warn(error);
+  }
+};
+
+const isItemCompared = (slug) => compareItems.some((entry) => entry.slug === slug);
+
+const getCompareToggleLabel = (slug) => (
+  isItemCompared(slug) ? t('compare.button.selected') : t('compare.button.add')
+);
+
+const getCompareItemBySlug = (slug) => {
+  if (!slug) return null;
+  const current = menuItemLookup.get(slug);
+  const existing = compareItems.find((entry) => entry.slug === slug) || {};
+  return normalizeCompareItem({
+    slug,
+    name: current?.name || existing.name || '',
+    category: current?.category || existing.category || '',
+    image: current?.image || existing.image || '',
+    price: current?.price ?? existing.price ?? 0,
+    shortDescription: current?.shortDescription || existing.shortDescription || '',
+    ingredients: current?.ingredients || existing.ingredients || [],
+    tags: current?.tags || existing.tags || [],
+    availability: current?.availability || existing.availability || '',
+    pairing: current?.pairing || existing.pairing || '',
+    vegetarian: current?.vegetarian ?? existing.vegetarian,
+    eggDairy: current?.eggDairy ?? existing.eggDairy,
+    nuts: current?.nuts ?? existing.nuts,
+    glutenFree: current?.glutenFree ?? existing.glutenFree
+  });
+};
+
+const createCompareToggleButton = (item) => {
+  const active = isItemCompared(item.slug);
+  return `<button class="compare-toggle${active ? ' is-active' : ''}" type="button" data-compare-toggle data-compare-slug="${item.slug}" aria-pressed="${active ? 'true' : 'false'}">${getCompareToggleLabel(item.slug)}</button>`;
+};
+
+const createCardActions = (item, options = {}) => {
+  const { linkClass = 'text-link' } = options;
+  return `
+    <div class="menu-card-actions">
+      ${createCompareToggleButton(item)}
+      <a class="${linkClass}" href="${getItemPageHref(item.slug)}" data-item-link data-item-slug="${item.slug}" data-item-name="${item.name}" data-item-category="${item.category}" data-item-image="${item.image}" data-item-price="${item.price}" data-item-short="${item.shortDescription}">${t('preview.action.view')}</a>
+    </div>
+  `;
+};
+
 const createMenuCard = (item) => `
   <article class="menu-item-card">
     <div class="menu-item-photo" style="background-image:url('${item.image}')">
@@ -1666,7 +1761,7 @@ const createMenuCard = (item) => `
       <p>${item.shortDescription}</p>
       ${getDietaryBadgesHtml(item)}
       <span class="price">${formatPrice(item.price)}</span>
-      <a class="text-link" href="${getItemPageHref(item.slug)}" data-item-link data-item-slug="${item.slug}" data-item-name="${item.name}" data-item-category="${item.category}" data-item-image="${item.image}" data-item-price="${item.price}" data-item-short="${item.shortDescription}">${t('preview.action.view')}</a>
+      ${createCardActions(item)}
     </div>
   </article>
 `;
@@ -1684,7 +1779,7 @@ const createCategoryDishCard = (item) => `
       <p>${item.shortDescription}</p>
       ${getDietaryBadgesHtml(item)}
       <span class="price">${formatPrice(item.price)}</span>
-      <a class="text-link" href="${getItemPageHref(item.slug)}" data-item-link data-item-slug="${item.slug}" data-item-name="${item.name}" data-item-category="${item.category}" data-item-image="${item.image}" data-item-price="${item.price}" data-item-short="${item.shortDescription}">${t('preview.action.view')}</a>
+      ${createCardActions(item)}
     </div>
   </article>
 `;
@@ -1761,9 +1856,11 @@ const setupDietaryFilterPanel = (panel, items, grid, renderer) => {
     }
     if (!filtered.length) {
       grid.innerHTML = `<div class="menu-filter-empty">${t('filter.empty')}</div>`;
+      syncCompareButtons();
       return;
     }
     grid.innerHTML = filtered.map(renderer).join('');
+    syncCompareButtons();
   };
 
   inputs.forEach((input) => input.addEventListener('change', render));
@@ -1887,10 +1984,12 @@ const setupMenuQuickFilters = (panel, items, grid, renderer) => {
 
     if (!filtered.length) {
       grid.innerHTML = `<div class="menu-filter-empty">${t('filter.empty')}</div>`;
+      syncCompareButtons();
       return;
     }
 
     grid.innerHTML = filtered.map(renderer).join('');
+    syncCompareButtons();
   };
 
   const toggleButton = (button) => {
@@ -1993,6 +2092,229 @@ const readFavorites = () => {
 
 const writeFavorites = (favorites) => {
   localStorage.setItem(favoriteStorageKey, JSON.stringify([...favorites]));
+};
+
+const getCompareTags = (item) => {
+  const dietary = getDietaryProfile(item);
+  const dietaryTags = dietaryBadgeConfig
+    .filter((badge) => dietary[badge.key])
+    .map((badge) => t(badge.labelKey));
+  return [...new Set([...(item.tags || []), ...dietaryTags])].filter(Boolean);
+};
+
+const createCompareCard = (item) => {
+  const ingredientText = (item.ingredients || []).slice(0, 4).join('、') || '-';
+  const tagsText = getCompareTags(item).slice(0, 6).join('、') || '-';
+  const availabilityText = item.availability || t('item.fallback.availability');
+  const pairingText = item.pairing || t('item.fallback.pairing');
+  return `
+    <article class="compare-card">
+      <div class="compare-card__photo" style="background-image:url('${item.image || ''}')"></div>
+      <div class="compare-card__content">
+        <div class="compare-card__head">
+          <h3>${item.name || item.slug}</h3>
+          <button class="compare-card__remove" type="button" data-compare-remove="${item.slug}">${t('compare.panel.remove')}</button>
+        </div>
+        <p class="compare-card__desc">${item.shortDescription || ''}</p>
+        <div class="compare-card__meta">
+          <div><span>${t('preview.meta.price')}</span><strong>${formatPrice(item.price)}</strong></div>
+          <div><span>${t('compare.meta.ingredients')}</span><strong>${ingredientText}</strong></div>
+          <div><span>${t('compare.meta.tags')}</span><strong>${tagsText}</strong></div>
+          <div><span>${t('compare.meta.availability')}</span><strong>${availabilityText}</strong></div>
+          <div><span>${t('compare.meta.pairing')}</span><strong>${pairingText}</strong></div>
+        </div>
+        <a class="text-link" href="${getItemPageHref(item.slug)}">${t('preview.action.view')}</a>
+      </div>
+    </article>
+  `;
+};
+
+const ensureCompareUi = () => {
+  if (compareUi) return compareUi;
+  const dock = document.createElement('div');
+  dock.className = 'compare-dock';
+  dock.hidden = true;
+  dock.innerHTML = `
+    <div class="compare-dock__copy">
+      <p class="compare-dock__count"></p>
+      <p class="compare-dock__status" aria-live="polite"></p>
+    </div>
+    <div class="compare-dock__actions">
+      <button class="btn btn-primary compare-dock__open" type="button" data-compare-open>${t('compare.dock.open')}</button>
+      <button class="btn btn-secondary compare-dock__clear" type="button" data-compare-clear>${t('compare.dock.clear')}</button>
+    </div>
+  `;
+  document.body.appendChild(dock);
+
+  const panel = document.createElement('div');
+  panel.className = 'compare-panel';
+  panel.setAttribute('aria-hidden', 'true');
+  panel.innerHTML = `
+    <div class="compare-panel__backdrop" data-compare-close></div>
+    <div class="compare-panel__card" role="dialog" aria-modal="true" aria-label="${t('compare.panel.aria')}">
+      <div class="compare-panel__head">
+        <h3>${t('compare.panel.title')}</h3>
+        <button class="compare-panel__close" type="button" data-compare-close>${t('compare.panel.close')}</button>
+      </div>
+      <p class="compare-panel__hint"></p>
+      <div class="compare-panel__grid"></div>
+    </div>
+  `;
+  document.body.appendChild(panel);
+
+  compareUi = {
+    dock,
+    panel,
+    countNode: dock.querySelector('.compare-dock__count'),
+    statusNode: dock.querySelector('.compare-dock__status'),
+    openButton: dock.querySelector('[data-compare-open]'),
+    gridNode: panel.querySelector('.compare-panel__grid'),
+    hintNode: panel.querySelector('.compare-panel__hint')
+  };
+  return compareUi;
+};
+
+const setCompareStatus = (message = '') => {
+  const ui = ensureCompareUi();
+  if (!ui.statusNode) return;
+  ui.statusNode.textContent = message;
+};
+
+const syncCompareButtons = () => {
+  const buttons = Array.from(document.querySelectorAll('[data-compare-toggle]'));
+  buttons.forEach((button) => {
+    const slug = button.dataset.compareSlug;
+    const active = isItemCompared(slug);
+    button.classList.toggle('is-active', active);
+    button.setAttribute('aria-pressed', String(active));
+    button.textContent = getCompareToggleLabel(slug);
+  });
+};
+
+const renderComparePanel = () => {
+  const ui = ensureCompareUi();
+  if (!ui.gridNode || !ui.hintNode) return;
+  if (!compareItems.length) {
+    ui.gridNode.innerHTML = `<div class="compare-panel__empty">${t('compare.panel.empty')}</div>`;
+    ui.hintNode.textContent = t('compare.panel.empty');
+    return;
+  }
+  ui.gridNode.innerHTML = compareItems.map(createCompareCard).join('');
+  ui.hintNode.textContent = compareItems.length < 2
+    ? t('compare.dock.tip')
+    : t('compare.dock.ready');
+};
+
+const closeComparePanel = () => {
+  const ui = ensureCompareUi();
+  document.body.classList.remove('compare-open');
+  ui.panel.classList.remove('is-visible');
+  ui.panel.setAttribute('aria-hidden', 'true');
+};
+
+const openComparePanel = () => {
+  const ui = ensureCompareUi();
+  if (compareItems.length < 2) {
+    setCompareStatus(t('compare.dock.tip'));
+    return;
+  }
+  renderComparePanel();
+  document.body.classList.add('compare-open');
+  ui.panel.classList.add('is-visible');
+  ui.panel.setAttribute('aria-hidden', 'false');
+};
+
+const refreshCompareUi = () => {
+  const ui = ensureCompareUi();
+  const count = compareItems.length;
+  ui.dock.hidden = count === 0;
+  if (ui.countNode) {
+    ui.countNode.textContent = t('compare.dock.count', { count, max: compareMaxItems });
+  }
+  if (ui.openButton) {
+    ui.openButton.disabled = count < 2;
+  }
+  if (!ui.panel.classList.contains('is-visible')) {
+    if (count === 0) setCompareStatus('');
+  } else {
+    renderComparePanel();
+  }
+  syncCompareButtons();
+};
+
+const toggleCompareItem = (slug) => {
+  if (!slug) return;
+  const existingIndex = compareItems.findIndex((entry) => entry.slug === slug);
+  if (existingIndex >= 0) {
+    const [removed] = compareItems.splice(existingIndex, 1);
+    writeCompareItems();
+    setCompareStatus(t('compare.status.removed', { name: removed?.name || slug }));
+    if (!compareItems.length) {
+      closeComparePanel();
+    }
+    refreshCompareUi();
+    return;
+  }
+  if (compareItems.length >= compareMaxItems) {
+    setCompareStatus(t('compare.status.limit', { max: compareMaxItems }));
+    return;
+  }
+  const item = getCompareItemBySlug(slug);
+  if (!item) {
+    setCompareStatus(t('compare.status.missing'));
+    return;
+  }
+  compareItems.push(item);
+  writeCompareItems();
+  setCompareStatus(t('compare.status.added', { name: item.name || slug }));
+  refreshCompareUi();
+};
+
+const setupMenuCompareMode = () => {
+  if (!['menu-overview', 'category', 'item-detail'].includes(pageType)) return;
+  compareItems = readCompareItems();
+  ensureCompareUi();
+  refreshCompareUi();
+  if (compareHandlersBound) return;
+
+  document.addEventListener('click', (event) => {
+    const toggleButton = event.target.closest('[data-compare-toggle]');
+    if (toggleButton) {
+      toggleCompareItem(toggleButton.dataset.compareSlug || '');
+      return;
+    }
+    if (event.target.closest('[data-compare-open]')) {
+      openComparePanel();
+      return;
+    }
+    if (event.target.closest('[data-compare-clear]')) {
+      compareItems = [];
+      writeCompareItems();
+      setCompareStatus('');
+      closeComparePanel();
+      refreshCompareUi();
+      return;
+    }
+    if (event.target.closest('[data-compare-close]')) {
+      closeComparePanel();
+      return;
+    }
+    const removeButton = event.target.closest('[data-compare-remove]');
+    if (removeButton) {
+      toggleCompareItem(removeButton.getAttribute('data-compare-remove') || '');
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      const ui = ensureCompareUi();
+      if (ui.panel.classList.contains('is-visible')) {
+        closeComparePanel();
+      }
+    }
+  });
+
+  compareHandlersBound = true;
 };
 
 const copyToClipboard = async (text) => {
@@ -2609,6 +2931,7 @@ const renderMenuOverview = async () => {
   } else if (filterPanel && filterGrid) {
     setupDietaryFilterPanel(filterPanel, displayItems, filterGrid, createMenuCard);
   }
+  syncCompareButtons();
 
   if (data && data.categories) {
     const menuSchema = {
@@ -2676,6 +2999,7 @@ const renderCategoryPage = async () => {
     }
     listGrid.classList.toggle('category-list-grid--three', displayItems.length <= 6 && slug !== 'breakfast');
   }
+  syncCompareButtons();
 
   const pairingNode = document.querySelector('#category-pairings');
   if (pairingNode) {
@@ -2771,6 +3095,7 @@ const renderItemDetailPage = async () => {
   if (relatedGrid) {
     relatedGrid.innerHTML = related.map(createCategoryDishCard).join('');
   }
+  syncCompareButtons();
 
   if (item) {
     const itemSchema = {
@@ -2988,6 +3313,7 @@ window.addEventListener('resize', requestScrollSync);
 setupRevealAnimations();
 setupActiveSections();
 setupRecentItemTracking();
+setupMenuCompareMode();
 window.LaMiuDeferredInit = {
   setupGlobalSearch,
   setupQuickPreview,
