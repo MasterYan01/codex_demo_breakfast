@@ -4,6 +4,8 @@ import mimetypes
 import os
 import smtplib
 import re
+import tempfile
+import threading
 import uuid
 from datetime import datetime, timezone
 from email.message import EmailMessage
@@ -42,10 +44,15 @@ ADMIN_USER = os.getenv('ADMIN_USER', '').strip()
 ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', '').strip()
 ADMIN_ENABLED = bool(ADMIN_USER and ADMIN_PASSWORD)
 ACTIVE_TOKENS = {}
+ADMIN_TOKEN_TTL_SECONDS = int(os.getenv('ADMIN_TOKEN_TTL_SECONDS', '43200'))
 AUDIT_LOG_LIMIT = int(os.getenv('AUDIT_LOG_LIMIT', '1000'))
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID', '').strip()
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN', '').strip()
 TWILIO_FROM = os.getenv('TWILIO_FROM', '').strip()
+DATA_LOCK = threading.RLock()
+TOKEN_LOCK = threading.RLock()
+SENSITIVE_STATIC_PREFIXES = ('data/', '__pycache__/')
+SENSITIVE_STATIC_EXTENSIONS = {'.py', '.pyc', '.pyo', '.json', '.env', '.sqlite', '.db', '.log'}
 WAITLIST_SMS_TEMPLATE = os.getenv(
     'WAITLIST_SMS_TEMPLATE',
     '樂沐 La Miu：{name} 您好，已可入座（{guests} 位）。請於 10 分鐘內到店。'
@@ -58,9 +65,7 @@ def load_menu():
 
 
 def save_menu(payload):
-    DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with DATA_FILE.open('w', encoding='utf-8') as fh:
-        json.dump(payload, fh, ensure_ascii=False, indent=2)
+    atomic_write_json(DATA_FILE, payload)
 
 
 def json_bytes(payload):
@@ -79,9 +84,25 @@ def load_list(path):
 
 
 def save_list(path, payload):
+    atomic_write_json(path, payload)
+
+
+def atomic_write_json(path, payload):
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open('w', encoding='utf-8') as fh:
-        json.dump(payload, fh, ensure_ascii=False, indent=2)
+    fd, temp_name = tempfile.mkstemp(prefix=f'.{path.name}.', suffix='.tmp', dir=str(path.parent))
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as fh:
+            json.dump(payload, fh, ensure_ascii=False, indent=2)
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(temp_name, path)
+    finally:
+        try:
+            os.remove(temp_name)
+        except FileNotFoundError:
+            pass
+        except OSError:
+            pass
 
 
 def load_reservations():
@@ -209,6 +230,24 @@ def notify_admin(event_type, entry):
     return result or None
 
 
+def has_notify_channel_configured():
+    return bool(NOTIFY_WEBHOOK_URL or LINE_NOTIFY_TOKEN or (SMTP_HOST and SMTP_TO))
+
+
+def dispatch_notify_async(event_type, entry):
+    if not has_notify_channel_configured():
+        return None
+
+    def _run():
+        try:
+            notify_admin(event_type, entry)
+        except Exception as exc:
+            print(f'Notify failed ({event_type}): {exc}')
+
+    threading.Thread(target=_run, daemon=True, name=f'notify-{event_type}').start()
+    return {'queued': True}
+
+
 def normalize_twilio_phone(value):
     if not value:
         return ''
@@ -279,6 +318,17 @@ def find_duplicate_entry(entry, entries, keys, window_seconds=120):
     return None
 
 
+def cleanup_expired_tokens(now=None):
+    if ADMIN_TOKEN_TTL_SECONDS <= 0:
+        return
+    now = now or datetime.now(timezone.utc)
+    with TOKEN_LOCK:
+        for token, token_entry in list(ACTIVE_TOKENS.items()):
+            created_at = parse_iso_timestamp(token_entry.get('createdAt', ''))
+            if created_at is None or (now - created_at).total_seconds() > ADMIN_TOKEN_TTL_SECONDS:
+                ACTIVE_TOKENS.pop(token, None)
+
+
 def normalize_item_snapshot(item):
     if not isinstance(item, dict):
         return {}
@@ -328,22 +378,23 @@ def diff_items(old_items, new_items):
 def append_audit_entries(entries, actor, ip_address, user_agent):
     if not entries:
         return
-    log = load_audit_log()
-    now = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
-    for entry in entries:
-        log.append({
-            'id': uuid.uuid4().hex,
-            'timestamp': now,
-            'actor': actor or 'unknown',
-            'action': entry.get('action', ''),
-            'item': entry.get('item', {}),
-            'changes': entry.get('changes', {}),
-            'ip': ip_address,
-            'userAgent': user_agent
-        })
-    if len(log) > AUDIT_LOG_LIMIT:
-        log = log[-AUDIT_LOG_LIMIT:]
-    save_audit_log(log)
+    with DATA_LOCK:
+        log = load_audit_log()
+        now = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+        for entry in entries:
+            log.append({
+                'id': uuid.uuid4().hex,
+                'timestamp': now,
+                'actor': actor or 'unknown',
+                'action': entry.get('action', ''),
+                'item': entry.get('item', {}),
+                'changes': entry.get('changes', {}),
+                'ip': ip_address,
+                'userAgent': user_agent
+            })
+        if len(log) > AUDIT_LOG_LIMIT:
+            log = log[-AUDIT_LOG_LIMIT:]
+        save_audit_log(log)
 
 
 class MenuHandler(BaseHTTPRequestHandler):
@@ -355,7 +406,9 @@ class MenuHandler(BaseHTTPRequestHandler):
         token = self.headers.get('X-Admin-Token', '').strip()
         if not token:
             return None
-        entry = ACTIVE_TOKENS.get(token)
+        cleanup_expired_tokens()
+        with TOKEN_LOCK:
+            entry = ACTIVE_TOKENS.get(token)
         if not entry:
             return None
         return entry.get('user')
@@ -469,9 +522,10 @@ class MenuHandler(BaseHTTPRequestHandler):
             payload = json.loads(raw.decode('utf-8'))
             if not isinstance(payload, dict) or 'categories' not in payload or 'items' not in payload:
                 raise ValueError('Invalid payload shape')
-            old_menu = load_menu()
-            save_menu(payload)
-            changes = diff_items(old_menu.get('items', []), payload.get('items', []))
+            with DATA_LOCK:
+                old_menu = load_menu()
+                save_menu(payload)
+                changes = diff_items(old_menu.get('items', []), payload.get('items', []))
             actor = self.get_token_user() or 'anonymous'
             append_audit_entries(changes, actor, self.client_address[0], self.headers.get('User-Agent', ''))
             self.send_json({'ok': True, 'saved': True})
@@ -515,16 +569,17 @@ class MenuHandler(BaseHTTPRequestHandler):
                 'userAgent': self.headers.get('User-Agent', '')
             }
 
-            reservations = load_reservations()
-            duplicate = find_duplicate_entry(entry, reservations, ['name', 'phone', 'email', 'date', 'time', 'guests'])
-            if duplicate:
-                return self.send_json({'ok': True, 'reservation': duplicate, 'deduped': True})
+            with DATA_LOCK:
+                reservations = load_reservations()
+                duplicate = find_duplicate_entry(entry, reservations, ['name', 'phone', 'email', 'date', 'time', 'guests'])
+                if duplicate:
+                    return self.send_json({'ok': True, 'reservation': duplicate, 'deduped': True})
 
-            reservations.append(entry)
-            if len(reservations) > RESERVATION_LIMIT:
-                reservations = reservations[-RESERVATION_LIMIT:]
-            save_reservations(reservations)
-            notify_status = notify_admin('reservation', entry)
+                reservations.append(entry)
+                if len(reservations) > RESERVATION_LIMIT:
+                    reservations = reservations[-RESERVATION_LIMIT:]
+                save_reservations(reservations)
+            notify_status = dispatch_notify_async('reservation', entry)
             response = {'ok': True, 'reservation': entry}
             if notify_status is not None:
                 response['notify'] = notify_status
@@ -569,16 +624,17 @@ class MenuHandler(BaseHTTPRequestHandler):
                 'userAgent': self.headers.get('User-Agent', '')
             }
 
-            entries = load_waitlist()
-            duplicate = find_duplicate_entry(entry, entries, ['name', 'phone', 'date', 'time', 'guests'])
-            if duplicate:
-                return self.send_json({'ok': True, 'waitlist': duplicate, 'deduped': True})
+            with DATA_LOCK:
+                entries = load_waitlist()
+                duplicate = find_duplicate_entry(entry, entries, ['name', 'phone', 'date', 'time', 'guests'])
+                if duplicate:
+                    return self.send_json({'ok': True, 'waitlist': duplicate, 'deduped': True})
 
-            entries.append(entry)
-            if len(entries) > WAITLIST_LIMIT:
-                entries = entries[-WAITLIST_LIMIT:]
-            save_waitlist(entries)
-            notify_status = notify_admin('waitlist', entry)
+                entries.append(entry)
+                if len(entries) > WAITLIST_LIMIT:
+                    entries = entries[-WAITLIST_LIMIT:]
+                save_waitlist(entries)
+            notify_status = dispatch_notify_async('waitlist', entry)
             response = {'ok': True, 'waitlist': entry}
             if notify_status is not None:
                 response['notify'] = notify_status
@@ -594,15 +650,22 @@ class MenuHandler(BaseHTTPRequestHandler):
             target_id = str(payload.get('id', '')).strip()
             if not target_id:
                 raise ValueError('Missing waitlist id')
-            entries = load_waitlist()
-            target = next((entry for entry in entries if entry.get('id') == target_id), None)
-            if not target:
-                return self.send_json({'ok': False, 'error': 'Waitlist entry not found'}, status=HTTPStatus.NOT_FOUND)
-            sms_status = send_waitlist_sms(target)
+            with DATA_LOCK:
+                entries = load_waitlist()
+                target = next((entry for entry in entries if entry.get('id') == target_id), None)
+                if not target:
+                    return self.send_json({'ok': False, 'error': 'Waitlist entry not found'}, status=HTTPStatus.NOT_FOUND)
+                snapshot = dict(target)
+            sms_status = send_waitlist_sms(snapshot)
             if sms_status is None:
                 return self.send_json({'ok': False, 'error': 'SMS not configured'}, status=HTTPStatus.BAD_REQUEST)
-            target['notifiedAt'] = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
-            save_waitlist(entries)
+            with DATA_LOCK:
+                entries = load_waitlist()
+                target = next((entry for entry in entries if entry.get('id') == target_id), None)
+                if not target:
+                    return self.send_json({'ok': False, 'error': 'Waitlist entry not found'}, status=HTTPStatus.NOT_FOUND)
+                target['notifiedAt'] = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+                save_waitlist(entries)
             return self.send_json({'ok': True, 'status': sms_status, 'waitlist': target})
         except Exception as exc:
             return self.send_json({'ok': False, 'error': str(exc)}, status=HTTPStatus.BAD_REQUEST)
@@ -641,18 +704,21 @@ class MenuHandler(BaseHTTPRequestHandler):
             if user != ADMIN_USER or password != ADMIN_PASSWORD:
                 return self.send_json({'ok': False, 'error': 'Invalid credentials'}, status=HTTPStatus.UNAUTHORIZED)
             token = uuid.uuid4().hex
-            ACTIVE_TOKENS[token] = {
-                'user': user,
-                'createdAt': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
-            }
+            cleanup_expired_tokens()
+            with TOKEN_LOCK:
+                ACTIVE_TOKENS[token] = {
+                    'user': user,
+                    'createdAt': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+                }
             return self.send_json({'ok': True, 'enabled': True, 'token': token, 'user': user})
         except Exception as exc:
             return self.send_json({'ok': False, 'error': str(exc)}, status=HTTPStatus.BAD_REQUEST)
 
     def handle_logout(self):
         token = self.headers.get('X-Admin-Token', '').strip()
-        if token and token in ACTIVE_TOKENS:
-            ACTIVE_TOKENS.pop(token, None)
+        if token:
+            with TOKEN_LOCK:
+                ACTIVE_TOKENS.pop(token, None)
         return self.send_json({'ok': True})
 
     def handle_whoami(self):
@@ -688,16 +754,17 @@ class MenuHandler(BaseHTTPRequestHandler):
                 'userAgent': self.headers.get('User-Agent', '')
             }
 
-            entries = load_takeout()
-            duplicate = find_duplicate_entry(entry, entries, ['name', 'phone', 'date', 'time', 'items'])
-            if duplicate:
-                return self.send_json({'ok': True, 'takeout': duplicate, 'deduped': True})
+            with DATA_LOCK:
+                entries = load_takeout()
+                duplicate = find_duplicate_entry(entry, entries, ['name', 'phone', 'date', 'time', 'items'])
+                if duplicate:
+                    return self.send_json({'ok': True, 'takeout': duplicate, 'deduped': True})
 
-            entries.append(entry)
-            if len(entries) > TAKEOUT_LIMIT:
-                entries = entries[-TAKEOUT_LIMIT:]
-            save_takeout(entries)
-            notify_status = notify_admin('takeout', entry)
+                entries.append(entry)
+                if len(entries) > TAKEOUT_LIMIT:
+                    entries = entries[-TAKEOUT_LIMIT:]
+                save_takeout(entries)
+            notify_status = dispatch_notify_async('takeout', entry)
             response = {'ok': True, 'takeout': entry}
             if notify_status is not None:
                 response['notify'] = notify_status
@@ -725,6 +792,12 @@ class MenuHandler(BaseHTTPRequestHandler):
     def serve_static(self, path):
         rel_path = path.lstrip('/') or 'index.html'
         rel_path = rel_path.split('?', 1)[0]
+        rel_path = rel_path.replace('\\', '/')
+        normalized = rel_path.lower().lstrip('/')
+        if any(normalized == prefix.rstrip('/') or normalized.startswith(prefix) for prefix in SENSITIVE_STATIC_PREFIXES):
+            return self.send_error(HTTPStatus.FORBIDDEN, 'Forbidden')
+        if Path(normalized).suffix in SENSITIVE_STATIC_EXTENSIONS:
+            return self.send_error(HTTPStatus.FORBIDDEN, 'Forbidden')
         file_path = (ROOT / rel_path).resolve()
         if ROOT not in file_path.parents and file_path != ROOT:
             return self.send_error(HTTPStatus.FORBIDDEN, 'Forbidden')
