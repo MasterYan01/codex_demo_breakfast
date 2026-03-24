@@ -2562,22 +2562,33 @@ const setupSpaceCarousel = () => {
 };
 
 const setupMobileQuickActions = () => {
-  const scrollButton = document.querySelector('[data-scroll-top]');
-  if (!scrollButton) return;
-  const toggleButtons = () => {
-    const hidden = window.scrollY < 240;
-    scrollButton.classList.toggle('is-hidden', hidden);
-  };
+  let root = document.querySelector('.mobile-quick-actions');
+  if (!root) {
+    root = document.createElement('nav');
+    root.className = 'mobile-quick-actions';
+    document.body.appendChild(root);
+  }
 
-  scrollButton.addEventListener('click', () => {
-    window.scrollTo({
-      top: 0,
-      behavior: reduceMotion ? 'auto' : 'smooth'
-    });
-  });
+  const getHomeSectionHref = (section) => (
+    pageType === 'home' ? `#${section}` : withLangParam(`index.html#${section}`)
+  );
+  const phoneHref = document.querySelector('a[href^="tel:"]')?.getAttribute('href') || 'tel:+88662213129';
+  const mapHref = document.querySelector('a[href*="maps.google"], a[href*="google.com/maps"]')?.getAttribute('href')
+    || 'https://maps.google.com/?q=%E5%8F%B0%E5%8D%97%E5%B8%82%E4%B8%AD%E8%A5%BF%E5%8D%80%E8%A1%9B%E6%B0%91%E8%A1%97129%E8%99%9F';
 
-  window.addEventListener('scroll', toggleButtons, { passive: true });
-  toggleButtons();
+  const actions = [
+    { href: getHomeSectionHref('reserve'), label: t('quick.reserve') },
+    { href: getHomeSectionHref('waitlist'), label: t('quick.waitlist') },
+    { href: getHomeSectionHref('takeout'), label: t('quick.takeout') },
+    { href: phoneHref, label: t('quick.call') },
+    { href: mapHref, label: t('quick.navigate'), external: true }
+  ];
+
+  root.setAttribute('aria-label', t('quick.aria'));
+  root.innerHTML = actions.map((action) => {
+    const externalAttrs = action.external ? ' target="_blank" rel="noreferrer"' : '';
+    return `<a class="mobile-quick-action" href="${action.href}"${externalAttrs}>${action.label}</a>`;
+  }).join('');
 };
 
 const setupBackgroundAudio = () => {
