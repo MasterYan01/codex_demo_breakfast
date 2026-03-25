@@ -43,6 +43,17 @@
   --logo-bg: rgba(255, 250, 244, 0.92);
   --logo-shadow: 0 12px 24px rgba(74, 47, 31, 0.16);
   --loader-logo-shadow: 0 24px 46px rgba(74, 47, 31, 0.18);
+  --footer-bg-a: rgba(248, 239, 228, 0.96);
+  --footer-bg-b: rgba(241, 228, 212, 0.9);
+  --footer-copy: #716053;
+  --footer-link: #716053;
+  --footer-link-hover: #68402d;
+  --footer-hover-surface: rgba(255, 250, 244, 0.38);
+  --footer-hover-shadow: 0 16px 28px rgba(74, 47, 31, 0.08);
+  --footer-link-underline: rgba(104, 64, 45, 0.45);
+  --footer-field-bg: rgba(255, 255, 255, 0.78);
+  --footer-field-border: rgba(104, 64, 45, 0.14);
+  --footer-field-placeholder: rgba(113, 96, 83, 0.8);
 }
 
 :root[data-theme="dark"] {
@@ -87,6 +98,17 @@
   --logo-bg: rgba(37, 28, 22, 0.92);
   --logo-shadow: 0 12px 24px rgba(0, 0, 0, 0.28);
   --loader-logo-shadow: 0 24px 46px rgba(0, 0, 0, 0.38);
+  --footer-bg-a: rgba(44, 33, 27, 0.94);
+  --footer-bg-b: rgba(31, 23, 19, 0.92);
+  --footer-copy: #e6d7ca;
+  --footer-link: #ecd9c7;
+  --footer-link-hover: #ffe8d4;
+  --footer-hover-surface: rgba(235, 199, 168, 0.1);
+  --footer-hover-shadow: 0 16px 28px rgba(0, 0, 0, 0.25);
+  --footer-link-underline: rgba(235, 199, 168, 0.68);
+  --footer-field-bg: rgba(255, 255, 255, 0.94);
+  --footer-field-border: rgba(235, 199, 168, 0.35);
+  --footer-field-placeholder: rgba(86, 67, 53, 0.9);
 }
 
 * {
@@ -1547,7 +1569,7 @@ body.search-open .search-panel {
   margin: 12px 18px 18px;
   padding: 30px 32px;
   background:
-    linear-gradient(135deg, rgba(248,239,228,0.96), rgba(241,228,212,0.9));
+    linear-gradient(135deg, var(--footer-bg-a), var(--footer-bg-b));
 }
 
 .footer-brand-block h2 {
@@ -1577,16 +1599,29 @@ body.search-open .search-panel {
 
 .footer-column a {
   text-decoration: none;
-  color: var(--muted);
+  color: var(--footer-link);
   transition: color 180ms ease;
 }
 
 .footer-column a:hover {
-  color: var(--wood-deep);
+  color: var(--footer-link-hover);
 }
 
 .footer-column p {
   margin: 0 0 8px;
+}
+
+.site-footer .footer-brand-block p,
+.site-footer .footer-column p {
+  color: var(--footer-copy);
+}
+
+.site-footer .footer-column a {
+  color: var(--footer-link);
+}
+
+.site-footer .footer-column a:hover {
+  color: var(--footer-link-hover);
 }
 
 @keyframes loaderSweep {
@@ -2036,8 +2071,8 @@ body.is-ready .hero.reveal-visible .hero-visual > .hero-floating-card { animatio
 .site-footer .footer-column:hover,
 .site-footer .footer-brand-block:hover {
   transform: translateY(-4px);
-  background: rgba(255, 250, 244, 0.38);
-  box-shadow: 0 16px 28px rgba(74, 47, 31, 0.08);
+  background: var(--footer-hover-surface);
+  box-shadow: var(--footer-hover-shadow);
 }
 
 .site-footer .footer-column a {
@@ -2053,7 +2088,7 @@ body.is-ready .hero.reveal-visible .hero-visual > .hero-floating-card { animatio
   bottom: -2px;
   width: 100%;
   height: 1px;
-  background: rgba(104, 64, 45, 0.45);
+  background: var(--footer-link-underline);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 220ms ease;
@@ -2677,6 +2712,18 @@ body {
   border-color: rgba(143, 91, 60, 0.4);
   box-shadow: 0 0 0 4px rgba(199, 154, 120, 0.12);
   background: rgba(255, 255, 255, 0.92);
+}
+
+.site-footer .field input,
+.site-footer .field select,
+.site-footer .field textarea {
+  background: var(--footer-field-bg);
+  border-color: var(--footer-field-border);
+}
+
+.site-footer .field input::placeholder,
+.site-footer .field textarea::placeholder {
+  color: var(--footer-field-placeholder);
 }
 
 .field-full {
