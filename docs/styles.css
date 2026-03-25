@@ -4814,3 +4814,228 @@ body.compare-open {
     grid-template-columns: 1fr;
   }
 }
+
+:root[data-theme="dark"] {
+  --dark-surface-1: rgba(40, 30, 24, 0.9);
+  --dark-surface-2: rgba(52, 39, 31, 0.9);
+  --dark-surface-3: rgba(61, 46, 37, 0.88);
+  --dark-border-1: rgba(235, 199, 168, 0.32);
+  --dark-border-2: rgba(235, 199, 168, 0.48);
+  --dark-text-1: #f5e6d9;
+  --dark-text-2: #e9d5c4;
+  --dark-text-3: #d5bca7;
+}
+
+:root[data-theme="dark"] .btn-secondary,
+:root[data-theme="dark"] .nav-search-trigger__hint,
+:root[data-theme="dark"] .bg-audio-toggle,
+:root[data-theme="dark"] .mobile-quick-actions,
+:root[data-theme="dark"] .mobile-quick-action,
+:root[data-theme="dark"] .reserve-note-item,
+:root[data-theme="dark"] .availability-panel,
+:root[data-theme="dark"] .availability-recommend,
+:root[data-theme="dark"] .availability-recommend__slot,
+:root[data-theme="dark"] .availability-slot,
+:root[data-theme="dark"] .reservation-summary,
+:root[data-theme="dark"] .access-info-item,
+:root[data-theme="dark"] .map-frame,
+:root[data-theme="dark"] .menu-pills a,
+:root[data-theme="dark"] .menu-filter-panel,
+:root[data-theme="dark"] .menu-filter-toolbar,
+:root[data-theme="dark"] .filter-chip span,
+:root[data-theme="dark"] .filter-clear,
+:root[data-theme="dark"] .filter-select,
+:root[data-theme="dark"] .filter-toggle,
+:root[data-theme="dark"] .menu-filter-empty,
+:root[data-theme="dark"] .compare-toggle,
+:root[data-theme="dark"] .tag-pill,
+:root[data-theme="dark"] .compare-panel__close,
+:root[data-theme="dark"] .compare-card__remove,
+:root[data-theme="dark"] .preview-action,
+:root[data-theme="dark"] .preview-nav,
+:root[data-theme="dark"] .admin-item-button {
+  background: var(--dark-surface-2);
+  border-color: var(--dark-border-1);
+  color: var(--dark-text-1);
+}
+
+:root[data-theme="dark"] .search-panel__bar,
+:root[data-theme="dark"] .search-clear,
+:root[data-theme="dark"] .search-close,
+:root[data-theme="dark"] .search-result,
+:root[data-theme="dark"] .search-empty,
+:root[data-theme="dark"] .compare-card {
+  background: var(--dark-surface-1);
+  border-color: var(--dark-border-1);
+}
+
+:root[data-theme="dark"] .search-input,
+:root[data-theme="dark"] .search-result,
+:root[data-theme="dark"] .search-result__copy strong,
+:root[data-theme="dark"] .search-result__copy p,
+:root[data-theme="dark"] .search-empty,
+:root[data-theme="dark"] .menu-filter-status,
+:root[data-theme="dark"] .menu-filter-empty,
+:root[data-theme="dark"] .compare-panel__hint,
+:root[data-theme="dark"] .compare-dock__count,
+:root[data-theme="dark"] .compare-dock__status,
+:root[data-theme="dark"] .compare-card__desc,
+:root[data-theme="dark"] .preview-feedback,
+:root[data-theme="dark"] .preview-description,
+:root[data-theme="dark"] .access-copy-block p,
+:root[data-theme="dark"] .access-info-item p,
+:root[data-theme="dark"] .detail-list,
+:root[data-theme="dark"] .admin-item-button span {
+  color: var(--dark-text-2);
+}
+
+:root[data-theme="dark"] .search-panel__hint,
+:root[data-theme="dark"] .availability-note,
+:root[data-theme="dark"] .availability-slot__meta,
+:root[data-theme="dark"] .availability-recommend__note,
+:root[data-theme="dark"] .reservation-steps li,
+:root[data-theme="dark"] .reservation-summary span,
+:root[data-theme="dark"] .preview-meta span,
+:root[data-theme="dark"] .compare-card__meta div span,
+:root[data-theme="dark"] .form-status[data-state="loading"] {
+  color: var(--dark-text-3);
+}
+
+:root[data-theme="dark"] .search-group__title,
+:root[data-theme="dark"] .search-result__meta,
+:root[data-theme="dark"] .filter-group-label,
+:root[data-theme="dark"] .menu-category-card__eyebrow {
+  color: #f1d7c1;
+}
+
+:root[data-theme="dark"] .search-result:hover,
+:root[data-theme="dark"] .filter-chip span:hover,
+:root[data-theme="dark"] .filter-toggle:hover,
+:root[data-theme="dark"] .filter-clear:hover,
+:root[data-theme="dark"] .compare-toggle:hover,
+:root[data-theme="dark"] .preview-action:hover,
+:root[data-theme="dark"] .compare-panel__close:hover,
+:root[data-theme="dark"] .compare-card__remove:hover,
+:root[data-theme="dark"] .admin-item-button:hover,
+:root[data-theme="dark"] .admin-item-button.is-selected {
+  border-color: var(--dark-border-2);
+  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.28);
+}
+
+:root[data-theme="dark"] .filter-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='%23f1e2d5' d='M5.5 7.5 10 12l4.5-4.5 1.4 1.4-5.9 5.9-5.9-5.9z'/%3E%3C/svg%3E");
+}
+
+:root[data-theme="dark"] .menu-pills a.is-active,
+:root[data-theme="dark"] .filter-chip input:checked + span,
+:root[data-theme="dark"] .filter-toggle.is-active,
+:root[data-theme="dark"] .filter-toggle[aria-pressed="true"],
+:root[data-theme="dark"] .compare-toggle.is-active,
+:root[data-theme="dark"] .preview-action.is-active,
+:root[data-theme="dark"] .availability-recommend__slot.is-selected,
+:root[data-theme="dark"] .availability-slot.is-selected {
+  background: linear-gradient(135deg, var(--latte), var(--wood));
+  color: #fffaf5;
+  border-color: transparent;
+}
+
+:root[data-theme="dark"] .tag-pill--veg {
+  background: rgba(125, 167, 120, 0.28);
+  border-color: rgba(181, 223, 175, 0.4);
+  color: #e5f5df;
+}
+
+:root[data-theme="dark"] .tag-pill--egg {
+  background: rgba(220, 176, 110, 0.32);
+  border-color: rgba(241, 205, 152, 0.4);
+  color: #fff0d3;
+}
+
+:root[data-theme="dark"] .tag-pill--nut {
+  background: rgba(199, 150, 115, 0.32);
+  border-color: rgba(232, 191, 159, 0.4);
+  color: #fde7d2;
+}
+
+:root[data-theme="dark"] .tag-pill--gf {
+  background: rgba(116, 164, 197, 0.32);
+  border-color: rgba(166, 205, 232, 0.4);
+  color: #e0f1ff;
+}
+
+:root[data-theme="dark"] .btn-secondary:hover,
+:root[data-theme="dark"] .bg-audio-toggle:hover,
+:root[data-theme="dark"] .mobile-quick-action:hover,
+:root[data-theme="dark"] .availability-recommend__slot:hover,
+:root[data-theme="dark"] .availability-slot:hover,
+:root[data-theme="dark"] .menu-pills a:hover,
+:root[data-theme="dark"] .preview-nav:hover {
+  border-color: var(--dark-border-2);
+  background: var(--dark-surface-3);
+}
+
+:root[data-theme="dark"] .reservation-form {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 18%),
+    rgba(34, 25, 20, 0.9);
+}
+
+:root[data-theme="dark"] .reservation-steps li span {
+  background: rgba(47, 35, 29, 0.9);
+  border-color: var(--dark-border-1);
+  color: var(--dark-text-2);
+}
+
+:root[data-theme="dark"] .field input,
+:root[data-theme="dark"] .field select,
+:root[data-theme="dark"] .field textarea {
+  background: rgba(36, 27, 22, 0.92);
+  border-color: var(--dark-border-1);
+  color: var(--dark-text-1);
+}
+
+:root[data-theme="dark"] .field input::placeholder,
+:root[data-theme="dark"] .field textarea::placeholder {
+  color: rgba(233, 213, 196, 0.72);
+}
+
+:root[data-theme="dark"] .field input:focus,
+:root[data-theme="dark"] .field select:focus,
+:root[data-theme="dark"] .field textarea:focus {
+  border-color: var(--dark-border-2);
+  box-shadow: 0 0 0 4px rgba(235, 199, 168, 0.2);
+  background: rgba(46, 34, 28, 0.95);
+}
+
+:root[data-theme="dark"] .form-status[data-state="error"] {
+  color: #ffb7a9;
+}
+
+:root[data-theme="dark"] .form-status[data-state="success"] {
+  color: #d6f2c5;
+  background: rgba(38, 61, 34, 0.5);
+  border-color: rgba(179, 230, 155, 0.35);
+}
+
+:root[data-theme="dark"] .reservation-success__card {
+  border-color: var(--dark-border-2);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08), transparent 55%),
+    linear-gradient(135deg, rgba(58, 43, 34, 0.98), rgba(43, 32, 26, 0.95));
+  box-shadow: 0 24px 46px rgba(0, 0, 0, 0.34);
+}
+
+:root[data-theme="dark"] .reservation-success__card::after {
+  border-color: rgba(235, 199, 168, 0.3);
+}
+
+:root[data-theme="dark"] .reservation-success__card h4,
+:root[data-theme="dark"] .reservation-success__summary {
+  color: var(--dark-text-1);
+}
+
+:root[data-theme="dark"] .preview-backdrop,
+:root[data-theme="dark"] .compare-panel__backdrop,
+:root[data-theme="dark"] .search-panel__backdrop {
+  background: rgba(13, 9, 7, 0.6);
+}
