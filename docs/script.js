@@ -30,6 +30,7 @@ const menuItemLookup = new Map();
 const searchStorageKey = 'la_miu_recent_items_v1';
 const favoriteStorageKey = 'la_miu_favorites_v1';
 const compareStorageKey = 'la_miu_compare_items_v1';
+const themeStorageKey = 'la_miu_theme_v1';
 const searchResultLimit = 8;
 const recentResultLimit = 6;
 const compareMaxItems = 3;
@@ -47,6 +48,7 @@ const reservationSlotCapacities = {
 const reservationDurationMinutes = 90;
 const languageStorageKey = 'la_miu_lang_v1';
 const supportedLangs = ['zh', 'en'];
+const supportedThemes = ['light', 'dark'];
 
 const resolveLanguage = () => {
   const params = new URLSearchParams(window.location.search);
@@ -65,6 +67,8 @@ const resolveLanguage = () => {
 };
 
 let currentLang = resolveLanguage();
+let currentTheme = 'light';
+let syncThemeToggle = () => {};
 
 const i18n = window.LA_MIU_I18N || {};
 
@@ -89,9 +93,52 @@ const setCurrentLang = (nextLang) => {
   } catch (error) {
     // Ignore storage errors.
   }
+  syncThemeToggle();
 };
 
 setCurrentLang(currentLang);
+
+const resolveTheme = () => {
+  const params = new URLSearchParams(window.location.search);
+  const queryTheme = (params.get('theme') || '').trim().toLowerCase();
+  if (supportedThemes.includes(queryTheme)) return queryTheme;
+  try {
+    const stored = window.localStorage.getItem(themeStorageKey);
+    if (stored && supportedThemes.includes(stored)) return stored;
+  } catch (error) {
+    // Ignore storage errors.
+  }
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+};
+
+const syncThemeMeta = () => {
+  const themeColor = currentTheme === 'dark' ? '#130d0a' : '#f2e6d8';
+  document.querySelectorAll('meta[name="theme-color"]').forEach((node) => {
+    node.setAttribute('content', themeColor);
+  });
+};
+
+const applyTheme = () => {
+  document.documentElement.dataset.theme = currentTheme;
+  document.documentElement.style.colorScheme = currentTheme === 'dark' ? 'dark' : 'light';
+  syncThemeMeta();
+};
+
+const setCurrentTheme = (nextTheme, options = {}) => {
+  const { persist = true } = options;
+  currentTheme = nextTheme === 'dark' ? 'dark' : 'light';
+  applyTheme();
+  if (persist) {
+    try {
+      window.localStorage.setItem(themeStorageKey, currentTheme);
+    } catch (error) {
+      // Ignore storage errors.
+    }
+  }
+  syncThemeToggle();
+};
+
+setCurrentTheme(resolveTheme(), { persist: false });
 
 const applyTranslations = () => {
   document.querySelectorAll('[data-i18n]').forEach((node) => {
@@ -1733,6 +1780,41 @@ const getCompareItemBySlug = (slug) => {
   });
 };
 
+const setupThemeToggle = () => {
+  const container = document.querySelector('.lang-toggle') || document.querySelector('.site-header');
+  if (!container) return;
+
+  let button = container.querySelector('.theme-toggle');
+  if (!button) {
+    button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'theme-toggle';
+    container.appendChild(button);
+  }
+
+  if (!button.dataset.bound) {
+    button.dataset.bound = '1';
+    button.addEventListener('click', () => {
+      setCurrentTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    });
+  }
+
+  syncThemeToggle = () => {
+    const labelKey = currentTheme === 'dark' ? 'theme.toggle.light' : 'theme.toggle.dark';
+    const label = t(labelKey);
+    const ariaText = t('theme.toggle.aria');
+    document.querySelectorAll('.theme-toggle').forEach((node) => {
+      node.textContent = label;
+      node.setAttribute('title', label);
+      node.setAttribute('aria-label', ariaText === 'theme.toggle.aria' ? label : ariaText);
+      node.setAttribute('aria-pressed', String(currentTheme === 'dark'));
+      node.classList.toggle('is-dark', currentTheme === 'dark');
+    });
+  };
+
+  syncThemeToggle();
+};
+
 const createCompareToggleButton = (item) => {
   const active = isItemCompared(item.slug);
   return `<button class="compare-toggle${active ? ' is-active' : ''}" type="button" data-compare-toggle data-compare-slug="${item.slug}" aria-pressed="${active ? 'true' : 'false'}">${getCompareToggleLabel(item.slug)}</button>`;
@@ -3306,6 +3388,7 @@ const deferNonCriticalInit = (callback, timeout = 1200) => {
 
 applyTranslations();
 setupLanguageSwitcher();
+setupThemeToggle();
 syncLanguageLinks();
 applyPageMeta();
 syncSeoMeta();
