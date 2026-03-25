@@ -64,6 +64,9 @@ Open the admin from the Render domain:
 - `https://your-render-service.onrender.com/admin.html`
 
 ## Notes
+- Rebuild CSS before deployment after any style change:
+  - `npm install` (first time only)
+  - `npm run build:css`
 - `backend/data/menu.json` is the editable data source.
 - `backend/data/reservations.json` stores incoming reservation requests.
 - `backend/data/waitlist.json` stores waitlist submissions.

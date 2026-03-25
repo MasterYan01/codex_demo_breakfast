@@ -1,0 +1,18 @@
+{
+  "name": "lamiu-breakfast",
+  "private": true,
+  "scripts": {
+    "build:docs-css": "postcss docs/src/styles.css -o docs/styles.css",
+    "build:backend-css": "postcss backend/src/styles.css -o backend/styles.css",
+    "build:css": "npm run build:docs-css && npm run build:backend-css",
+    "watch:docs-css": "postcss docs/src/styles.css -o docs/styles.css --watch",
+    "watch:backend-css": "postcss backend/src/styles.css -o backend/styles.css --watch"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "postcss-cli": "^11.0.0",
+    "postcss-import": "^16.1.0",
+    "tailwindcss": "^3.4.17"
+  }
+}
