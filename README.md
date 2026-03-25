@@ -31,7 +31,27 @@ A static, multi-page restaurant website for **La Miu** featuring a menu-driven U
 
 ## Local Development
 
-### 1) Start the API server
+### 1) Install CSS toolchain and build Tailwind output
+
+```bash
+npm install
+npm run build:css
+```
+
+For active CSS development, run either watcher:
+
+```bash
+npm run watch:docs-css
+npm run watch:backend-css
+```
+
+Migration layout:
+
+- `docs/src/legacy.css` and `backend/src/legacy.css` keep current site styles.
+- `docs/src/styles.css` and `backend/src/styles.css` are Tailwind entry files (`@tailwind` + `@layer`).
+- Build output is written to `docs/styles.css` and `backend/styles.css` for runtime/deploy.
+
+### 2) Start the API server
 
 ```bash
 cd backend
@@ -40,7 +60,7 @@ python app.py
 
 The API runs at `http://127.0.0.1:8020` by default.
 
-### 2) Serve the front-end
+### 3) Serve the front-end
 
 Any static server works. Example:
 
@@ -51,7 +71,7 @@ python -m http.server 5500
 
 Open `http://127.0.0.1:5500` in your browser.
 
-### 3) Configure API base URL (optional)
+### 4) Configure API base URL (optional)
 
 Front-end API target is defined in:
 

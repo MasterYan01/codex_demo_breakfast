@@ -1,0 +1,9 @@
+@import "./legacy.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tailwind migration layer for backend pages. */
+@layer components {}
+@layer utilities {}
